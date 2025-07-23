@@ -7,7 +7,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 /**
- * The type Hello application.
+ * The Hello application class.
  */
 public class HelloApplication extends Application {
 
