@@ -1,0 +1,22 @@
+name: Checkstyle
+
+on:
+  workflow_dispatch:
+
+jobs:
+  checkstyle:
+    name: Run Checkstyle
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '24'
+
+      - name: Build and run Checkstyle
+        run: mvn checkstyle:check
