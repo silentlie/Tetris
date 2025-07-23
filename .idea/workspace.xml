@@ -6,6 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="9bee126a-e892-4d20-a3e4-60c6771447c6" name="Changes" comment="misc: update idea settings">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -62,7 +63,7 @@
     "project.structure.proportion": "0.15",
     "project.structure.side.proportion": "0.53333336",
     "rearrange.code.on.save": "true",
-    "settings.editor.selected.configurable": "preferences.pluginManager",
+    "settings.editor.selected.configurable": "org.infernus.idea.checkstyle.CheckStyleConfigurable",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -85,7 +86,7 @@
       <workItem from="1753247932554" duration="1110000" />
       <workItem from="1753249062009" duration="298000" />
       <workItem from="1753249375788" duration="1288000" />
-      <workItem from="1753250753028" duration="1398000" />
+      <workItem from="1753250753028" duration="2732000" />
     </task>
     <servers />
   </component>
