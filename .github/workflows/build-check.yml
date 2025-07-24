@@ -1,4 +1,4 @@
-name: Checkstyle
+name: Build check using Maven
 
 on:
   pull_request:
@@ -13,13 +13,12 @@ permissions:
   pull-requests: write
 
 jobs:
-  checkstyle:
-    name: Run Checkstyle
+  build_check:
+    name: Run Build check using Maven
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up JDK 24
         uses: actions/setup-java@v3
@@ -35,11 +34,11 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      - name: Build and run Checkstyle
-        id: checkstyle
+      - name: Build with Maven (capture logs)
+        id: build
         run: |
-          mvn checkstyle:check > checkstyle.log 2>&1 || true
-          grep '\[ERROR\]' checkstyle.log | tail -n 20 > summary.log || echo "No violations found." > summary.log
+          mvn clean verify > build.log 2>&1 || true
+          grep '\[ERROR\]' build.log | tail -n 20 > summary.log
 
           {
             echo 'summary<<EOF'
@@ -47,38 +46,40 @@ jobs:
             echo 'EOF'
           } >> "$GITHUB_OUTPUT"
 
-      - name: Upload full Checkstyle log
+      - name: Upload full build log
         uses: actions/upload-artifact@v4
         with:
-          name: checkstyle-log
-          path: checkstyle.log
+          name: full-build-log
+          path: build.log
 
-      - name: Comment on Checkstyle failure
+      - name: Comment on failure with summary
         if: failure()
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          comment-id: checkstyle
+          comment-id: build-check
           body: |
-            ⚠️ **Checkstyle found violations** in commit `${{ github.sha }}`
+            ⚠️ **Build failed** for commit `${{ github.sha }}`
 
-            🧪 Showing last 20 `[ERROR]` lines from Checkstyle output:
+            🧪 Showing last 20 Maven error lines:
 
             ```
-            ${{ steps.checkstyle.outputs.summary }}
+            ${{ steps.build.outputs.summary }}
             ```
 
-            📦 [Download full checkstyle.log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            📦 [Download full log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-      - name: Comment on Checkstyle success
+      - name: Comment on success
         if: success()
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          comment-id: checkstyle
+          comment-id: build-check
           body: |
-            ✅ **Checkstyle passed successfully** for commit `${{ github.sha }}`
+            ✅ **Build succeeded** for commit `${{ github.sha }}`!
 
-            📦 [View checkstyle log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            🧪 No errors found during the build.
+
+            📦 [View full log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
