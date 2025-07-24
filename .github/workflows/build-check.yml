@@ -2,7 +2,9 @@ name: Build check using Maven
 
 on:
   pull_request:
-    branches: [ main, dev ]
+    branches:
+      - main
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -11,10 +13,9 @@ permissions:
   pull-requests: write
 
 jobs:
-  build:
-
+  build_check:
+    name: Run Build check using Maven
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
