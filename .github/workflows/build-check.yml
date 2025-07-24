@@ -2,9 +2,7 @@ name: Build check using Maven
 
 on:
   pull_request:
-    branches:
-      - main
-      - dev
+    branches: [ main, dev ]
   workflow_dispatch:
 
 permissions:
@@ -39,13 +37,19 @@ jobs:
         id: build
         run: |
           mvn clean verify > build.log 2>&1 || true
-          tail -n 20 build.log > summary.log
-          
-          # Prepare escaped log content for output
-          summary=$(sed 's/%/%%/g; s/$/\\n/g' summary.log | tr -d '\r')
-          
-          # Set output safely using modern syntax
-          echo "summary=$summary" >> "$GITHUB_OUTPUT"
+          grep '\[ERROR\]' build.log | tail -n 20 > summary.log
+
+          {
+            echo 'summary<<EOF'
+            cat summary.log | sed 's/%/%%/g'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Upload full build log
+        uses: actions/upload-artifact@v4
+        with:
+          name: full-build-log
+          path: build.log
 
       - name: Comment on failure with summary
         if: failure()
@@ -53,14 +57,17 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
+          comment-id: build-check
           body: |
             ⚠️ **Build failed** for commit `${{ github.sha }}`
-            
-            Last 20 lines of the build log:
-            
+
+            🧪 Showing last 20 Maven error lines:
+
             ```
             ${{ steps.build.outputs.summary }}
             ```
+
+            📦 [Download full log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
       - name: Comment on success
         if: success()
@@ -68,5 +75,10 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
+          comment-id: build-check
           body: |
             ✅ **Build succeeded** for commit `${{ github.sha }}`!
+
+            🧪 No errors found during the build.
+
+            📦 [View full log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
