@@ -39,10 +39,13 @@ jobs:
         id: build
         run: |
           mvn clean verify > build.log 2>&1 || true
-          tail -n 20 build.log > failure-summary.log
-          # Escape % and newlines for output
-          summary=$(tail -n 20 build.log | sed 's/%/%%/g; s/$/\\n/g' | tr -d '\r')
-          echo "::set-output name=summary::$summary"
+          tail -n 20 build.log > summary.log
+          
+          # Prepare escaped log content for output
+          summary=$(sed 's/%/%%/g; s/$/\\n/g' summary.log | tr -d '\r')
+          
+          # Set output safely using modern syntax
+          echo "summary=$summary" >> "$GITHUB_OUTPUT"
 
       - name: Comment on failure with summary
         if: failure()

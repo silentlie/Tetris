@@ -39,9 +39,12 @@ jobs:
         id: checkstyle
         run: |
           mvn checkstyle:check > checkstyle.log 2>&1 || true
-          # Escape % and newlines, remove carriage returns for output variable
+          
+          # Prepare escaped log content for output
           summary=$(sed 's/%/%%/g; s/$/\\n/g' checkstyle.log | tr -d '\r')
-          echo "::set-output name=summary::$summary"
+          
+          # Set output safely using modern syntax
+          echo "summary=$summary" >> "$GITHUB_OUTPUT"
 
           - name: Comment on failure
             if: failure()
