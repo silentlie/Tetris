@@ -39,34 +39,46 @@ jobs:
         id: checkstyle
         run: |
           mvn checkstyle:check > checkstyle.log 2>&1 || true
-          
-          # Prepare escaped log content for output
-          summary=$(sed 's/%/%%/g; s/$/\\n/g' checkstyle.log | tr -d '\r')
-          
-          # Set output safely using modern syntax
-          echo "summary=$summary" >> "$GITHUB_OUTPUT"
+          grep '\[ERROR\]' checkstyle.log | tail -n 20 > summary.log || echo "No violations found." > summary.log
 
-          - name: Comment on failure
-            if: failure()
-            uses: peter-evans/create-or-update-comment@v4
-            with:
-              token: ${{ secrets.GITHUB_TOKEN }}
-              issue-number: ${{ github.event.pull_request.number }}
-              body: |
-                ⚠️ **Checkstyle found violations** in commit `${{ github.sha }}`.
-          
-                Full Checkstyle output:
-          
-                ```
-                ${{ steps.checkstyle.outputs.summary }}
-                ```
+          {
+            echo 'summary<<EOF'
+            cat summary.log | sed 's/%/%%/g'
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
 
-          - name: Comment on success
-            if: success()
-            uses: peter-evans/create-or-update-comment@v4
-            with:
-              token: ${{ secrets.GITHUB_TOKEN }}
-              issue-number: ${{ github.event.pull_request.number }}
-              body: |
-                ✅ **Checkstyle passed successfully** for commit `${{ github.sha }}`.
+      - name: Upload full Checkstyle log
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-log
+          path: checkstyle.log
 
+      - name: Comment on Checkstyle failure
+        if: failure()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: checkstyle
+          body: |
+            ⚠️ **Checkstyle found violations** in commit `${{ github.sha }}`
+
+            🧪 Showing last 20 `[ERROR]` lines from Checkstyle output:
+
+            ```
+            ${{ steps.checkstyle.outputs.summary }}
+            ```
+
+            📦 [Download full checkstyle.log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+      - name: Comment on Checkstyle success
+        if: success()
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-id: checkstyle
+          body: |
+            ✅ **Checkstyle passed successfully** for commit `${{ github.sha }}`
+
+            📦 [View checkstyle log](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
