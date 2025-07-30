@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="9bee126a-e892-4d20-a3e4-60c6771447c6" name="Changes" comment="misc: update idea settings">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/Submmission.docx" beforeDir="false" afterPath="$PROJECT_DIR$/docs/Submmission.docx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,7 +68,7 @@
     "settings.editor.selected.configurable": "configurable.group.appearance",
     "vue.rearranger.settings.migration": "true"
   }
-}]]></component>
+}</component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -88,6 +90,7 @@
       <workItem from="1753249375788" duration="1288000" />
       <workItem from="1753250753028" duration="3526000" />
       <workItem from="1753681716297" duration="1816000" />
+      <workItem from="1753840328617" duration="622000" />
       <workItem from="1753690251415" duration="21000" />
       <workItem from="1753831836688" duration="813000" />
       <workItem from="1753832698565" duration="1911000" />
