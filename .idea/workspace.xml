@@ -5,6 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/IDE_SETUP.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/dictionaries/project.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
     </list>
@@ -13,17 +15,135 @@
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
+  <component name="FormatOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+    <option name="myAllFileTypesSelected" value="false" />
+    <option name="mySelectedFileTypes">
+      <set>
+        <option value="Angular2Html" />
+        <option value="CSS" />
+        <option value="CassandraQL" />
+        <option value="DGM" />
+        <option value="DTD" />
+        <option value="EditorConfig" />
+        <option value="FTL" />
+        <option value="Flow" />
+        <option value="Gradle" />
+        <option value="Gradle Declarative Configuration Language" />
+        <option value="Groovy" />
+        <option value="HTML" />
+        <option value="HTTP Request" />
+        <option value="HiveQL" />
+        <option value="JAVA" />
+        <option value="JSHELL" />
+        <option value="JSHint" />
+        <option value="JSON" />
+        <option value="JSON-lines" />
+        <option value="JSON5" />
+        <option value="JSP" />
+        <option value="JSPX" />
+        <option value="JSX" />
+        <option value="Java module" />
+        <option value="JavaScript" />
+        <option value="Jupyter" />
+        <option value="Kotlin" />
+        <option value="Less" />
+        <option value="PostCSS" />
+        <option value="Properties" />
+        <option value="Qute" />
+        <option value="RNG Compact" />
+        <option value="Redis" />
+        <option value="SARIF" />
+        <option value="SCSS" />
+        <option value="SQL" />
+        <option value="SVG" />
+        <option value="Sass" />
+        <option value="Shell Script" />
+        <option value="SourceMap" />
+        <option value="TOML" />
+        <option value="TypeScript" />
+        <option value="TypeScript JSX" />
+        <option value="VTL" />
+        <option value="Vue.js" />
+        <option value="XHTML" />
+        <option value="YAML" />
+        <option value="gdsl" />
+        <option value="logback" />
+        <option value="protobuf" />
+        <option value="prototext" />
+        <option value="tsconfig" />
+      </set>
+    </option>
+  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/README.md" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
+  </component>
+  <component name="MaliciousPackageCheckinHandlerState">
+    <option name="packageCheck" value="true" />
+  </component>
+  <component name="OptimizeOnSaveOptions">
+    <option name="myRunOnSave" value="true" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="30a5Xj7zDtRC28Y8SVAnHYDYdf1" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "code.cleanup.on.save": "true",
     "git-widget-placeholder": "misc/docs",
+    "ignore.virus.scanning.warn.message": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
-    "settings.editor.selected.configurable": "preferences.lookFeel"
+    "nodejs_package_manager_path": "npm",
+    "rearrange.code.on.save": "true",
+    "settings.editor.selected.configurable": "configurable.group.tools",
+    "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-9823dce3aa75-fbdcb00ec9e3-intellij.indexing.shared.core-IU-251.27812.49" />
+        <option value="bundled-js-predefined-d6986cc7102b-09060db00ec0-JavaScript-IU-251.27812.49" />
+      </set>
+    </attachedChunks>
+  </component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="" />
+      <created>1753852886187</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1753852886187</updated>
+      <workItem from="1753852888272" duration="2002000" />
+    </task>
     <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="UpdateCopyrightCheckinHandler">
+    <option name="UPDATE_COPYRIGHT" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
+    <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
   </component>
 </project>

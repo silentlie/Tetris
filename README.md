@@ -12,16 +12,17 @@
 2. [Feature](#feature)
 3. [Getting Start](#getting-started)
 
-    3.1 [Prerequisites](#prerequisites)  
-    3.2 [Clone the Repository](#clone-the-repository)  
-    3.3 [Run the Project](#run-the-project)  
-    3.4 [Build and Run the Project](#build-and-run-the-project)
+   3.1 [Prerequisites](#prerequisites)  
+   3.2 [Clone the Repository](#clone-the-repository)  
+   3.3 [Run the Project](#run-the-project)  
+   3.4 [Build and Run the Project](#build-and-run-the-project)
 4. [Project Structure](#project-structure)
-5. [Contributing](#contributing)
-6. [Group Member](#group-member)
-7. [Screenshots](#screenshots)
-8. [License](#license)
-9. [Acknowledgments](#acknowledgments)
+5. [Development Environment](#development-environment)
+6. [Contributing](#contributing)
+7. [Group Member](#group-member)
+8. [Screenshots](#screenshots)
+9. [License](#license)
+10. [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -70,9 +71,15 @@ cd Tetris
 
 ---
 
+## Development Environment
+
+To ensure consistency across contributors, follow our [IDE Setup Guide](IDE_SETUP.md) for IntelliJ
+IDEA.
+
 ## Contributing
 
-Before you start, please review our [Workflow Guide](WORKFLOW.md) to understand our branching strategy and development process.
+Before you start, please review our [Workflow Guide](WORKFLOW.md) to understand our branching
+strategy and development process.
 
 ---
 
