@@ -8,15 +8,15 @@ import javafx.scene.control.Label;
  */
 public class HelloController {
 
-  @FXML
-  private Label welcomeText;
+    @FXML
+    private Label welcomeText;
 
-  /**
-   * On the hello button click.
-   */
-  @FXML
-  protected void onHelloButtonClick() {
+    /**
+     * On the hello button click.
+     */
+    @FXML
+    protected void onHelloButtonClick() {
 
-    welcomeText.setText("Welcome to JavaFX Application!");
-  }
+        welcomeText.setText("Welcome to JavaFasdfasdfX Application!");
+    }
 }
