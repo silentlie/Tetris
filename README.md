@@ -11,11 +11,17 @@
 1. [Project Overview](#project-overview)
 2. [Feature](#feature)
 3. [Getting Start](#getting-started)
+
+    3.1 [Prerequisites](#prerequisites)  
+    3.2 [Clone the Repository](#clone-the-repository)  
+    3.3 [Run the Project](#run-the-project)  
+    3.4 [Build and Run the Project](#build-and-run-the-project)
 4. [Project Structure](#project-structure)
-5. [Group Member](#group-member)
-6. [Screenshots](#screenshots)
-7. [License](#license)
-8. [Acknowledgments](#acknowledgments)
+5. [Contributing](#contributing)
+6. [Group Member](#group-member)
+7. [Screenshots](#screenshots)
+8. [License](#license)
+9. [Acknowledgments](#acknowledgments)
 
 ---
 
@@ -64,13 +70,21 @@ cd Tetris
 
 ---
 
+## Contributing
+
+Before you start, please review our [Workflow Guide](WORKFLOW.md) to understand our branching strategy and development process.
+
+---
+
 ## Group Member
 
-| Name            | Student ID | Role                 |
-|-----------------|------------|----------------------|
-| Alice Example   | 12345678   | UI Design, JavaFX    |
-| Bob Example     | 87654321   | Game Logic, Testing  |
-| Charlie Example | 23456789   | Asset Creation, Docs |
+| Name              | Student ID | Role |
+|-------------------|------------|------|
+| Linh Tuan Nguyen  | S5452023   |      |
+| Leyna Mary Joseph | S5326391   |      |
+| Sayona Anna Sunil | S5323993   |      |
+| Hamza Amer        | S2944984   |      |
+|                   |            |      |
 
 ---
 
