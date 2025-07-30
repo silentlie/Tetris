@@ -48,6 +48,12 @@ cd Tetris
 ### Run the Project
 
 ```bash
+.\mvnw clean javafx:run
+```
+
+### Build and Run the Project
+
+```bash
 .\mvnw clean javafx:jlink
 .\target\Tetris\bin\Tetris
 ```
