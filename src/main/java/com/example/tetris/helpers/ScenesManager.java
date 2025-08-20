@@ -62,11 +62,13 @@ public class ScenesManager {
    * window.</p>
    *
    * @param fxml the name of the FXML file to load (must be in the classpath)
+   *
    * @throws RuntimeException if the FXML file cannot be loaded
    */
   private void goFxml(String fxml) {
     try {
       FXMLLoader loader = new FXMLLoader(Main.class.getResource(fxml));
+      System.out.println(Main.class.getResource(fxml));
       if (primaryStage.getScene() != null) {
         primaryStage.getScene().setRoot(loader.load());
       } else {

@@ -5,21 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/GameTimer.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/TetrominoType.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HighScores.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/HighScores.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Main.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Menu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Settings.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/helpers/ScenesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/helpers/ScenesManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Bounds.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -128,33 +115,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.HelloApplication.executor": "Run",
-    "Application.Main.executor": "Run",
-    "Maven.Tetris [clean].executor": "Run",
-    "Maven.Tetris [org.openjfx:javafx-maven-plugin:0.0.8:run].executor": "Run",
-    "Maven.Tetris [verify].executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "code.cleanup.on.save": "true",
-    "git-widget-placeholder": "feature/Play-scene",
-    "ignore.virus.scanning.warn.message": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "last_directory_selection": "G:/Griffith/2006ICT Object Oriented Software Development/Tetris/src/main/java/com/example/tetris",
-    "list.type.of.created.stylesheet": "CSS",
-    "node.js.detected.package.eslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.15",
-    "project.structure.side.proportion": "0.53333336",
-    "settings.editor.selected.configurable": "reference.settingsdialog.project.grazie",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.HelloApplication.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Main.executor&quot;: &quot;Run&quot;,
+    &quot;Maven.Tetris [clean].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.Tetris [org.openjfx:javafx-maven-plugin:0.0.8:run].executor&quot;: &quot;Run&quot;,
+    &quot;Maven.Tetris [verify].executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;code.cleanup.on.save&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;feature/Play-scene&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;last_directory_selection&quot;: &quot;G:/Griffith/2006ICT Object Oriented Software Development/Tetris/src/main/java/com/example/tetris&quot;,
+    &quot;list.type.of.created.stylesheet&quot;: &quot;CSS&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Project&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.53333336&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settingsdialog.project.grazie&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\Griffith\2006ICT Object Oriented Software Development\Tetris\src\main\resources\com\example\tetris\scenes" />
