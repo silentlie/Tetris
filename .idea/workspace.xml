@@ -11,12 +11,12 @@
       <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/high-scores.fxml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/play.fxml" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/settings.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/splash.png" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HelloApplication.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HelloController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Main.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" beforeDir="false" />
