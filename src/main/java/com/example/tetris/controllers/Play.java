@@ -6,7 +6,6 @@ import com.example.tetris.models.Game;
 import com.example.tetris.models.Tetromino;
 import com.example.tetris.models.TetrominoType;
 import java.util.Optional;
-import javafx.animation.AnimationTimer;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
@@ -18,6 +17,13 @@ import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
+/**
+ * Controller class for the Play scene of the game.
+ *
+ * <p>Handles player input, rendering of the board, managing game state
+ * (start, pause, end), and integrating with the {@link Game} and {@link GameTimer}.
+ * </p>
+ */
 public class Play {
 
   @FXML
@@ -26,10 +32,16 @@ public class Play {
   private Canvas boardCanvas;
 
   private Game game;
-  private AnimationTimer timer;
+  private GameTimer timer;
   private boolean dirty = true;
-  private boolean isRunning = false;
 
+  /**
+   * Initializes the Play scene.
+   *
+   * <p>Prompts for player name, sets up listeners for resizing and keyboard input,
+   * and starts the game timer.
+   * </p>
+   */
   @FXML
   private void initialize() {
     TextInputDialog dialog = new TextInputDialog();
@@ -38,17 +50,19 @@ public class Play {
     dialog.setContentText("Please enter your name:");
     Optional<String> result = dialog.showAndWait();
     if (result.isEmpty() || result.get().trim().isEmpty()) {
+      // No player name provided → return to menu
       Platform.runLater(ScenesManager.getInstance()::showMenuScene);
       return;
     }
     game = new Game(result.get());
-    boardCanvas.setManaged(false);
+    // Adjust canvas size to match boardHolder
     boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
       boardCanvas.setWidth(b.getWidth());
       boardCanvas.setHeight(b.getHeight());
+      dirty = true;
       render();
     });
-
+    // Handle keyboard input for controlling the game
     boardHolder.sceneProperty().addListener((obs, oldScene, newScene) -> {
       if (newScene != null) {
         newScene.setOnKeyPressed(event -> {
@@ -66,11 +80,12 @@ public class Play {
               dirty = true;
             }
             case DOWN -> {
-              game.moveDown();
-              dirty = true;
-              if (game.lock()) {
-                endGame();
+              if (!game.moveDown()) {
+                if (game.lock()) {
+                  endGame();
+                }
               }
+              dirty = true;
             }
             case SPACE -> {
               while (true) {
@@ -83,46 +98,66 @@ public class Play {
                 endGame();
               }
             }
-            case P -> {
-              pauseGame();
-            }
+            case P -> pauseGame();
             default -> {
+              // ignore other keys
             }
           }
         });
-        // request focus so we actually receive key events
-        boardHolder.requestFocus();
       }
     });
 
-    timer = new AnimationTimer() {
-      private final long lastTick = 0;
-      private final long fallAccNanos = 0L;
+    timer = new GameTimer() {
+      @Override
+      protected boolean onFallStep() {
+        return game.moveDown();
+      }
 
       @Override
-      public void handle(long now) {
-        // TODO: falling tetromino
+      protected boolean onLock() {
+        return game.lock();
+      }
+
+      @Override
+      protected void onEndGame() {
+        endGame();
+      }
+
+      @Override
+      protected void onRender() {
         render();
       }
+
+      @Override
+      protected void onDirty() {
+        dirty = true;
+      }
     };
+    timer.start();
   }
 
+  /**
+   * Ends the current game session.
+   *
+   * <p>Stops the timer, and switches back to the menu scene.
+   * </p>
+   */
   private void endGame() {
     // TODO: end Game and save score
-    if (isRunning) {
-      isRunning = false;
+    if (timer.isRunning()) {
       timer.stop();
     }
 
     ScenesManager.getInstance().showMenuScene();
   }
 
+  /**
+   * Pauses the game and shows a dialog with options to resume or leave the game.
+   */
   private void pauseGame() {
-    if (!isRunning) {
+    if (!timer.isRunning()) {
       return;
     }
-
-    isRunning = false;
     timer.stop();
 
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
@@ -140,10 +175,16 @@ public class Play {
       endGame();
     } else {
       timer.start();
-      isRunning = true;
     }
   }
 
+  /**
+   * Renders the current state of the game board onto the canvas.
+   *
+   * <p>Draws locked pieces, the active falling tetromino, and
+   * background/grid styling.
+   * </p>
+   */
   private void render() {
     if (!dirty || game == null) {
       return;
