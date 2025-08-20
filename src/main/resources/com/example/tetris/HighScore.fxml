@@ -1,9 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
-<AnchorPane xmlns:fx="http://javafx.com/fxml"
-            xmlns="http://javafx.com/javafx"
-            fx:controller="com.example.tetris.HighScore"
-            prefHeight="400.0" prefWidth="600.0">
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns:fx="http://javafx.com/fxml"
+      xmlns="http://javafx.com/javafx"
+      fx:controller="com.example.tetris.HighScore"
+      alignment="CENTER" spacing="16">
+    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
 
-</AnchorPane>
+    <Label text="High Score" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
+    <Label fx:id="highScoreLabel" text="0" style="-fx-font-size: 48px; -fx-font-weight: bold;"/>
+
+    <Button text="Back" onAction="#onBackButtonClick"/>
+</VBox>
