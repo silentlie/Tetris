@@ -1,9 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.scene.layout.AnchorPane?>
-<AnchorPane xmlns="http://javafx.com/javafx"
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<VBox xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.Menu"
-  prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+  alignment="CENTER"
+>
+  <Region VBox.vgrow="ALWAYS"/>
+  <Button onAction="#onPlayButtonClick" text="Play"/>
+  <Region VBox.vgrow="ALWAYS"/>
+  <Button onAction="#onHighScoresButtonClick" text="High Scores"/>
+  <Region VBox.vgrow="ALWAYS"/>
+  <Button onAction="#onSettingsButtonClick" text="Settings"/>
+  <Region VBox.vgrow="ALWAYS"/>
+  <Button onAction="#onExitButtonClick" text="Exit"/>
+  <Region VBox.vgrow="ALWAYS"/>
+</VBox>
