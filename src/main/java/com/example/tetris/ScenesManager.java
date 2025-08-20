@@ -1,10 +1,12 @@
 package com.example.tetris;
 
 import java.io.IOException;
+import java.util.Objects;
 import javafx.animation.PauseTransition;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
@@ -87,7 +89,10 @@ public class ScenesManager {
    * @param r        a callback to run after the splash screen closes; may be {@code null}
    */
   public void showSplashScreen(Duration duration, Runnable r) {
-    Scene scene = new Scene(new StackPane(new Label("Splash Scene")));
+    String url = Objects.requireNonNull(Main.class.getResource("splash.png")).toString();
+    ImageView splashImage = new ImageView(new Image(url));
+    splashImage.setPreserveRatio(true);
+    Scene scene = new Scene(new StackPane(splashImage));
     Stage splashStage = new Stage();
     splashStage.initOwner(primaryStage);
     splashStage.setScene(scene);
@@ -102,7 +107,6 @@ public class ScenesManager {
       if (r != null) {
         r.run();
       }
-
     });
     delay.play();
   }
