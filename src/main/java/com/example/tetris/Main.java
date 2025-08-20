@@ -8,10 +8,34 @@ import javafx.util.Duration;
 
 public class Main extends Application {
 
+  /**
+   * Entry point for the Tetris application.
+   *
+   * <p>This class initializes JavaFX, configures the primary stage, and delegates scene
+   * management to {@link ScenesManager}. The initial scene can be selected using named launch
+   * parameters (e.g., {@code --scene=menu}).</p>
+   */
   public static void main(String[] args) {
     launch(args);
   }
 
+  /**
+   * Initializes and displays the primary stage of the application.
+   *
+   * <p>The startup behavior depends on the {@code --scene} launch parameter:</p>
+   * <ul>
+   *   <li>No parameter – shows a splash screen for 3 seconds, then the main menu.</li>
+   *   <li>{@code splash} – shows the splash screen for 15 seconds, then closes the application.
+   *   </li>
+   *   <li>{@code menu} – shows the main menu scene.</li>
+   *   <li>{@code highScores} – shows the high scores scene.</li>
+   *   <li>{@code settings} – shows the settings scene.</li>
+   *   <li>{@code play} – shows the gameplay scene.</li>
+   * </ul>
+   *
+   * @param primaryStage the primary stage provided by the JavaFX runtime
+   * @throws IOException if a required FXML file cannot be loaded
+   */
   @Override
   public void start(Stage primaryStage) throws IOException {
     // set window title

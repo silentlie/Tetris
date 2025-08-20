@@ -87,6 +87,7 @@ public class ScenesManager {
   public void showSplashScreen(Duration duration, Runnable r) {
     Scene scene = new Scene(new StackPane(new Label("Splash Scene")));
     Stage splashStage = new Stage();
+    splashStage.initOwner(primaryStage);
     splashStage.setScene(scene);
     splashStage.setResizable(false);
     splashStage.initStyle(StageStyle.UNDECORATED);
