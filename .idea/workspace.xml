@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Bounds.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotation.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/TetrominoType.java" afterDir="false" />
       <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/play.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
@@ -17,7 +16,9 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/helpers/ScenesManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Settings.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/hello-view.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/high-scores.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/high-scores.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/menu.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/menu.fxml" afterDir="false" />
@@ -36,9 +37,9 @@
         <option value="Interface" />
         <option value="JavaFXApplication" />
         <option value="FxmlFile" />
-        <option value="Record" />
         <option value="Class" />
         <option value="Enum" />
+        <option value="Record" />
       </list>
     </option>
   </component>

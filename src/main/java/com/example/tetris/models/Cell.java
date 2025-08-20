@@ -54,5 +54,23 @@ public record Cell(int x, int y) {
   public Cell moveRight() {
     return new Cell(x + 1, y);
   }
+
+  /**
+   * Returns a new {@code Cell} by adding the coordinates of this cell with another cell.
+   *
+   * <p>Useful for combining a relative offset with an absolute position.</p>
+   *
+   * <pre>
+   *   Cell base = new Cell(5, 10);
+   *   Cell offset = new Cell(2, -1);
+   *   Cell result = base.add(offset); // (7, 9)
+   * </pre>
+   *
+   * @param other the other cell whose coordinates will be added
+   * @return a new {@code Cell} with summed {@code x} and {@code y}
+   */
+  public Cell add(Cell other) {
+    return new Cell(this.x + other.x, this.y + other.y);
+  }
 }
 
