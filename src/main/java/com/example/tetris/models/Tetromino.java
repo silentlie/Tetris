@@ -111,32 +111,8 @@ public record Tetromino(TetrominoType type, Rotation rotation, Cell position) {
     return abs;
   }
 
-  /**
-   * Returns the bounding box of this tetromino in its current rotation, relative to its origin
-   * position.
-   *
-   * @return the relative {@link Bounds} of the tetromino
-   */
-  public Bounds getRelativeBounds() {
-    return REL_BOUNDS[type.ordinal()][rotation.ordinal()];
-  }
-
-  /**
-   * Returns the bounding box of this tetromino in its current rotation, translated into absolute
-   * board coordinates.
-   *
-   * @return the absolute {@link Bounds} of the tetromino
-   */
-  public Bounds getAbsoluteBounds() {
-    Bounds b = getRelativeBounds();
-    return b.add(position);
-  }
-
   private static final Cell[][][] SHAPES =
       new Cell[TetrominoType.values().length][Rotation.values().length][];
-
-  private static final Bounds[][] REL_BOUNDS =
-      new Bounds[TetrominoType.values().length][Rotation.values().length];
 
   static {
     // Define each tetromino in the UP rotation
@@ -167,12 +143,6 @@ public record Tetromino(TetrominoType type, Rotation rotation, Cell position) {
       Cell[] up = base.get(t);
       for (Rotation r : Rotation.values()) {
         SHAPES[t.ordinal()][r.ordinal()] = (t == TetrominoType.O) ? up : rotate(up, r);
-      }
-    }
-    // Precompute bounds
-    for (TetrominoType t : TetrominoType.values()) {
-      for (Rotation r : Rotation.values()) {
-        REL_BOUNDS[t.ordinal()][r.ordinal()] = Bounds.from(SHAPES[t.ordinal()][r.ordinal()]);
       }
     }
   }

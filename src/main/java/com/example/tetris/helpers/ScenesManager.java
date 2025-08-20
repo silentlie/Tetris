@@ -67,7 +67,6 @@ public class ScenesManager {
   private void goFxml(String fxml) {
     try {
       FXMLLoader loader = new FXMLLoader(Main.class.getResource(fxml));
-      System.out.println(Main.class.getResource(fxml));
       if (primaryStage.getScene() != null) {
         primaryStage.getScene().setRoot(loader.load());
       } else {
