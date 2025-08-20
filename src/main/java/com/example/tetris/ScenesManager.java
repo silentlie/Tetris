@@ -12,7 +12,8 @@ import javafx.util.Duration;
 
 /**
  * Singleton manager responsible for handling scene transitions in the application.
- * <p> This class manages switching between different FXML-based scenes in the primary stage.
+ *
+ * <p>This class manages switching between different FXML-based scenes in the primary stage.
  * It also provides utility methods such as showing a splash screen.</p>
  */
 public class ScenesManager {
@@ -25,6 +26,7 @@ public class ScenesManager {
 
   /**
    * Returns the singleton instance of {@code ScenesManager}.
+   *
    * <p>If the instance does not exist yet, it will be created.</p>
    *
    * @return the singleton instance of {@code ScenesManager}
@@ -38,6 +40,7 @@ public class ScenesManager {
 
   /**
    * Initializes the scene manager with the primary stage of the application.
+   *
    * <p>This method should be called once at application startup.</p>
    *
    * @param primaryStage the primary stage of the application
@@ -50,6 +53,7 @@ public class ScenesManager {
 
   /**
    * Loads the specified FXML file and switches the current scene to it.
+   *
    * <p>If the primary stage already has a scene, only the root node is replaced
    * to preserve stage configuration. Otherwise, a new scene is created and maximized to fill the
    * window.</p>
@@ -73,6 +77,7 @@ public class ScenesManager {
 
   /**
    * Displays a splash screen for the given duration, then executes the provided {@link Runnable}.
+   *
    * <p>If the duration is {@code null}, the splash screen will be displayed for 15 seconds by
    * default.</p>
    *
@@ -101,28 +106,28 @@ public class ScenesManager {
   /**
    * Shows the main menu scene.
    */
-  public void showMenu() {
+  public void showMenuScene() {
     goFxml("menu.fxml");
   }
 
   /**
    * Shows the high scores scene.
    */
-  public void showHighScores() {
+  public void showHighScoresScene() {
     goFxml("high-scores.fxml");
   }
 
   /**
    * Shows the settings scene.
    */
-  public void showSettings() {
+  public void showSettingsScene() {
     goFxml("settings.fxml");
   }
 
   /**
    * Shows the gameplay scene.
    */
-  public void showPlay() {
+  public void showPlayScene() {
     goFxml("play.fxml");
   }
 }

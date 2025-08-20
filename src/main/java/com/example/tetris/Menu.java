@@ -12,14 +12,17 @@ public class Menu {
 
   @FXML
   private void onPlayButtonClick(ActionEvent actionEvent) {
+    ScenesManager.getInstance().showPlayScene();
   }
 
   @FXML
   private void onHighScoresButtonClick(ActionEvent actionEvent) {
+    ScenesManager.getInstance().showHighScoresScene();
   }
 
   @FXML
   private void onSettingsButtonClick(ActionEvent actionEvent) {
+    ScenesManager.getInstance().showSettingsScene();
   }
 
   @FXML
