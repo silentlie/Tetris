@@ -5,22 +5,20 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/HighScores.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Play.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Settings.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/high-scores.fxml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/play.fxml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/settings.fxml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/splash.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/play.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HelloApplication.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HelloController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/menu.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/menu.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HighScores.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/HighScores.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Main.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Main.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Menu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Play.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/helpers/ScenesManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Settings.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Settings.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/hello-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/high-scores.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/high-scores.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/menu.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/menu.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/play.fxml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/settings.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/scenes/settings.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,7 +138,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "code.cleanup.on.save": "true",
-    "git-widget-placeholder": "feature/Menu-scene",
+    "git-widget-placeholder": "feature/Play-scene",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
     "last_directory_selection": "G:/Griffith/2006ICT Object Oriented Software Development/Tetris/src/main/java/com/example/tetris",
@@ -158,6 +156,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\Griffith\2006ICT Object Oriented Software Development\Tetris\src\main\resources\com\example\tetris\scenes" />
       <recent name="G:\Griffith\2006ICT Object Oriented Software Development\Tetris\src\main\resources\com\example\tetris" />
     </key>
     <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">

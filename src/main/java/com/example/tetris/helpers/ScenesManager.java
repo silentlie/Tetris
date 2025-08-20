@@ -1,5 +1,6 @@
-package com.example.tetris;
+package com.example.tetris.helpers;
 
+import com.example.tetris.Main;
 import java.io.IOException;
 import java.util.Objects;
 import javafx.animation.PauseTransition;
