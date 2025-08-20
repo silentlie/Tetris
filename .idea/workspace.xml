@@ -5,13 +5,40 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/HighScores.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Play.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Settings.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/high-scores.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/play.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/settings.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/splash.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HelloApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/HelloController.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/Menu.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/ScenesManager.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/hello-view.fxml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/com/example/tetris/menu.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/com/example/tetris/menu.fxml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
     <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Enum" />
+        <option value="Record" />
+        <option value="CSS File" />
+        <option value="Interface" />
+        <option value="JavaFXApplication" />
+        <option value="FxmlFile" />
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="FormatOnSaveOptions">
     <option name="myRunOnSave" value="true" />
@@ -46,6 +73,7 @@
         <option value="Jupyter" />
         <option value="Kotlin" />
         <option value="Less" />
+        <option value="Markdown" />
         <option value="PostCSS" />
         <option value="Properties" />
         <option value="Qute" />
@@ -64,6 +92,7 @@
         <option value="VTL" />
         <option value="Vue.js" />
         <option value="XHTML" />
+        <option value="XML" />
         <option value="YAML" />
         <option value="gdsl" />
         <option value="logback" />
@@ -79,6 +108,10 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/README.md" root0="FORCE_HIGHLIGHTING" root1="FORCE_HIGHLIGHTING" />
   </component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
   <component name="MaliciousPackageCheckinHandlerState">
     <option name="packageCheck" value="true" />
   </component>
@@ -99,27 +132,45 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Application.HelloApplication.executor": "Run",
+    "Application.Main.executor": "Run",
+    "Maven.Tetris [clean].executor": "Run",
+    "Maven.Tetris [org.openjfx:javafx-maven-plugin:0.0.8:run].executor": "Run",
+    "Maven.Tetris [verify].executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "code.cleanup.on.save": "true",
-    "git-widget-placeholder": "feature/play-scene",
+    "git-widget-placeholder": "feature/Menu-scene",
     "ignore.virus.scanning.warn.message": "true",
     "junie.onboarding.icon.badge.shown": "true",
+    "last_directory_selection": "G:/Griffith/2006ICT Object Oriented Software Development/Tetris/src/main/java/com/example/tetris",
+    "list.type.of.created.stylesheet": "CSS",
     "node.js.detected.package.eslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "actions.on.save",
+    "project.structure.last.edited": "Project",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.53333336",
+    "settings.editor.selected.configurable": "reference.settingsdialog.project.grazie",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\Griffith\2006ICT Object Oriented Software Development\Tetris\src\main\resources\com\example\tetris" />
+    </key>
+    <key name="MoveClassesOrPackagesDialog.RECENTS_KEY">
+      <recent name="com.example.tetris" />
+    </key>
+  </component>
   <component name="RunManager">
-    <configuration name="HelloApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.example.tetris.HelloApplication" />
+    <configuration name="Main" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.example.tetris.Main" />
       <module name="Tetris" />
       <extension name="coverage">
         <pattern>
-          <option name="PATTERN" value="com.example.tetris.*" />
+          <option name="PATTERN" value="com.example.tetris.play.*" />
           <option name="ENABLED" value="true" />
         </pattern>
       </extension>
@@ -129,7 +180,7 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.HelloApplication" />
+        <item itemvalue="Application.Main" />
       </list>
     </recent_temporary>
   </component>
@@ -149,6 +200,19 @@
       <option name="presentableId" value="Default" />
       <updated>1753852886187</updated>
       <workItem from="1753852888272" duration="2002000" />
+      <workItem from="1754607366816" duration="330000" />
+      <workItem from="1754607707214" duration="525000" />
+      <workItem from="1754608244883" duration="4842000" />
+      <workItem from="1754613132633" duration="729000" />
+      <workItem from="1754613878556" duration="432000" />
+      <workItem from="1754614322102" duration="6694000" />
+      <workItem from="1754629391702" duration="3850000" />
+      <workItem from="1754739929778" duration="23213000" />
+      <workItem from="1755140075474" duration="2703000" />
+      <workItem from="1755145193169" duration="5862000" />
+      <workItem from="1755421341218" duration="5413000" />
+      <workItem from="1755480635960" duration="23371000" />
+      <workItem from="1755563641917" duration="3958000" />
     </task>
     <servers />
   </component>
@@ -157,6 +221,17 @@
   </component>
   <component name="UpdateCopyrightCheckinHandler">
     <option name="UPDATE_COPYRIGHT" value="true" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CHECK_CODE_CLEANUP_BEFORE_PROJECT_COMMIT" value="true" />
