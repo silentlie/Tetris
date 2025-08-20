@@ -16,9 +16,11 @@ public class Main extends Application {
   public void start(Stage primaryStage) throws IOException {
     // set window title
     primaryStage.setTitle("Tetris");
+    // get params from args from main function
     Parameters params = getParameters();
     Map<String, String> paramsNamed = params.getNamed();
     String scene = paramsNamed.get("scene");
+    // debug only
     System.out.println(scene);
     ScenesManager sceneManager = ScenesManager.getInstance();
     sceneManager.init(primaryStage);

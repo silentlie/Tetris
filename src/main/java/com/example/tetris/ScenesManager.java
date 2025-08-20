@@ -94,12 +94,13 @@ public class ScenesManager {
     splashStage.show();
     Duration d = duration != null ? duration : Duration.seconds(15);
     PauseTransition delay = new PauseTransition(d);
-    if (r != null) {
-      delay.setOnFinished(e -> {
-        splashStage.close();
+    delay.setOnFinished(e -> {
+      splashStage.close();
+      if (r != null) {
         r.run();
-      });
-    }
+      }
+
+    });
     delay.play();
   }
 
