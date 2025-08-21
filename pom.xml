@@ -38,7 +38,7 @@
           <jlinkImageName>Tetris</jlinkImageName>
           <jlinkZipName>Tetris</jlinkZipName>
           <launcher>Tetris</launcher>
-          <mainClass>com.example.tetris/com.example.tetris.Main</mainClass>
+          <mainClass>com.example.tetris/com.example.tetris.HelloApplication</mainClass>
           <noHeaderFiles>true</noHeaderFiles>
           <noManPages>true</noManPages>
           <stripDebug>true</stripDebug>
