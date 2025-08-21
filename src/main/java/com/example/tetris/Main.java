@@ -71,7 +71,7 @@ public class Main extends Application {
     } else if ("highScores".equals(scene)) {
       sceneManager.showHighScoresScene();
     } else if ("settings".equals(scene)) {
-      sceneManager.showSettingsScene();
+      sceneManager.showConfigurationScene();
     } else if ("play".equals(scene)) {
       sceneManager.showPlayScene();
     }

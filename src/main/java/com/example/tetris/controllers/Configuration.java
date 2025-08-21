@@ -1,4 +1,4 @@
-package com.example.tetris;
+package com.example.tetris.controllers;
 
 import java.io.IOException;
 import javafx.beans.binding.Bindings;
