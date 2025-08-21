@@ -42,15 +42,15 @@ public class Menu {
   }
 
   /**
-   * Handles the Settings button click event.
+   * Handles the Configuration button click event.
    *
-   * <p>Switches to the settings scene.</p>
+   * <p>Switches to the Configuration scene.</p>
    *
-   * @param actionEvent the event triggered by clicking the Settings button
+   * @param actionEvent the event triggered by clicking the Configuration button
    */
   @FXML
-  private void onSettingsButtonClick(ActionEvent actionEvent) {
-    ScenesManager.getInstance().showSettingsScene();
+  private void onConfigurationButtonClick(ActionEvent actionEvent) {
+    ScenesManager.getInstance().showConfigurationScene();
   }
 
   /**

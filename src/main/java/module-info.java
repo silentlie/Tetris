@@ -6,4 +6,5 @@ module com.example.tetris {
   exports com.example.tetris;
   opens com.example.tetris.helpers to javafx.fxml;
   opens com.example.tetris.models to javafx.fxml;
+  exports com.example.tetris.controllers;
 }

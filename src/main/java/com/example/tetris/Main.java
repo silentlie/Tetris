@@ -25,7 +25,7 @@ public class Main extends Application {
    *               <li>{@code splash} – shows only the splash screen</li>
    *               <li>{@code menu} – shows the main menu</li>
    *               <li>{@code highScores} – shows the high scores scene</li>
-   *               <li>{@code settings} – shows the settings scene</li>
+   *               <li>{@code configuration} – shows the configuration scene</li>
    *               <li>{@code play} – shows the gameplay scene</li>
    *             </ul>
    */
@@ -43,7 +43,7 @@ public class Main extends Application {
    *   </li>
    *   <li>{@code menu} – shows the main menu scene.</li>
    *   <li>{@code highScores} – shows the high scores scene.</li>
-   *   <li>{@code settings} – shows the settings scene.</li>
+   *   <li>{@code configuration} – shows the configuration scene.</li>
    *   <li>{@code play} – shows the gameplay scene.</li>
    * </ul>
    *
@@ -70,8 +70,8 @@ public class Main extends Application {
       sceneManager.showMenuScene();
     } else if ("highScores".equals(scene)) {
       sceneManager.showHighScoresScene();
-    } else if ("settings".equals(scene)) {
-      sceneManager.showSettingsScene();
+    } else if ("configuration".equals(scene)) {
+      sceneManager.showConfigurationScene();
     } else if ("play".equals(scene)) {
       sceneManager.showPlayScene();
     }

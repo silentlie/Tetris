@@ -130,8 +130,8 @@ public class ScenesManager {
   /**
    * Shows the settings scene.
    */
-  public void showSettingsScene() {
-    goFxml("settings.fxml");
+  public void showConfigurationScene() {
+    goFxml("Configuration.fxml");
   }
 
   /**

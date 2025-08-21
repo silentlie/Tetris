@@ -13,7 +13,7 @@
   <Region VBox.vgrow="ALWAYS"/>
   <Button onAction="#onHighScoresButtonClick" text="High Scores"/>
   <Region VBox.vgrow="ALWAYS"/>
-  <Button onAction="#onSettingsButtonClick" text="Settings"/>
+  <Button onAction="#onConfigurationButtonClick" text="Configuration"/>
   <Region VBox.vgrow="ALWAYS"/>
   <Button onAction="#onExitButtonClick" text="Exit"/>
   <Region VBox.vgrow="ALWAYS"/>
