@@ -9,19 +9,19 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.util.Objects;
 
 public class HelloController {
 
     @FXML
-    private void onPlayButtonClick() {
-        System.out.println("Start Game clicked! (wire your game scene here)");
+    private void onPlayButtonClick(ActionEvent event) {
+        // TODO: switch to your game scene when ready
+        System.out.println("Play clicked!");
     }
 
     @FXML
     private void onHighScores(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
-                Objects.requireNonNull(HelloController.class.getResource("/com/example/tetris/HighScore.fxml"))
+                HelloController.class.getResource("/com/example/tetris/HighScore.fxml")
         );
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));

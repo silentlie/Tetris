@@ -9,7 +9,7 @@
       alignment="CENTER" spacing="16">
     <padding><Insets top="30" right="30" bottom="30" left="30"/></padding>
 
-    <Button text="Play" onAction="#onPlayButtonClick"/>
+    <Button text="Play"        onAction="#onPlayButtonClick"/>
     <Button text="High Scores" onAction="#onHighScores"/>
-    <Button text="Exit" onAction="#onExitButtonClick"/>
+    <Button text="Exit"        onAction="#onExitButtonClick"/>
 </VBox>

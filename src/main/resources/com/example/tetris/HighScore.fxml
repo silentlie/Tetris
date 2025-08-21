@@ -7,11 +7,14 @@
 <VBox xmlns:fx="http://javafx.com/fxml"
       xmlns="http://javafx.com/javafx"
       fx:controller="com.example.tetris.HighScore"
-      alignment="CENTER" spacing="16">
-    <padding><Insets top="24" right="24" bottom="24" left="24"/></padding>
+      fx:id="root"
+      alignment="CENTER"
+      spacing="10">
+    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
 
-    <Label text="High Score" style="-fx-font-size: 28px; -fx-font-weight: bold;"/>
-    <Label fx:id="highScoreLabel" text="0" style="-fx-font-size: 48px; -fx-font-weight: bold;"/>
+    <Label text="High Scores" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
+
+    <!-- rows will be added here by controller -->
 
     <Button text="Back" onAction="#onBackButtonClick"/>
 </VBox>
