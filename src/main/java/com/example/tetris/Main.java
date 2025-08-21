@@ -48,6 +48,7 @@ public class Main extends Application {
    * </ul>
    *
    * @param primaryStage the primary stage provided by the JavaFX runtime
+   *
    * @throws IOException if a required FXML file cannot be loaded
    */
   @Override
@@ -62,18 +63,18 @@ public class Main extends Application {
     System.out.println(scene);
     ScenesManager sceneManager = ScenesManager.getInstance();
     sceneManager.init(primaryStage);
-    if (scene == null) {
+    if (null == scene) {
       sceneManager.showSplashScreen(Duration.seconds(3), sceneManager::showMenuScene);
-    } else if ("splash".equals(scene)) {
-      sceneManager.showSplashScreen(null, primaryStage::close);
-    } else if ("menu".equals(scene)) {
-      sceneManager.showMenuScene();
-    } else if ("highScores".equals(scene)) {
-      sceneManager.showHighScoreScene();
-    } else if ("configuration".equals(scene)) {
-      sceneManager.showConfigurationScene();
-    } else if ("play".equals(scene)) {
-      sceneManager.showPlayScene();
+    } else {
+      switch (scene) {
+        case "splash" -> sceneManager.showSplashScreen(null, primaryStage::close);
+        case "menu" -> sceneManager.showMenuScene();
+        case "highScores" -> sceneManager.showHighScoreScene();
+        case "configuration" -> sceneManager.showConfigurationScene();
+        case "play" -> sceneManager.showPlayScene();
+        default -> {
+        }
+      }
     }
   }
 }

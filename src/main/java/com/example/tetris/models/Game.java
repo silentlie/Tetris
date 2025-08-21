@@ -28,15 +28,13 @@ public class Game {
   public static final int HEIGHT = 20;
 
   private final String playerName;
-  private int score = 0;
-
   /**
    * The playfield grid; {@code null} entries are empty cells.
    *
    * <p>Indexed as {@code [row][col]} (i.e., {@code [y][x]}).</p>
    */
   private final TetrominoType[][] board = new TetrominoType[HEIGHT][WIDTH];
-
+  private int score = 0;
   /**
    * The currently falling tetromino.
    *

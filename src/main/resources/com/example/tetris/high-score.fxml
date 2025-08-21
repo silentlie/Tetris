@@ -9,8 +9,11 @@
       fx:controller="com.example.tetris.controllers.HighScore"
       fx:id="root"
       alignment="CENTER"
-      spacing="10">
-    <padding><Insets top="20" right="20" bottom="20" left="20"/></padding>
+      spacing="10"
+>
+    <padding>
+        <Insets top="20" right="20" bottom="20" left="20"/>
+    </padding>
 
     <Label text="High Scores" style="-fx-font-size: 22px; -fx-font-weight: bold;"/>
 
