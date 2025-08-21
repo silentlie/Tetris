@@ -69,7 +69,7 @@ public class Main extends Application {
     } else if ("menu".equals(scene)) {
       sceneManager.showMenuScene();
     } else if ("highScores".equals(scene)) {
-      sceneManager.showHighScoresScene();
+      sceneManager.showHighScoreScene();
     } else if ("configuration".equals(scene)) {
       sceneManager.showConfigurationScene();
     } else if ("play".equals(scene)) {

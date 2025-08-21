@@ -121,17 +121,17 @@ public class ScenesManager {
   }
 
   /**
-   * Shows the high scores scene.
+   * Shows the high score scene.
    */
-  public void showHighScoresScene() {
-    goFxml("high-scores.fxml");
+  public void showHighScoreScene() {
+    goFxml("high-score.fxml");
   }
 
   /**
    * Shows the settings scene.
    */
   public void showConfigurationScene() {
-    goFxml("Configuration.fxml");
+    goFxml("configuration.fxml");
   }
 
   /**
