@@ -91,7 +91,7 @@ strategy and development process.
 | Leyna Mary Joseph | S5326391   |      |
 | Sayona Anna Sunil | S5323993   |      |
 | Hamza Amer        | S2944984   |      |
-|                   |            |      |
+| Oscar Dennis      | S5080470   |      |
 
 ---
 
