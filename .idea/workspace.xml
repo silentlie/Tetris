@@ -5,9 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/helpers/GameLoopCallbacks.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/highScores" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/save" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/GameTimer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/helpers/GameTimer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/controllers/Play.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/module-info.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/module-info.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,11 +21,11 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="CSS File" />
-        <option value="Interface" />
         <option value="JavaFXApplication" />
         <option value="FxmlFile" />
         <option value="Enum" />
         <option value="Record" />
+        <option value="Interface" />
         <option value="Class" />
       </list>
     </option>
@@ -201,6 +204,7 @@
       <workItem from="1755421341218" duration="5413000" />
       <workItem from="1755480635960" duration="23371000" />
       <workItem from="1755563641917" duration="3958000" />
+      <workItem from="1755734514717" duration="11376000" />
     </task>
     <servers />
   </component>

@@ -3,10 +3,11 @@ package com.example.tetris.models;
 import java.util.Arrays;
 
 /**
- * Represents the state of a Tetris game.
+ * Represents the state and rules of a Tetris game.
  *
- * <p>This class manages the game board, active tetromino, score, and game logic
- * such as movement, rotation, line clearing, and game over detection.</p>
+ * <p>Owns the board, active tetromino, score, and implements core mechanics:
+ * movement, rotation, gravity step (soft drop), locking, line clearing, and game-over detection.
+ * All methods are intended to be called on the JavaFX Application Thread.</p>
  */
 public class Game {
 
@@ -17,13 +18,20 @@ public class Game {
   private final String playerName;
   private int score = 0;
 
+  /**
+   * Board cells; {@code null} means empty. Indexed as [row][col] i.e., [y][x].
+   */
   private final TetrominoType[][] board = new TetrominoType[HEIGHT][WIDTH];
+  /**
+   * Currently falling tetromino. Never {@code null} after construction unless locking creates game
+   * over.
+   */
   private Tetromino tetromino;
 
   /**
-   * Creates a new game instance for the given player.
+   * Creates a new game instance for the given player and spawns the first tetromino.
    *
-   * @param playerName the player's name
+   * @param playerName the player's name (used externally for UI/scoreboard)
    */
   public Game(String playerName) {
     this.playerName = playerName;
@@ -31,22 +39,24 @@ public class Game {
   }
 
   /**
-   * Spawns a new tetromino at the starting position.
+   * Spawns a new tetromino at the standard starting column, slightly above the visible board.
    *
-   * @return a newly spawned tetromino
+   * <p>Blocks above the top are permitted until they enter the field.</p>
    */
   private Tetromino newTetromino() {
     return new Tetromino(new Cell(WIDTH / 2 - 1, -2));
   }
 
   /**
-   * Checks whether the given tetromino is in a valid position on the board.
+   * Validates that a tetromino's blocks are within bounds and not colliding with locked cells.
    *
-   * <p>Blocks above the top row are allowed. Returns {@code false} if the
-   * tetromino is out of bounds or collides with locked cells.</p>
+   * <p>Cells with {@code y < 0} (above the top) are allowed. Any cell with {@code x < 0},
+   * {@code x >= WIDTH}, or {@code y >= HEIGHT} is invalid, as is collision with a non-null board
+   * cell.</p>
    *
-   * @param t the tetromino to test
-   * @return {@code true} if the tetromino's position is valid; {@code false} otherwise
+   * @param t tetromino to test
+   *
+   * @return {@code true} if every block is legal against the board; {@code false} otherwise
    */
   public boolean checkPosition(Tetromino t) {
     for (Cell cell : t.getAbsoluteShape()) {
@@ -69,7 +79,7 @@ public class Game {
   }
 
   /**
-   * Rotates the active tetromino clockwise if possible.
+   * Rotates the active tetromino clockwise; no-ops if the rotated position is illegal.
    */
   public void rotate() {
     Tetromino newTetromino = tetromino.rotateClockwise();
@@ -79,7 +89,7 @@ public class Game {
   }
 
   /**
-   * Moves the active tetromino left if possible.
+   * Moves the active tetromino left; no-ops if the target position is illegal.
    */
   public void moveLeft() {
     Tetromino newTetromino = tetromino.moveLeft();
@@ -89,7 +99,7 @@ public class Game {
   }
 
   /**
-   * Moves the active tetromino right if possible.
+   * Moves the active tetromino right; no-ops if the target position is illegal.
    */
   public void moveRight() {
     Tetromino newTetromino = tetromino.moveRight();
@@ -99,11 +109,11 @@ public class Game {
   }
 
   /**
-   * Moves the active tetromino down if possible.
+   * Advances the active tetromino downward by one row if possible.
    *
-   * @return {@code true} if the tetromino moved down; {@code false} if blocked
+   * @return {@code true} if the piece moved; {@code false} if blocked by floor/stack
    */
-  public boolean moveDown() {
+  public boolean softDrop() {
     Tetromino newTetromino = tetromino.moveDown();
     if (checkPosition(newTetromino)) {
       tetromino = newTetromino;
@@ -113,12 +123,17 @@ public class Game {
   }
 
   /**
-   * Locks the active tetromino into the board, clears lines, and spawns a new one.
+   * Locks the active tetromino into the board, clears completed lines, and spawns the next piece.
    *
-   * @return {@code true} if the game is over after locking, {@code false} otherwise
+   * <p><strong>Game over:</strong> If any block of the locked piece lies above the visible field
+   * (i.e., {@code y < 0}), or if the freshly spawned piece cannot be placed legally, the game
+   * ends.</p>
+   *
+   * @return {@code true} if the game is over after locking; {@code false} otherwise
    */
   public boolean lock() {
     boolean gameOver = false;
+    // Place current piece into the board; detect lock-out if any block is above the top.
     for (Cell cell : tetromino.getAbsoluteShape()) {
       int x = cell.x();
       int y = cell.y();
@@ -129,19 +144,21 @@ public class Game {
       board[y][x] = tetromino.type();
     }
     clearLines();
+    // Spawn next piece; if it can't legally exist, game is over.
     tetromino = newTetromino();
     return gameOver || !checkPosition(tetromino);
   }
 
   /**
-   * Clears completed lines and updates the score.
+   * Clears all full lines, compacts remaining rows downward, inserts empty rows at the top, and
+   * increments the score by the number of cleared lines (simple scoring).
    *
-   * <p>Lines are compacted downward, and empty rows are inserted at the top.
-   * The score is incremented by the number of lines cleared.</p>
+   * <p>Scoring: +1 per line. Adjust here if you later add T-Spins/back-to-back/etc.</p>
    */
   private void clearLines() {
     int cleared = 0;
     int writeY = HEIGHT - 1;
+    // Sweep from bottom to top, copying non-full rows downward.
     for (int y = HEIGHT - 1; y >= 0; y--) {
       boolean full = true;
       for (TetrominoType cell : board[y]) {
@@ -159,6 +176,7 @@ public class Game {
         writeY--;
       }
     }
+    // Insert cleared empty rows at the top.
     for (int i = 0; i < cleared; i++) {
       Arrays.fill(board[i], null);
     }
