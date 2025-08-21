@@ -83,3 +83,7 @@
 - Pull frequently to avoid merge conflicts
 - Keep PRs small and focused
 - Use GitHub Issues and PR comments for communication
+
+## References
+
+- [How to Write Better Git Commit Messages – A Step-By-Step Guide](https://www.freecodecamp.org/news/how-to-write-better-git-commit-messages/)
