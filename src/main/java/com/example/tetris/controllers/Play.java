@@ -84,10 +84,21 @@ public class Play implements GameLoopCallbacks {
   }
 
   /**
+   * Handles the exit button action
+   */
+
+  @FXML
+  private javafx.scene.control.Button exitButton;
+
+  @FXML
+  private void onExitClicked() {
+    pauseGame(); // reuses the pause dialogue
+  }
+
+  /**
    * Handles key input for controlling the game.
    *
    * @param code the {@link KeyCode} pressed by the player
-   *
    * @return true if the key was handled, false otherwise
    */
   private boolean handleKey(KeyCode code) {
