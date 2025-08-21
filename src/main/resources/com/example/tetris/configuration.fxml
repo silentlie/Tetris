@@ -9,10 +9,11 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
-<VBox xmlns:fx="http://javafx.com/fxml/1"
-  xmlns="http://javafx.com/javafx/17"
+<VBox xmlns="http://javafx.com/javafx"
+  xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.controllers.Configuration"
-  spacing="12" alignment="TOP_CENTER" prefWidth="520">
+  spacing="12" alignment="CENTER"
+>
   <padding>
     <Insets top="16" right="16" bottom="16" left="16"/>
   </padding>
