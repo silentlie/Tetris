@@ -38,7 +38,7 @@ public class Menu {
    */
   @FXML
   private void onHighScoresButtonClick(ActionEvent actionEvent) {
-    ScenesManager.getInstance().showHighScoresScene();
+    ScenesManager.getInstance().showHighScoreScene();
   }
 
   /**

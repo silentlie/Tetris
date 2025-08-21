@@ -6,7 +6,7 @@
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns:fx="http://javafx.com/fxml"
       xmlns="http://javafx.com/javafx"
-      fx:controller="com.example.tetris.HighScore"
+      fx:controller="com.example.tetris.controllers.HighScore"
       fx:id="root"
       alignment="CENTER"
       spacing="10">
