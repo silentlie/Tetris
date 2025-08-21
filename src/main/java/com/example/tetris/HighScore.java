@@ -24,7 +24,7 @@ public class HighScore {
 
     @FXML
     private void initialize() {
-        // --- Demo data for Milestone 1 (replace with real scores later) ---
+        // --- Demo data for Milestone 1
         List<Score> demo = List.of(
                 new Score("Tom", 865_013),
                 new Score("Anna", 754_859),
@@ -55,7 +55,7 @@ public class HighScore {
         left.setStyle("-fx-font-size: 14px;");
         right.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
-        // Spacer pushes score to the right edge
+
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
@@ -74,7 +74,7 @@ public class HighScore {
         stage.show();
     }
 
-    // simple record for demo data
+
     private record Score(String name, int score) {
     }
 }

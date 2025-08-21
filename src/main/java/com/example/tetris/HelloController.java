@@ -9,6 +9,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class HelloController {
 
@@ -21,7 +22,7 @@ public class HelloController {
     @FXML
     private void onHighScores(ActionEvent event) throws IOException {
         Parent root = FXMLLoader.load(
-                HelloController.class.getResource("/com/example/tetris/HighScore.fxml")
+                Objects.requireNonNull(HelloController.class.getResource("/com/example/tetris/HighScore.fxml"))
         );
         Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
         stage.setScene(new Scene(root));
