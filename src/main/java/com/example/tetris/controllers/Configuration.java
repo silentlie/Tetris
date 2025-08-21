@@ -1,5 +1,6 @@
 package com.example.tetris.controllers;
 
+import com.example.tetris.helpers.ScenesManager;
 import java.io.IOException;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
@@ -108,14 +109,7 @@ public final class Configuration {
 
     // Back → load your main screen (hello-view.fxml)
     backButton.setOnAction(e -> {
-      try {
-        Stage stage = (Stage) backButton.getScene().getWindow();
-        Scene scene = new Scene(FXMLLoader.load(getClass().getResource("hello-view.fxml")));
-        stage.setScene(scene);
-        stage.show();
-      } catch (IOException ex) {
-        ex.printStackTrace();
-      }
+      ScenesManager.getInstance().showMenuScene();
     });
   }
 }
