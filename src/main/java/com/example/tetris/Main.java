@@ -1,19 +1,33 @@
 package com.example.tetris;
 
+import com.example.tetris.helpers.ScenesManager;
 import java.io.IOException;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
+/**
+ * Entry point for the Tetris application.
+ *
+ * <p>This class initializes JavaFX, configures the primary stage, and delegates scene
+ * management to {@link ScenesManager}. The initial scene can be selected using named launch
+ * parameters (e.g., {@code --scene=menu}).</p>
+ */
 public class Main extends Application {
 
   /**
-   * Entry point for the Tetris application.
+   * Launches the JavaFX Tetris application.
    *
-   * <p>This class initializes JavaFX, configures the primary stage, and delegates scene
-   * management to {@link ScenesManager}. The initial scene can be selected using named launch
-   * parameters (e.g., {@code --scene=menu}).</p>
+   * @param args command-line arguments; may include {@code --scene=<sceneName>} to select the
+   *             initial scene. Supported values are:
+   *             <ul>
+   *               <li>{@code splash} – shows only the splash screen</li>
+   *               <li>{@code menu} – shows the main menu</li>
+   *               <li>{@code highScores} – shows the high scores scene</li>
+   *               <li>{@code settings} – shows the settings scene</li>
+   *               <li>{@code play} – shows the gameplay scene</li>
+   *             </ul>
    */
   public static void main(String[] args) {
     launch(args);
