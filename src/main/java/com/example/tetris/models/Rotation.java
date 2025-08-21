@@ -3,8 +3,8 @@ package com.example.tetris.models;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Represents the four possible rotation states for tetrominoes or other rotatable entities within
- * the Tetris game grid.
+ * Represents the four possible rotation states for tetromino or other rotatable entities within the
+ * Tetris game grid.
  *
  * <p>The rotation states are ordered clockwise as follows:
  * {@link #UP} → {@link #RIGHT} → {@link #DOWN} → {@link #LEFT} → {@link #UP}.</p>
@@ -33,6 +33,19 @@ public enum Rotation {
    * Rotated 270° clockwise (or 90° counter-clockwise) from {@link #UP}.
    */
   LEFT;
+
+  /**
+   * Returns a random {@code Rotation} value.
+   *
+   * <p>This method uses {@link ThreadLocalRandom} to ensure
+   * thread-safe randomization.</p>
+   *
+   * @return a randomly selected {@code Rotation}, never {@code null}
+   */
+  public static Rotation randomRotation() {
+    Rotation[] values = Rotation.values();
+    return values[ThreadLocalRandom.current().nextInt(values.length)];
+  }
 
   /**
    * Returns the next {@code Rotation} in clockwise order.
@@ -66,19 +79,6 @@ public enum Rotation {
    */
   public Rotation rotateCounterClockwise() {
     return values()[(this.ordinal() + 3) % 4];
-  }
-
-  /**
-   * Returns a random {@code Rotation} value.
-   *
-   * <p>This method uses {@link ThreadLocalRandom} to ensure
-   * thread-safe randomization.</p>
-   *
-   * @return a randomly selected {@code Rotation}, never {@code null}
-   */
-  public static Rotation randomRotation() {
-    Rotation[] values = Rotation.values();
-    return values[ThreadLocalRandom.current().nextInt(values.length)];
   }
 
   /**

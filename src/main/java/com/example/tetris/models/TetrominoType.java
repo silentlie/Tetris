@@ -57,17 +57,6 @@ public enum TetrominoType {
   }
 
   /**
-   * Returns the display {@link Color} associated with this tetromino type.
-   *
-   * <p>This color is typically used for rendering the tetromino on the board.</p>
-   *
-   * @return the color assigned to this tetromino type, never {@code null}
-   */
-  public Color getColor() {
-    return color;
-  }
-
-  /**
    * Selects and returns a random {@code TetrominoType}.
    *
    * <p>This uses {@link ThreadLocalRandom} to ensure thread-safe randomness.</p>
@@ -83,5 +72,16 @@ public enum TetrominoType {
   public static TetrominoType randomType() {
     TetrominoType[] values = TetrominoType.values();
     return values[ThreadLocalRandom.current().nextInt(values.length)];
+  }
+
+  /**
+   * Returns the display {@link Color} associated with this tetromino type.
+   *
+   * <p>This color is typically used for rendering the tetromino on the board.</p>
+   *
+   * @return the color assigned to this tetromino type, never {@code null}
+   */
+  public Color getColor() {
+    return color;
   }
 }

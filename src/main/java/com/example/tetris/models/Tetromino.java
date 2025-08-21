@@ -15,7 +15,7 @@ import java.util.Map;
  * </ul>
  *
  * <p>This record implements {@link Movable} and {@link Rotatable}, meaning
- * tetrominoes are <b>immutable</b>: any movement or rotation returns a
+ * tetromino are <b>immutable</b>: any movement or rotation returns a
  * <b>new {@code Tetromino}</b> instance instead of mutating the existing one.</p>
  *
  * @param type     the {@link TetrominoType} defining the tetromino's shape and color

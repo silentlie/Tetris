@@ -111,7 +111,7 @@ public class Play extends GameTimer {
   }
 
   /**
-   * Handles keyboard input for controlling tetrominoes and game state.
+   * Handles keyboard input for controlling tetromino and game state.
    *
    * <ul>
    *   <li>{@code LEFT}  → Move piece left</li>
