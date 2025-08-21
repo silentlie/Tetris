@@ -1,180 +1,76 @@
 package com.example.tetris.models;
 
-import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
- * Represents a single tetromino piece in the game of Tetris.
+ * Represents a Tetris tetromino, which consists of four blocks arranged in one of seven shapes.
+ * Each tetromino has a specific type, position on the grid, and rotation.
  *
- * <p>A tetromino is defined by three attributes:</p>
- * <ul>
- *   <li>{@link TetrominoType type} — the shape of the piece (I, O, T, S, Z, J, L)</li>
- *   <li>{@link Rotation rotation} — the current orientation (UP, RIGHT, DOWN, LEFT)</li>
- *   <li>{@link Cell position} — the absolute position of the tetromino on the board,
- *       corresponding to the origin cell of its shape</li>
- * </ul>
+ * <p>This record implements {@link Movable} and {@link Rotatable}, allowing the tetromino to be
+ * moved and rotated while maintaining immutability.</p>
  *
- * <p>This class is immutable: all movement and rotation operations return new
- * {@code Tetromino} instances instead of mutating the existing one.</p>
+ * @param type     the shape type of the tetromino
+ * @param position the current origin position of the tetromino on the grid
+ * @param rotation the current rotation of the tetromino
  */
-public record Tetromino(TetrominoType type, Rotation rotation, Cell position) {
+public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
+    implements Movable<Tetromino>, Rotatable<Tetromino> {
 
   /**
-   * Constructs a new tetromino with a random type and random rotation, positioned at the given
-   * cell.
-   *
-   * @param position the starting cell position of the tetromino
+   * Shape definitions for each {@link TetrominoType} in the default {@link Rotation#UP}
+   * orientation. Each shape is defined as a list of {@link Cell} offsets relative to an origin at
+   * (0, 0).
    */
-  public Tetromino(Cell position) {
-    this(TetrominoType.randomType(), Rotation.randomRotation(), position);
+  private static final Map<TetrominoType, List<Cell>> SHAPES = Map.of(
+      TetrominoType.I, List.of(new Cell(-2, 0), new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0)),
+      TetrominoType.O, List.of(new Cell(0, 0), new Cell(1, 0), new Cell(0, 1), new Cell(1, 1)),
+      TetrominoType.T, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(0, 1)),
+      TetrominoType.S, List.of(new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1), new Cell(0, 1)),
+      TetrominoType.Z, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(0, 1), new Cell(1, 1)),
+      TetrominoType.J, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1)),
+      TetrominoType.L, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(1, 1))
+  );
+
+  /**
+   * Creates a random tetromino at the given spawn position with the default {@link Rotation#UP}.
+   *
+   * @param spawnPosition the initial grid position for the tetromino
+   *
+   * @return a new {@link Tetromino} with a random type and an upward orientation
+   */
+  public static Tetromino randomTetromino(Cell spawnPosition) {
+    return new Tetromino(TetrominoType.randomType(), spawnPosition, Rotation.UP);
   }
 
   /**
-   * Moves this tetromino one cell upward.
+   * Returns a new tetromino with the specified position, keeping the same type and rotation.
    *
-   * @return a new tetromino positioned one row above
+   * @param newPosition the new grid position
+   *
+   * @return a new {@link Tetromino} instance with the updated position
    */
-  public Tetromino moveUp() {
-    return new Tetromino(type, rotation, position.moveUp());
+  @Override
+  public Tetromino withPosition(Cell newPosition) {
+    return new Tetromino(this.type, newPosition, this.rotation);
   }
 
   /**
-   * Moves this tetromino one cell downward.
+   * Returns a new tetromino with the specified rotation, keeping the same type and position.
    *
-   * @return a new tetromino positioned one row below
+   * @param newRotation the new rotation
+   *
+   * @return a new {@link Tetromino} instance with the updated rotation
    */
-  public Tetromino moveDown() {
-    return new Tetromino(type, rotation, position.moveDown());
+  @Override
+  public Tetromino withRotation(Rotation newRotation) {
+    return new Tetromino(this.type, this.position, newRotation);
   }
 
-  /**
-   * Moves this tetromino one cell to the left.
-   *
-   * @return a new tetromino positioned one column left
-   */
-  public Tetromino moveLeft() {
-    return new Tetromino(type, rotation, position.moveLeft());
-  }
-
-  /**
-   * Moves this tetromino one cell to the right.
-   *
-   * @return a new tetromino positioned one column right
-   */
-  public Tetromino moveRight() {
-    return new Tetromino(type, rotation, position.moveRight());
-  }
-
-  /**
-   * Rotates this tetromino 90 degrees clockwise.
-   *
-   * @return a new tetromino with updated rotation
-   */
-  public Tetromino rotateClockwise() {
-    return new Tetromino(type, rotation.rotateClockwise(), position);
-  }
-
-  /**
-   * Rotates this tetromino 90 degrees counter-clockwise.
-   *
-   * @return a new tetromino with updated rotation
-   */
-  public Tetromino rotateCounterClockwise() {
-    return new Tetromino(type, rotation.rotateCounterClockwise(), position);
-  }
-
-  /**
-   * Returns the relative coordinates of this tetromino’s cells in its current rotation.
-   *
-   * <p>The coordinates are relative to the tetromino’s origin cell ({@link #position}).</p>
-   *
-   * @return an array of relative {@link Cell} offsets
-   */
-  public Cell[] getRelativeShape() {
-    return SHAPES[type.ordinal()][rotation.ordinal()].clone();
-  }
-
-  /**
-   * Returns the absolute coordinates of this tetromino’s cells on the board.
-   *
-   * <p>This is computed by adding the tetromino’s {@link #position} to each relative
-   * cell in its shape.</p>
-   *
-   * @return an array of absolute {@link Cell} positions
-   */
-  public Cell[] getAbsoluteShape() {
-    Cell[] rel = getRelativeShape();
-    Cell[] abs = new Cell[rel.length];
-    for (int i = 0; i < rel.length; i++) {
-      abs[i] = position.add(rel[i]);
-    }
-    return abs;
-  }
-
-  private static final Cell[][][] SHAPES =
-      new Cell[TetrominoType.values().length][Rotation.values().length][];
-
-  static {
-    // Define each tetromino in the UP rotation
-    final Map<TetrominoType, Cell[]> base = new EnumMap<>(TetrominoType.class);
-    base.put(TetrominoType.I, new Cell[]{
-        new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(2, 0)
-    });
-    base.put(TetrominoType.O, new Cell[]{
-        new Cell(0, 0), new Cell(1, 0), new Cell(0, 1), new Cell(1, 1)
-    });
-    base.put(TetrominoType.T, new Cell[]{
-        new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(0, 1)
-    });
-    base.put(TetrominoType.S, new Cell[]{
-        new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1), new Cell(0, 1)
-    });
-    base.put(TetrominoType.Z, new Cell[]{
-        new Cell(-1, 0), new Cell(0, 0), new Cell(0, 1), new Cell(1, 1)
-    });
-    base.put(TetrominoType.J, new Cell[]{
-        new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1)
-    });
-    base.put(TetrominoType.L, new Cell[]{
-        new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(1, 1)
-    });
-    // Precompute rotated shapes
-    for (TetrominoType t : TetrominoType.values()) {
-      Cell[] up = base.get(t);
-      for (Rotation r : Rotation.values()) {
-        SHAPES[t.ordinal()][r.ordinal()] = (t == TetrominoType.O) ? up : rotate(up, r);
-      }
-    }
-  }
-
-  /**
-   * Rotates a set of relative cells into the given rotation.
-   *
-   * <p>Rotation is clockwise on screen (y-axis pointing downward).
-   * The transformation per step is {@code (x, y) → (-y, x)}.</p>
-   *
-   * @param up the base cells in the UP orientation
-   * @param r  the desired rotation
-   * @return the rotated array of cells
-   */
-  private static Cell[] rotate(Cell[] up, Rotation r) {
-    int steps = switch (r) {
-      case UP -> 0;
-      case RIGHT -> 1;
-      case DOWN -> 2;
-      case LEFT -> 3;
-    };
-    Cell[] out = new Cell[up.length];
-    for (int i = 0; i < up.length; i++) {
-      int x = up[i].x();
-      int y = up[i].y();
-      for (int k = 0; k < steps; k++) {
-        int ny = x;
-        x = -y;
-        y = ny;
-      }
-      out[i] = new Cell(x, y);
-    }
-    return out;
+  public List<Cell> getAbsoluteShape() {
+    return SHAPES.get(type).stream()
+        .map(rotation::apply)
+        .map(position::add)
+        .toList();
   }
 }

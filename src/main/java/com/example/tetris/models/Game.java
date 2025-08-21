@@ -44,7 +44,7 @@ public class Game {
    * <p>Blocks above the top are permitted until they enter the field.</p>
    */
   private Tetromino newTetromino() {
-    return new Tetromino(new Cell(WIDTH / 2 - 1, -2));
+    return Tetromino.randomTetromino(new Cell(WIDTH / 2 - 1, -2));
   }
 
   /**
