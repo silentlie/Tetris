@@ -5,12 +5,13 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="58787ae9-9344-4681-b07f-6f07a06fc769" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Movable.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotatable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Cell.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Game.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Movable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Movable.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotatable.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Rotatable.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/Tetromino.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/TetrominoType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/tetris/models/TetrominoType.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

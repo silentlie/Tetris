@@ -1,37 +1,53 @@
 package com.example.tetris.models;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 /**
- * Represents the state and rules of a Tetris game.
+ * Represents the state and core rules of a Tetris game.
  *
- * <p>Owns the board, active tetromino, score, and implements core mechanics:
- * movement, rotation, gravity step (soft drop), locking, line clearing, and game-over detection.
- * All methods are intended to be called on the JavaFX Application Thread.</p>
+ * <p>This class owns the playfield (board), the currently falling {@link Tetromino},
+ * the player's score, and implements the main mechanics: movement, rotation, gravity (soft drop),
+ * locking, line clearing, and game-over detection.</p>
+ *
+ * <p><b>Threading:</b> All public methods are intended to be invoked on the JavaFX
+ * Application Thread.</p>
  */
 public class Game {
 
   public static final int K = 10;
+
+  /**
+   * Board width in cells.
+   */
   public static final int WIDTH = 10;
+
+  /**
+   * Board height in cells (visible rows).
+   */
   public static final int HEIGHT = 20;
 
   private final String playerName;
   private int score = 0;
 
   /**
-   * Board cells; {@code null} means empty. Indexed as [row][col] i.e., [y][x].
+   * The playfield grid; {@code null} entries are empty cells.
+   *
+   * <p>Indexed as {@code [row][col]} (i.e., {@code [y][x]}).</p>
    */
   private final TetrominoType[][] board = new TetrominoType[HEIGHT][WIDTH];
+
   /**
-   * Currently falling tetromino. Never {@code null} after construction unless locking creates game
-   * over.
+   * The currently falling tetromino.
+   *
+   * <p>Never {@code null} after construction unless a lock operation results in game over.</p>
    */
   private Tetromino tetromino;
 
   /**
    * Creates a new game instance for the given player and spawns the first tetromino.
    *
-   * @param playerName the player's name (used externally for UI/scoreboard)
+   * @param playerName the player's name (for UI/scoreboard use)
    */
   public Game(String playerName) {
     this.playerName = playerName;
@@ -41,45 +57,51 @@ public class Game {
   /**
    * Spawns a new tetromino at the standard starting column, slightly above the visible board.
    *
-   * <p>Blocks above the top are permitted until they enter the field.</p>
+   * <p>Blocks with {@code y < 0} (above the top) are permitted until they enter the field.</p>
+   *
+   * @return a newly spawned {@link Tetromino}
    */
   private Tetromino newTetromino() {
     return Tetromino.randomTetromino(new Cell(WIDTH / 2 - 1, -2));
   }
 
   /**
-   * Validates that a tetromino's blocks are within bounds and not colliding with locked cells.
+   * Validates that a tetromino's blocks are within bounds and do not collide with already locked
+   * cells on the board.
    *
-   * <p>Cells with {@code y < 0} (above the top) are allowed. Any cell with {@code x < 0},
-   * {@code x >= WIDTH}, or {@code y >= HEIGHT} is invalid, as is collision with a non-null board
-   * cell.</p>
+   * <p>Rules:</p>
+   * <ul>
+   *   <li>Cells with {@code y < 0} (above the top) are allowed.</li>
+   *   <li>Any cell with {@code x < 0}, {@code x >= WIDTH}, or {@code y >= HEIGHT} is invalid.</li>
+   *   <li>Any cell overlapping a non-{@code null} board cell is invalid (collision).</li>
+   * </ul>
    *
-   * @param t tetromino to test
+   * @param t the tetromino to test, must not be {@code null}
    *
-   * @return {@code true} if every block is legal against the board; {@code false} otherwise
+   * @return {@code true} if all blocks are legal against the current board; {@code false} otherwise
    */
   public boolean checkPosition(Tetromino t) {
-    for (Cell cell : t.getAbsoluteShape()) {
+    return t.getAbsoluteShape().stream().allMatch(cell -> {
       int x = cell.x();
       int y = cell.y();
-      // allow blocks above the top
+      // allow above top
       if (y < 0) {
-        continue;
+        return true;
       }
-      // out of bounds
+      // OOB
       if (x < 0 || x >= WIDTH || y >= HEIGHT) {
         return false;
       }
-      // collides with locked
-      if (board[y][x] != null) {
-        return false;
-      }
-    }
-    return true;
+      // no collision
+      return board[y][x] == null;
+    });
   }
 
   /**
-   * Rotates the active tetromino clockwise; no-ops if the rotated position is illegal.
+   * Attempts to rotate the active tetromino clockwise.
+   *
+   * <p>If the rotated position would be illegal (out of bounds or colliding),
+   * the method performs no change.</p>
    */
   public void rotate() {
     Tetromino newTetromino = tetromino.rotateClockwise();
@@ -89,7 +111,9 @@ public class Game {
   }
 
   /**
-   * Moves the active tetromino left; no-ops if the target position is illegal.
+   * Attempts to move the active tetromino one cell to the left.
+   *
+   * <p>No-op if the target position is illegal.</p>
    */
   public void moveLeft() {
     Tetromino newTetromino = tetromino.moveLeft();
@@ -99,7 +123,9 @@ public class Game {
   }
 
   /**
-   * Moves the active tetromino right; no-ops if the target position is illegal.
+   * Attempts to move the active tetromino one cell to the right.
+   *
+   * <p>No-op if the target position is illegal.</p>
    */
   public void moveRight() {
     Tetromino newTetromino = tetromino.moveRight();
@@ -109,9 +135,9 @@ public class Game {
   }
 
   /**
-   * Advances the active tetromino downward by one row if possible.
+   * Advances the active tetromino downward by one row (gravity step) if possible.
    *
-   * @return {@code true} if the piece moved; {@code false} if blocked by floor/stack
+   * @return {@code true} if the piece moved; {@code false} if blocked by floor or stack
    */
   public boolean softDrop() {
     Tetromino newTetromino = tetromino.moveDown();
@@ -125,9 +151,8 @@ public class Game {
   /**
    * Locks the active tetromino into the board, clears completed lines, and spawns the next piece.
    *
-   * <p><strong>Game over:</strong> If any block of the locked piece lies above the visible field
-   * (i.e., {@code y < 0}), or if the freshly spawned piece cannot be placed legally, the game
-   * ends.</p>
+   * <p><b>Game over:</b> Occurs if any block of the just-locked piece lies above the visible field
+   * (i.e., {@code y < 0}) or if the freshly spawned tetromino cannot be placed legally.</p>
    *
    * @return {@code true} if the game is over after locking; {@code false} otherwise
    */
@@ -151,42 +176,37 @@ public class Game {
 
   /**
    * Clears all full lines, compacts remaining rows downward, inserts empty rows at the top, and
-   * increments the score by the number of cleared lines (simple scoring).
+   * increments the score by the number of cleared lines (simple scoring: +1 per line).
    *
-   * <p>Scoring: +1 per line. Adjust here if you later add T-Spins/back-to-back/etc.</p>
+   * <p>Algorithm:</p>
+   * <ol>
+   *   <li>Sweep bottom-to-top, copying non-full rows downward to close gaps.</li>
+   *   <li>Count full rows; then set that many top rows to {@code null} (empty).</li>
+   *   <li>Increment {@link #score} by the number of cleared lines.</li>
+   * </ol>
+   *
+   * <p>Adjust here if you later add T-Spins, back-to-back, combo bonuses, etc.</p>
    */
   private void clearLines() {
-    int cleared = 0;
-    int writeY = HEIGHT - 1;
-    // Sweep from bottom to top, copying non-full rows downward.
-    for (int y = HEIGHT - 1; y >= 0; y--) {
-      boolean full = true;
-      for (TetrominoType cell : board[y]) {
-        if (cell == null) {
-          full = false;
-          break;
-        }
-      }
-      if (full) {
-        cleared++;
-      } else {
-        if (y != writeY) {
-          System.arraycopy(board[y], 0, board[writeY], 0, board[y].length);
-        }
-        writeY--;
-      }
-    }
-    // Insert cleared empty rows at the top.
+    int cleared = (int) Arrays.stream(board)
+        .filter(row -> Arrays.stream(row).allMatch(Objects::nonNull))
+        .count();
+    TetrominoType[][] remaining = Arrays.stream(board)
+        .filter(row -> Arrays.stream(row).anyMatch(Objects::isNull))
+        .toArray(TetrominoType[][]::new);
     for (int i = 0; i < cleared; i++) {
       Arrays.fill(board[i], null);
+    }
+    for (int i = 0; i < remaining.length; i++) {
+      System.arraycopy(remaining[i], 0, board[cleared + i], 0, remaining[i].length);
     }
     score += cleared;
   }
 
   /**
-   * Returns the name of the player.
+   * Returns the player's name.
    *
-   * @return the player's name
+   * @return the player's name, never {@code null}
    */
   public String getPlayerName() {
     return playerName;
@@ -195,32 +215,30 @@ public class Game {
   /**
    * Returns the current score.
    *
-   * @return the player's score
+   * @return the player's score (non-negative)
    */
   public int getScore() {
     return score;
   }
 
   /**
-   * Returns a copy of the current board state.
+   * Returns a defensive copy of the current board state.
    *
-   * <p>The returned array is a deep copy; modifications will not affect
-   * the internal board.</p>
+   * <p>The returned 2D array is a deep copy; modifying it will not affect the internal board.</p>
    *
-   * @return a copy of the board
+   * @return a deep copy of the board, indexed as {@code [y][x]}
    */
   public TetrominoType[][] getBoard() {
-    TetrominoType[][] copy = new TetrominoType[HEIGHT][];
-    for (int i = 0; i < HEIGHT; i++) {
-      copy[i] = Arrays.copyOf(board[i], WIDTH);
-    }
-    return copy;
+    return Arrays.stream(board)
+        .map(row -> Arrays.copyOf(row, WIDTH))
+        .toArray(TetrominoType[][]::new);
   }
 
+
   /**
-   * Returns the current active tetromino.
+   * Returns the currently active tetromino.
    *
-   * @return the active tetromino
+   * @return the active {@link Tetromino}, never {@code null} during play
    */
   public Tetromino getTetromino() {
     return tetromino;

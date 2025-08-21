@@ -1,46 +1,54 @@
 package com.example.tetris.models;
 
 /**
- * Represents an immutable contract for entities that can move within a grid.
+ * Represents an immutable contract for entities that can move within a two-dimensional grid.
  *
- * <p>Implementations of this interface must be <b>immutable</b>: any movement
- * operation should return a <i>new instance</i> with the updated position rather than modifying the
- * current one.
+ * <p>Implementations of this interface must be <b>immutable</b>:
+ * all movement operations return a <b>new instance</b> instead of modifying the existing one.</p>
  *
- * @param <T> the concrete self type
+ * <p>This interface uses a self-referential generic type {@code <T>} to enable
+ * <i>fluent method chaining</i> for implementing classes or records.</p>
+ *
+ * @param <T> the concrete implementing type, enabling fluent API returns
  */
 public interface Movable<T extends Movable<T>> {
 
   /**
-   * Returns the current absolute position of this entity.
+   * Returns the current absolute position of this entity in the grid.
    *
-   * <p>The position typically refers to the "origin" or "reference cell"
-   * of the entity in the grid.
+   * <p>The position usually refers to the "origin" or "reference cell"
+   * of the entity, such as the pivot point of a tetromino.</p>
    *
-   * @return the current {@link Cell} position
+   * @return the current {@link Cell} position, never {@code null}
    */
   Cell position();
 
   /**
-   * Creates a new instance of this entity with the given position.
+   * Creates a <b>new instance</b> of this entity with the specified position.
    *
-   * <p>This method acts as an immutability hook: implementations must
-   * not mutate the current instance but instead return a new instance.
+   * <p>This method acts as an <b>immutability hook</b>, ensuring the current
+   * instance remains unchanged while returning a new one.</p>
    *
-   * @param newPosition the new {@link Cell} position
+   * @param newPosition the new {@link Cell} position, must not be {@code null}
    *
-   * @return a new instance of {@code T} with the updated position
+   * @return a new instance of {@code T} with the updated position, never {@code null}
    */
   T withPosition(Cell newPosition);
 
   /**
    * Moves this entity by a relative offset defined by the given delta.
    *
-   * <p>The delta is applied by adding it to the current position.
+   * <p>The delta is applied by adding its coordinates to the current position.</p>
    *
-   * @param delta the relative movement as a {@link Cell} offset
+   * <p>Example:</p>
+   * <pre>
+   *   Cell delta = new Cell(2, -1);
+   *   T moved = entity.moveBy(delta);
+   * </pre>
    *
-   * @return a new instance of {@code T} with the updated position
+   * @param delta the relative movement as a {@link Cell} offset, must not be {@code null}
+   *
+   * @return a new instance of {@code T} at the updated position, never {@code null}
    */
   default T moveBy(Cell delta) {
     return withPosition(position().add(delta));
@@ -49,44 +57,44 @@ public interface Movable<T extends Movable<T>> {
   /**
    * Moves this entity one cell upward in the grid.
    *
-   * <p>This decreases the y-coordinate by 1.
+   * <p>This decreases the y-coordinate by 1.</p>
    *
-   * @return a new instance of {@code T} one cell up
+   * @return a new instance of {@code T} one cell up, never {@code null}
    */
   default T moveUp() {
-    return moveBy(new Cell(0, -1));
+    return moveBy(Cell.UP);
   }
 
   /**
    * Moves this entity one cell downward in the grid.
    *
-   * <p>This increases the y-coordinate by 1.
+   * <p>This increases the y-coordinate by 1.</p>
    *
-   * @return a new instance of {@code T} one cell down
+   * @return a new instance of {@code T} one cell down, never {@code null}
    */
   default T moveDown() {
-    return moveBy(new Cell(0, 1));
+    return moveBy(Cell.DOWN);
   }
 
   /**
    * Moves this entity one cell to the left in the grid.
    *
-   * <p>This decreases the x-coordinate by 1.
+   * <p>This decreases the x-coordinate by 1.</p>
    *
-   * @return a new instance of {@code T} one cell left
+   * @return a new instance of {@code T} one cell left, never {@code null}
    */
   default T moveLeft() {
-    return moveBy(new Cell(-1, 0));
+    return moveBy(Cell.LEFT);
   }
 
   /**
    * Moves this entity one cell to the right in the grid.
    *
-   * <p>This increases the x-coordinate by 1.
+   * <p>This increases the x-coordinate by 1.</p>
    *
-   * @return a new instance of {@code T} one cell right
+   * @return a new instance of {@code T} one cell right, never {@code null}
    */
   default T moveRight() {
-    return moveBy(new Cell(1, 0));
+    return moveBy(Cell.RIGHT);
   }
 }
