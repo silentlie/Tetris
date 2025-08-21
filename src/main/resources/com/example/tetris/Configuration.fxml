@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<VBox xmlns:fx="http://javafx.com/fxml/1"
+      xmlns="http://javafx.com/javafx/17"
+      fx:controller="com.example.tetris.Configuration"
+      spacing="12" alignment="TOP_CENTER" prefWidth="520">
+  <padding>
+    <Insets top="16" right="16" bottom="16" left="16"/>
+  </padding>
+
+  <children>
+
+    <Label text="Configuration" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+
+    <!-- Field Width -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+      <children>
+        <Label text="Field Width (No of cells):"/>
+        <Slider fx:id="widthSlider" min="5" max="15" majorTickUnit="1" blockIncrement="1"
+                showTickMarks="true" showTickLabels="true" snapToTicks="true" prefWidth="320"/>
+        <Label fx:id="widthValue" text="10"/>
+      </children>
+    </HBox>
+
+    <!-- Field Height -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+      <children>
+        <Label text="Field Height (No of cells):"/>
+        <Slider fx:id="heightSlider" min="15" max="30" majorTickUnit="1" blockIncrement="1"
+                showTickMarks="true" showTickLabels="true" snapToTicks="true" prefWidth="320"/>
+        <Label fx:id="heightValue" text="20"/>
+      </children>
+    </HBox>
+
+    <!-- Game Level -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+      <children>
+        <Label text="Game Level:"/>
+        <Slider fx:id="levelSlider" min="1" max="10" majorTickUnit="1" blockIncrement="1"
+                showTickMarks="true" showTickLabels="true" snapToTicks="true" prefWidth="320"/>
+        <Label fx:id="levelValue" text="1"/>
+      </children>
+    </HBox>
+
+    <!-- Toggles with On/Off mirror -->
+    <GridPane hgap="10" vgap="8">
+      <columnConstraints>
+        <ColumnConstraints minWidth="220"/>
+        <ColumnConstraints minWidth="100"/>
+      </columnConstraints>
+      <children>
+        <Label text="Music (On/Off):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+        <HBox spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
+          <children>
+            <CheckBox fx:id="musicCheck"/>
+            <Label fx:id="musicValue" text="On"/>
+          </children>
+        </HBox>
+
+        <Label text="Sound Effect (On/Off):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+        <HBox spacing="8" GridPane.rowIndex="1" GridPane.columnIndex="1">
+          <children>
+            <CheckBox fx:id="soundCheck"/>
+            <Label fx:id="soundValue" text="On"/>
+          </children>
+        </HBox>
+
+        <Label text="AI Play (On/Off):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+        <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">
+          <children>
+            <CheckBox fx:id="aiPlayCheck"/>
+            <Label fx:id="aiPlayValue" text="Off"/>
+          </children>
+        </HBox>
+
+        <Label text="Extend Mode (On/Off):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+        <HBox spacing="8" GridPane.rowIndex="3" GridPane.columnIndex="1">
+          <children>
+            <CheckBox fx:id="extendedCheck"/>
+            <Label fx:id="extendedValue" text="Off"/>
+          </children>
+        </HBox>
+      </children>
+    </GridPane>
+
+    <HBox spacing="12" alignment="CENTER">
+      <children>
+        <Button fx:id="saveButton" text="Save"/>
+        <Button fx:id="resetButton" text="Reset"/>
+        <Button fx:id="backButton" text="Back"/>
+      </children>
+    </HBox>
+
+    <Label text="Author: (your name here)" style="-fx-text-fill: #666;"/>
+
+  </children>
+</VBox>
