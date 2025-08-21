@@ -1,6 +1,7 @@
 package com.example.tetris.controllers;
 
-import com.example.tetris.helpers.GameLoopCallbacks;
+import static com.example.tetris.models.Game.K;
+
 import com.example.tetris.helpers.GameTimer;
 import com.example.tetris.helpers.ScenesManager;
 import com.example.tetris.models.Game;
@@ -19,13 +20,13 @@ import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 
 /**
- * Controller class for the Tetris game play scene.
+ * Controller class for the Tetris gameplay scene.
  *
- * <p>Handles user input, rendering the board and active tetromino,
- * and manages game loop callbacks such as dropping and locking pieces.
+ * <p>Handles player input, rendering the board and active tetromino, and drives the game loop
+ * (gravity, soft drop, locking pieces).
  * </p>
  */
-public class Play implements GameLoopCallbacks {
+public class Play extends GameTimer {
 
   @FXML
   private Pane boardHolder;
@@ -33,15 +34,13 @@ public class Play implements GameLoopCallbacks {
   private Canvas boardCanvas;
 
   private Game game;
-  private GameTimer timer;
-
   private boolean dirty = true;
 
   /**
    * Initializes the play scene.
    *
-   * <p>Prompts for player name, sets up canvas resizing, scene key handling, and starts the
-   * game timer.
+   * <p>Prompts the player for their name, sets up canvas resizing, attaches keyboard handlers, and
+   * starts the game timer.
    * </p>
    */
   @FXML
@@ -58,7 +57,7 @@ public class Play implements GameLoopCallbacks {
     }
     game = new Game(result.get().trim());
 
-    // Resize canvas with parent and trigger a redraw.
+    // Resize canvas dynamically and trigger redraw.
     boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
       boardCanvas.setWidth(b.getWidth());
       boardCanvas.setHeight(b.getHeight());
@@ -66,6 +65,7 @@ public class Play implements GameLoopCallbacks {
       render();
     });
 
+    // Register keyboard input when scene becomes active.
     boardHolder.sceneProperty().addListener((obs, oldScene, newScene) -> {
       if (oldScene != null) {
         oldScene.setOnKeyPressed(null);
@@ -78,13 +78,49 @@ public class Play implements GameLoopCallbacks {
         });
       }
     });
-
-    timer = new GameTimer(this);
-    timer.start();
+    start();
   }
 
   /**
-   * Handles key input for controlling the game.
+   * Main game loop, invoked by {@link GameTimer}.
+   *
+   * <p>Advances game state by applying gravity based on elapsed time and player level. If a piece
+   * can no longer fall, it locks and the game ends when no new piece can spawn.
+   * </p>
+   */
+  @Override
+  protected void gameLoop() {
+    double elapsedSeconds = elapsedNanos / 1_000_000_000.0;
+    double level = (1.0 + Math.sqrt(1.0 + (2.0 * elapsedSeconds) / 15.0)) / 2.0;
+    double clampedLevel = Math.min(level, K);
+    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (K - 1));
+    long fallIntervalNanos = (long) (secondsPerRow * 1_000_000_000.0);
+
+    while (accumulateNanos >= fallIntervalNanos) {
+      accumulateNanos -= fallIntervalNanos;
+      if (softDrop()) {
+        continue;
+      }
+      if (lock()) {
+        endGame();
+        return;
+      }
+      accumulateNanos = 0L;
+    }
+    render();
+  }
+
+  /**
+   * Handles keyboard input for controlling tetrominoes and game state.
+   *
+   * <ul>
+   *   <li>{@code LEFT}  → Move piece left</li>
+   *   <li>{@code RIGHT} → Move piece right</li>
+   *   <li>{@code UP}    → Rotate piece</li>
+   *   <li>{@code DOWN}  → Soft drop (move down faster)</li>
+   *   <li>{@code SPACE} → Hard drop (instant drop to bottom)</li>
+   *   <li>{@code P}     → Pause game</li>
+   * </ul>
    *
    * @param code the {@link KeyCode} pressed by the player
    *
@@ -96,27 +132,19 @@ public class Play implements GameLoopCallbacks {
     }
     switch (code) {
       case LEFT -> {
-        game.moveLeft();
-        markDirty();
+        moveLeft();
         return true;
       }
       case RIGHT -> {
-        game.moveRight();
-        markDirty();
+        moveRight();
         return true;
       }
       case UP -> {
-        game.rotate();
-        markDirty();
+        rotate();
         return true;
       }
       case DOWN -> {
-        if (softDrop()) {
-          return true;
-        }
-        if (lock()) {
-          endGame();
-        }
+        softDrop();
         return true;
       }
       case SPACE -> {
@@ -124,9 +152,6 @@ public class Play implements GameLoopCallbacks {
         do {
           moved = softDrop();
         } while (moved);
-        if (lock()) {
-          endGame();
-        }
         return true;
       }
       case P -> {
@@ -139,56 +164,71 @@ public class Play implements GameLoopCallbacks {
     }
   }
 
+  private void rotate() {
+    markDirty();
+    game.rotate();
+  }
+
+  private void moveRight() {
+    markDirty();
+    game.moveRight();
+  }
+
+  private void moveLeft() {
+    markDirty();
+    game.moveLeft();
+  }
+
   /**
-   * Attempts to soft drop the current tetromino (move down one cell).
+   * Attempts to move the active piece down by one row.
    *
-   * @return true if the tetromino moved down, false if blocked
+   * @return true if the piece moved down, false if blocked
    */
-  @Override
-  public boolean softDrop() {
+  private boolean softDrop() {
     markDirty();
     return game.softDrop();
   }
 
   /**
-   * Locks the current tetromino into the board if it cannot move further.
+   * Attempts to lock the current piece in place.
    *
-   * @return true if the game should end, false otherwise
+   * @return true if the piece locked and no new piece could spawn (game over)
    */
-  @Override
-  public boolean lock() {
+  private boolean lock() {
     markDirty();
     return game.lock();
   }
 
-  /**
-   * Ends the game, stopping the timer and returning to the menu scene.
-   */
-  @Override
-  public void endGame() {
-    if (timer != null && timer.isRunning()) {
-      timer.stop();
-    }
-    // TODO: Alert Score and save Score
-    ScenesManager.getInstance().showMenuScene();
-  }
-
-  /**
-   * Marks the canvas as dirty, requiring a redraw on the next render call.
-   */
-  @Override
-  public void markDirty() {
+  private void markDirty() {
     dirty = true;
   }
 
   /**
-   * Pauses the game and shows a confirmation dialog. Player can either resume or leave the game.
+   * Ends the game, stops the timer, shows the final score, and returns to the main menu scene.
+   */
+  public void endGame() {
+    if (isRunning) {
+      stop();
+    }
+    Alert alert = new Alert(Alert.AlertType.INFORMATION);
+    alert.setTitle("Game Over");
+    alert.setHeaderText("Your Score: " + game.getScore());
+    alert.setContentText("Thanks for playing!");
+    alert.showAndWait();
+    ScenesManager.getInstance().showMenuScene();
+  }
+
+  /**
+   * Pauses the game and shows a confirmation dialog.
+   *
+   * <p>The player can choose to resume play or leave the game, returning to the main menu.
+   * </p>
    */
   public void pauseGame() {
-    if (timer == null || !timer.isRunning()) {
+    if (!isRunning) {
       return;
     }
-    timer.stop();
+    stop();
 
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Game Paused");
@@ -203,17 +243,17 @@ public class Play implements GameLoopCallbacks {
     if (result.equals(leave)) {
       endGame();
     } else {
-      timer.start();
+      start();
     }
   }
 
   /**
-   * Renders the game board and active tetromino onto the canvas.
+   * Renders the game board and the active tetromino onto the canvas.
    *
-   * <p>Only redraws if the {@code dirty} flag is set.
+   * <p>Redraw is performed only when the {@code dirty} flag is set. This avoids unnecessary
+   * rendering work.
    * </p>
    */
-  @Override
   public void render() {
     if (!dirty || game == null) {
       return;
@@ -230,7 +270,7 @@ public class Play implements GameLoopCallbacks {
     final int cols = Game.WIDTH;
     final int rows = Game.HEIGHT;
 
-    // Compute uniform cell size and board offset (centre the board)
+    // Compute uniform cell size and board offset (center the board).
     double cell = Math.floor(Math.min(width / cols, height / rows));
     double boardWidth = cell * cols;
     double boardHeight = cell * rows;

@@ -1,69 +1,67 @@
 package com.example.tetris.helpers;
 
-import static com.example.tetris.models.Game.K;
-
 import javafx.animation.AnimationTimer;
 
 /**
- * Frame timer that drives automatic falling and delegates actions via {@link GameLoopCallbacks}.
+ * Base class for managing a fixed-step game loop using JavaFX's {@link AnimationTimer}.
  *
- * <p>Built on {@link javafx.animation.AnimationTimer} so ticks occur on the JavaFX
- * Application Thread. Maintains an accumulated time budget and executes one or more "fall steps"
- * per frame based on a decreasing fall interval (difficulty curve).</p>
+ * <p>Provides timing utilities such as accumulated nanoseconds since the last update,
+ * total elapsed time, and a running flag for pause/resume logic.
+ * </p>
  *
- * <h2>How it works</h2>
- * <ol>
- *   <li>Accumulate elapsed time since the last frame.</li>
- *   <li>While accumulated time ≥ fall interval:
- *     <ol>
- *       <li>Invoke {@link GameLoopCallbacks#softDrop()}.</li>
- *       <li>If blocked, invoke {@link GameLoopCallbacks#lock()} and, if it returns {@code true},
- *           call {@link GameLoopCallbacks#endGame()} and stop processing this frame.</li>
- *       <li><em>Implementations</em> of these callbacks should call
- *       {@link GameLoopCallbacks#markDirty()} whenever they mutate state so rendering can be gated
- *       efficiently.</li>
- *     </ol>
- *   </li>
- *   <li>Call {@link GameLoopCallbacks#render()} once per frame.</li>
- * </ol>
- *
- * <p>The fall interval shortens over time using a continuous level curve clamped by {@code Game.K}.
- * {@code K} must be ≥ 2 to avoid division by zero in the curve.</p>
+ * <p>Subclasses should implement {@link #gameLoop()} to update game state each frame.
+ * </p>
  */
-public class GameTimer extends AnimationTimer {
+public abstract class GameTimer extends AnimationTimer {
 
   /**
-   * Last timestamp recorded (nanoseconds).
-   */
-  private long last = 0L;
-  /**
-   * Accumulated nanoseconds since last fall step.
-   */
-  private long accNanos = 0L;
-  /**
-   * Total elapsed nanoseconds since the game started.
-   */
-  private long elapsedNanos = 0L;
-  /**
-   * Tracks whether the timer is actively running.
-   */
-  private boolean isRunning = false;
-
-  private final GameLoopCallbacks cb;
-
-  /**
-   * Create a new timer that delegates game actions to the provided callbacks.
+   * Last timestamp recorded in nanoseconds.
    *
-   * @param callbacks recipient of fall/lock/end/render/dirty events
+   * <p>Used to calculate frame-to-frame deltas.
+   * </p>
    */
-  public GameTimer(GameLoopCallbacks callbacks) {
-    this.cb = callbacks;
-  }
+  protected long last = 0L;
+  /**
+   * Accumulated nanoseconds since the last fixed-step update.
+   *
+   * <p>Typically consumed by gravity or physics calculations that run
+   * at intervals rather than every frame.
+   * </p>
+   */
+  protected long accumulateNanos = 0L;
+  /**
+   * Total elapsed nanoseconds since the timer started.
+   *
+   * <p>Preserved across pause/resume so difficulty scaling or
+   * time-based logic continues smoothly.
+   * </p>
+   */
+  protected long elapsedNanos = 0L;
+  /**
+   * Whether the timer is currently active.
+   *
+   * <p>Provides an easy check for pause/resume state in controllers.
+   * </p>
+   */
+  protected boolean isRunning = false;
 
   /**
-   * Per-frame tick called by the JavaFX runtime with a monotonic time source (nanoseconds).
+   * Called once per frame after time calculations are updated.
    *
-   * @param now current timestamp in nanoseconds (monotonic)
+   * <p>Subclasses should implement this method to apply game logic (e.g. gravity, collision,
+   * rendering).
+   * </p>
+   */
+  protected abstract void gameLoop();
+
+  /**
+   * Internal handler invoked each frame by JavaFX.
+   *
+   * <p>Computes the delta time since the last frame, updates
+   * {@link #elapsedNanos} and {@link #accumulateNanos}, then delegates to {@link #gameLoop()}.
+   * </p>
+   *
+   * @param now the current timestamp in nanoseconds
    */
   @Override
   public void handle(long now) {
@@ -71,90 +69,39 @@ public class GameTimer extends AnimationTimer {
       last = now;
       return;
     }
+
     long delta = now - last;
     last = now;
+
     elapsedNanos += delta;
-    long fallInterval = getFallIntervalNanos(elapsedNanos);
-    accNanos += delta;
-    // Perform one or more fall steps depending on accumulated time
-    while (accNanos >= fallInterval) {
-      accNanos -= fallInterval;
-      if (cb.softDrop()) {
-        continue;
-      }
-      if (cb.lock()) {
-        cb.endGame();
-        return;
-      }
-      // reset if lock happened
-      accNanos = 0L;
-    }
-    cb.render();
+    accumulateNanos += delta;
+    gameLoop();
   }
 
   /**
-   * Stops ticking and resets per-frame accumulators ({@code last}, {@code accNanos}).
+   * Stops the timer and resets per-frame accumulators ({@link #last}, {@link #accumulateNanos}).
    *
-   * <p><strong>Note:</strong> {@code elapsedNanos} is intentionally preserved so that
-   * gravity/difficulty is unchanged across pause/resume.</p>
+   * <p><strong>Note:</strong> {@link #elapsedNanos} is intentionally preserved
+   * so that time-based logic (e.g. gravity/difficulty) is unaffected when pausing and
+   * resuming.</p>
    */
   @Override
   public void stop() {
     last = 0L;
-    accNanos = 0L;
+    accumulateNanos = 0L;
     isRunning = false;
     super.stop();
   }
 
   /**
-   * Starts ticking on the JavaFX Application Thread. Sets an internal running flag for easy checks
-   * in controllers.
+   * Starts ticking on the JavaFX Application Thread.
+   *
+   * <p>Also sets {@link #isRunning} to {@code true} for convenience.
+   * </p>
    */
   @Override
   public void start() {
     isRunning = true;
     super.start();
-  }
-
-  /**
-   * Checks if the timer is currently running.
-   *
-   * @return true if running, false otherwise
-   */
-  public boolean isRunning() {
-    return isRunning;
-  }
-
-  /**
-   * Computes the current fall interval (nanoseconds per row) from total elapsed time.
-   *
-   * <p>Steps:</p>
-   * <ol>
-   *   <li>Convert elapsed nanoseconds to seconds.</li>
-   *   <li>Compute a continuous "level" that increases with time.</li>
-   *   <li>Clamp level to {@code [1, K]}.</li>
-   *   <li>Map level to seconds-per-row using an exponential decay.</li>
-   *   <li>Convert seconds back to nanoseconds.</li>
-   * </ol>
-   *
-   * @param elapsedNanos total elapsed time since the timer started (or since last reset)
-   *
-   * @return fall interval in nanoseconds (never zero)
-   */
-  private long getFallIntervalNanos(long elapsedNanos) {
-    // 1. Convert nanos -> seconds (as double for precision)
-    double elapsedSeconds = elapsedNanos / 1_000_000_000.0;
-
-    // 2. Continuous level curve
-    double level = (1.0 + Math.sqrt(1.0 + (2.0 * elapsedSeconds) / 15.0)) / 2.0;
-
-    // 3. Clamp so we don’t exceed max K levels
-    double clampedLevel = Math.min(level, K);
-
-    // 4. Seconds per row
-    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (K - 1));
-
-    // 5. Convert back to nanos
-    return (long) (secondsPerRow * 1_000_000_000.0);
   }
 }
