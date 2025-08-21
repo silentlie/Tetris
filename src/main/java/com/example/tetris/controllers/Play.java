@@ -152,6 +152,9 @@ public class Play extends GameTimer {
         do {
           moved = softDrop();
         } while (moved);
+        if (lock()) {
+          endGame();
+        }
         return true;
       }
       case P -> {
