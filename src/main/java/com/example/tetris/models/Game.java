@@ -186,17 +186,21 @@ public class Game {
    * <p>Adjust here if you later add T-Spins, back-to-back, combo bonuses, etc.</p>
    */
   private void clearLines() {
-    int cleared = (int) Arrays.stream(board)
-        .filter(row -> Arrays.stream(row).allMatch(Objects::nonNull))
-        .count();
-    TetrominoType[][] remaining = Arrays.stream(board)
-        .filter(row -> Arrays.stream(row).anyMatch(Objects::isNull))
-        .toArray(TetrominoType[][]::new);
-    for (int i = 0; i < cleared; i++) {
-      Arrays.fill(board[i], null);
+    int cleared = 0;
+    int writeY = board.length - 1;
+    for (int y = board.length - 1; y >= 0; y--) {
+      TetrominoType[] row = board[y];
+      if (Arrays.stream(row).noneMatch(Objects::isNull)) {
+        cleared++;
+      } else {
+        if (y != writeY) {
+          System.arraycopy(row, 0, board[writeY], 0, row.length);
+        }
+        writeY--;
+      }
     }
-    for (int i = 0; i < remaining.length; i++) {
-      System.arraycopy(remaining[i], 0, board[cleared + i], 0, remaining[i].length);
+    for (int y = 0; y < cleared; y++) {
+      Arrays.fill(board[y], null);
     }
     score += cleared;
   }

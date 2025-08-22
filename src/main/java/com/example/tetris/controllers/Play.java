@@ -8,6 +8,7 @@ import com.example.tetris.models.Game;
 import com.example.tetris.models.Tetromino;
 import com.example.tetris.models.TetrominoType;
 import java.util.Optional;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
@@ -213,12 +214,15 @@ public class Play extends GameTimer {
     if (isRunning) {
       stop();
     }
-    Alert alert = new Alert(Alert.AlertType.INFORMATION);
-    alert.setTitle("Game Over");
-    alert.setHeaderText("Your Score: " + game.getScore());
-    alert.setContentText("Thanks for playing!");
-    alert.showAndWait();
-    ScenesManager.getInstance().showMenuScene();
+    Platform.runLater(() -> {
+      Alert alert = new Alert(Alert.AlertType.INFORMATION);
+      alert.setTitle("Game Over");
+      alert.setHeaderText("Player: " + game.getPlayerName() + "\nYour Score: " + game.getScore());
+      alert.setContentText("Thanks for playing, " + game.getPlayerName() + "!");
+
+      alert.showAndWait();
+      ScenesManager.getInstance().showMenuScene();
+    });
   }
 
   /**
