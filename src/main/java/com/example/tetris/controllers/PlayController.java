@@ -33,8 +33,6 @@ public class PlayController extends GameTimer implements FxController {
 
   private AppContext ctx;
 
-
-
   @FXML
   private Pane boardHolder;
   @FXML
