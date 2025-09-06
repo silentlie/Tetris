@@ -1,6 +1,8 @@
 package com.example.tetris.controllers;
 
-import com.example.tetris.helpers.ScenesManager;
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.FxController;
+import com.example.tetris.helpers.Route;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -8,7 +10,9 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
 
-public final class Configuration {
+public final class ConfigurationController implements FxController {
+
+  private AppContext ctx;
 
   // sliders + numeric labels
   @FXML
@@ -105,7 +109,12 @@ public final class Configuration {
 
     // Back → load your main screen (hello-view.fxml)
     backButton.setOnAction(e -> {
-      ScenesManager.getInstance().showMenuScene();
+      ctx.show(Route.MENU);
     });
+  }
+
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
   }
 }

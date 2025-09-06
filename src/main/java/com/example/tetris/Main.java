@@ -1,6 +1,9 @@
 package com.example.tetris;
 
-import com.example.tetris.helpers.ScenesManager;
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.Route;
+import com.example.tetris.helpers.Router;
+import com.example.tetris.helpers.ViewLoader;
 import java.io.IOException;
 import java.util.Map;
 import javafx.application.Application;
@@ -8,48 +11,51 @@ import javafx.stage.Stage;
 import javafx.util.Duration;
 
 /**
- * Entry point for the Tetris application.
+ * Main entry point of the Tetris JavaFX application.
  *
- * <p>This class initializes JavaFX, configures the primary stage, and delegates scene
- * management to {@link ScenesManager}. The initial scene can be selected using named launch
- * parameters (e.g., {@code --scene=menu}).</p>
+ * <p>This class bootstraps JavaFX, sets up the primary stage, and delegates
+ * view navigation to {@link Router} and {@link ViewLoader}. The initial screen
+ * can be chosen with a named launch parameter (e.g. {@code --scene=menu}).</p>
  */
 public class Main extends Application {
 
   /**
-   * Launches the JavaFX Tetris application.
+   * Starts the Tetris application.
    *
-   * @param args command-line arguments; may include {@code --scene=<sceneName>} to select the
-   *             initial scene. Supported values are:
-   *             <ul>
-   *               <li>{@code splash} – shows only the splash screen</li>
-   *               <li>{@code menu} – shows the main menu</li>
-   *               <li>{@code highScores} – shows the high scores scene</li>
-   *               <li>{@code configuration} – shows the configuration scene</li>
-   *               <li>{@code play} – shows the gameplay scene</li>
-   *             </ul>
+   * <p>Accepts an optional named parameter {@code --scene=<name>} to control
+   * which scene is shown at startup. Supported values:</p>
+   * <ul>
+   *   <li>{@code splash} – show only the splash screen (15 s) and then exit</li>
+   *   <li>{@code menu} – show the main menu</li>
+   *   <li>{@code highScores} – show the high scores view</li>
+   *   <li>{@code configuration} – show the configuration view</li>
+   *   <li>{@code play} – start gameplay directly</li>
+   * </ul>
+   *
+   * @param args command-line arguments, may include {@code --scene=<name>}
    */
   public static void main(String[] args) {
     launch(args);
   }
 
   /**
-   * Initializes and displays the primary stage of the application.
+   * Configures and displays the primary stage.
    *
-   * <p>The startup behavior depends on the {@code --scene} launch parameter:</p>
+   * <p>If no {@code --scene} parameter is provided, the application shows a
+   * splash screen for three seconds and then switches to the main menu.</p>
+   *
+   * <p>If {@code --scene} is specified, behavior is as follows:</p>
    * <ul>
-   *   <li>No parameter – shows a splash screen for 3 seconds, then the main menu.</li>
-   *   <li>{@code splash} – shows the splash screen for 15 seconds, then closes the application.
-   *   </li>
-   *   <li>{@code menu} – shows the main menu scene.</li>
-   *   <li>{@code highScores} – shows the high scores scene.</li>
-   *   <li>{@code configuration} – shows the configuration scene.</li>
-   *   <li>{@code play} – shows the gameplay scene.</li>
+   *   <li>{@code splash} – show the splash screen for 15 s and then close</li>
+   *   <li>{@code menu} – show the main menu</li>
+   *   <li>{@code highScores} – show the high scores view</li>
+   *   <li>{@code configuration} – show the configuration view</li>
+   *   <li>{@code play} – show the gameplay view</li>
+   *   <li>other values – ignored (no scene shown)</li>
    * </ul>
    *
-   * @param primaryStage the primary stage provided by the JavaFX runtime
-   *
-   * @throws IOException if a required FXML file cannot be loaded
+   * @param primaryStage the main application window created by JavaFX
+   * @throws IOException if loading of an FXML resource fails
    */
   @Override
   public void start(Stage primaryStage) throws IOException {
@@ -61,17 +67,18 @@ public class Main extends Application {
     String scene = paramsNamed.get("scene");
     // debug only
     System.out.println(scene);
-    ScenesManager sceneManager = ScenesManager.getInstance();
-    sceneManager.init(primaryStage);
+    ViewLoader loader = new ViewLoader(Main.class);
+    Router router = new Router(primaryStage, loader);
+    AppContext ctx = new AppContext(router);
     if (null == scene) {
-      sceneManager.showSplashScreen(Duration.seconds(3), sceneManager::showMenuScene);
+      router.showSplash(Duration.seconds(3), () -> ctx.show(Route.MENU));
     } else {
       switch (scene) {
-        case "splash" -> sceneManager.showSplashScreen(null, primaryStage::close);
-        case "menu" -> sceneManager.showMenuScene();
-        case "highScores" -> sceneManager.showHighScoreScene();
-        case "configuration" -> sceneManager.showConfigurationScene();
-        case "play" -> sceneManager.showPlayScene();
+        case "splash" -> router.showSplash(null, primaryStage::close);
+        case "menu" -> ctx.show(Route.MENU);
+        case "highScores" -> ctx.show(Route.HIGH_SCORE);
+        case "configuration" -> ctx.show(Route.CONFIGURATION);
+        case "play" -> ctx.show(Route.PLAY);
         default -> {
         }
       }
