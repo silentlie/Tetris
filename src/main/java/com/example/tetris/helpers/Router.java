@@ -86,12 +86,14 @@ public class Router {
    *
    * <p>If {@code duration} is {@code null}, the splash defaults to 15 seconds.</p>
    *
+   * @param resourceAnchor a class whose classloader and package are used to
+   *                       resolve FXML resources (typically {@code Main.class})
    * @param duration how long the splash should remain visible; defaults to 15s if {@code null}
    * @param after    action to run after the splash closes; may be {@code null}
    */
-  public void showSplash(Duration duration, Runnable after) {
+  public void showSplash(Class<?> resourceAnchor, Duration duration, Runnable after) {
     String url = Objects.requireNonNull(
-        stage.getClass().getResource("splash.png"),
+        resourceAnchor.getResource("splash.png"),
         "Missing splash.png").toExternalForm();
 
     ImageView splashImage = new ImageView(new Image(url));
