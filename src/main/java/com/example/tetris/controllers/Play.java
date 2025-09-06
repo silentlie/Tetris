@@ -56,7 +56,9 @@ public class Play extends GameTimer {
       ScenesManager.getInstance().showMenuScene();
       return;
     }
-    game = new Game(result.get().trim());
+    long seed = System.nanoTime();
+    // TODO: using configuration instead of hard code
+    game = new Game(result.get().trim(), seed, 10, 20);
 
     // Resize canvas dynamically and trigger redraw.
     boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
@@ -274,8 +276,8 @@ public class Play extends GameTimer {
     g.setFill(Color.web("#111111"));
     g.fillRect(0, 0, width, height);
 
-    final int cols = Game.WIDTH;
-    final int rows = Game.HEIGHT;
+    final int cols = game.width;
+    final int rows = game.width;
 
     // Compute uniform cell size and board offset (center the board).
     double cell = Math.floor(Math.min(width / cols, height / rows));
