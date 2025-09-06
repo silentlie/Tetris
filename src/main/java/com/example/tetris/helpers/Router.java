@@ -91,7 +91,7 @@ public class Router {
    */
   public void showSplash(Duration duration, Runnable after) {
     String url = Objects.requireNonNull(
-        stage.getClass().getResource("/com/example/tetris/splash.png"),
+        stage.getClass().getResource("splash.png"),
         "Missing splash.png").toExternalForm();
 
     ImageView splashImage = new ImageView(new Image(url));
