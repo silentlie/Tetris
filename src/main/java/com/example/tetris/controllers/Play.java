@@ -277,7 +277,7 @@ public class Play extends GameTimer {
     g.fillRect(0, 0, width, height);
 
     final int cols = game.width;
-    final int rows = game.width;
+    final int rows = game.height;
 
     // Compute uniform cell size and board offset (center the board).
     double cell = Math.floor(Math.min(width / cols, height / rows));
