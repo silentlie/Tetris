@@ -1,6 +1,10 @@
 package com.example.tetris.models;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 import java.util.SplittableRandom;
 
@@ -24,6 +28,12 @@ import java.util.SplittableRandom;
  *   <li>Cells with {@code y < 0} (above the visible top) are permitted for spawn/entry.</li>
  *   <li>Out-of-bounds means {@code x < 0}, {@code x >= width}, or {@code y >= height}.</li>
  * </ul>
+ *
+ * <h2>Next Queue</h2>
+ *
+ * <p>The game maintains a fixed-size queue of the next three {@link TetrominoType}s.
+ * Spawning consumes the head and immediately refills the tail using the same seeded RNG,
+ * keeping the queue size constant. Use {@link #peekNextTypes()} for UI previews.</p>
  *
  * <h2>Scoring</h2>
  *
@@ -52,6 +62,9 @@ public class Game {
 
   /** Unused constant kept for compatibility; reserved for future tuning. */
   public static final int K = 10;
+
+  /** Number of upcoming pieces exposed to the UI (peek size). */
+  private static final int NEXT_QUEUE_SIZE = 3;
 
   /** Board width in cells. */
   public final int width;
@@ -82,6 +95,14 @@ public class Game {
    */
   private Tetromino tetromino;
 
+  /**
+   * FIFO of upcoming piece types (head = next to spawn).
+   *
+   * <p>Always kept at size {@value #NEXT_QUEUE_SIZE}: spawning removes the head
+   * and the tail is refilled from the seeded RNG.</p>
+   */
+  private final ArrayDeque<TetrominoType> nextQueue = new ArrayDeque<>(NEXT_QUEUE_SIZE);
+
   /** Seed used to initialize the piece generator for deterministic sequences. */
   private final long seed;
 
@@ -91,12 +112,14 @@ public class Game {
   /**
    * Constructs a new game instance and spawns the first tetromino.
    *
-   * <p>Piece order is fully determined by {@code seed}. Using the same {@code playerName}
-   * and {@code seed} on another machine will produce the same sequence and outcomes
-   * (given identical inputs).</p>
+   * <p>Initializes the board, fills the next-queue to exactly three items,
+   * then spawns the active piece by consuming the queue head. The queue is
+   * immediately refilled to maintain its fixed size.</p>
    *
    * @param playerName the player's display name (used by UI/scoreboard); must not be {@code null}
    * @param seed       the RNG seed controlling piece sequence (store this for replays/PvP)
+   * @param width      board width in cells
+   * @param height     board height in cells (visible rows)
    */
   public Game(String playerName, long seed, int width, int height) {
     this.playerName = playerName;
@@ -105,20 +128,36 @@ public class Game {
     this.width = width;
     this.height = height;
     board = new TetrominoType[height][width];
-    tetromino = newTetromino();
+    fillNextQueueToSize();
+    tetromino = spawnFromQueue();
+  }
+
+  /** Draws a random tetromino type using the seeded RNG (uniform; not 7-bag). */
+  private TetrominoType randomType() {
+    TetrominoType[] values = TetrominoType.values();
+    return values[rng.nextInt(values.length)];
+  }
+
+  /** Tops up {@link #nextQueue} to {@value #NEXT_QUEUE_SIZE} using {@link #randomType()}. */
+  private void fillNextQueueToSize() {
+    while (nextQueue.size() < NEXT_QUEUE_SIZE) {
+      nextQueue.addLast(randomType());
+    }
   }
 
   /**
-   * Spawns a new tetromino at the standard starting column, slightly above the visible board.
+   * Consumes the next piece from the queue and returns a newly spawned {@link Tetromino}.
    *
-   * <p>Pieces are selected by full randomness over {@link TetrominoType#values()} using the
-   * seeded RNG (not 7-bag). Blocks with {@code y < 0} are allowed until they enter the field.</p>
+   * <p>After removal, the queue is refilled to maintain its fixed size. The piece spawns
+   * centered horizontally with {@link Rotation#UP}, and may begin with {@code y < 0}
+   * (above the visible top) to allow entry.</p>
    *
-   * @return the newly spawned tetromino
+   * @return a freshly spawned tetromino determined by the queue head
    */
-  private Tetromino newTetromino() {
-    TetrominoType[] values = TetrominoType.values();
-    TetrominoType type = values[rng.nextInt(values.length)];
+  private Tetromino spawnFromQueue() {
+    TetrominoType type = nextQueue.removeFirst();
+    fillNextQueueToSize();
+    // Standard spawn position/orientation
     Cell position = new Cell(width / 2 - 1, -2);
     Rotation rotation = Rotation.UP;
     return new Tetromino(type, position, rotation);
@@ -208,8 +247,9 @@ public class Game {
   /**
    * Locks the active tetromino into the board, clears completed lines, and spawns the next piece.
    *
-   * <p><b>Game over</b> occurs if any block of the just-locked piece lies above the visible field
-   * ({@code y < 0}) or if the newly spawned tetromino cannot be placed legally.</p>
+   * <p>After locking, {@link #clearLines()} compacts the board and applies scoring/streak.
+   * Then a new piece is spawned from the next-queue; if its initial placement is illegal,
+   * the game ends.</p>
    *
    * @return {@code true} if the game is over after locking; {@code false} otherwise
    */
@@ -227,7 +267,7 @@ public class Game {
     }
     clearLines();
     // Spawn next piece; if it can't legally exist, game is over.
-    tetromino = newTetromino();
+    tetromino = spawnFromQueue();
     return gameOver || !checkPosition(tetromino);
   }
 
@@ -249,7 +289,8 @@ public class Game {
    * </ol>
    *
    * <p>This method defines the combo policy (per-line streak increments). Adjust here if you add
-   * classic baseline values, level multipliers, back-to-back bonuses, or T-Spins.</p>
+   * classic baseline values, level multipliers, back-to-back bonuses, T-Spins, or alternative
+   * combo semantics.</p>
    */
   private void clearLines() {
     int cleared = 0;
@@ -333,5 +374,17 @@ public class Game {
    */
   public long getSeed() {
     return seed;
+  }
+
+  /**
+   * Returns an immutable snapshot (head-first) of the upcoming piece types
+   * for UI rendering. The list size is always {@value #NEXT_QUEUE_SIZE}.
+   *
+   * @return an unmodifiable list of the next three tetromino types in spawn order
+   */
+  public List<TetrominoType> peekNextTypes() {
+    // Preserve queue order (head to tail) in a stable List
+    List<TetrominoType> list = new ArrayList<>(nextQueue);
+    return Collections.unmodifiableList(list);
   }
 }
