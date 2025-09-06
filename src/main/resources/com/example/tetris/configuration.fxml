@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
-  fx:controller="com.example.tetris.controllers.Configuration"
+  fx:controller="com.example.tetris.controllers.ConfigurationController"
   spacing="12" alignment="CENTER"
 >
   <padding>
