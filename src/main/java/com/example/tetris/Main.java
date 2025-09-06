@@ -71,10 +71,10 @@ public class Main extends Application {
     Router router = new Router(primaryStage, loader);
     AppContext ctx = new AppContext(router);
     if (null == scene) {
-      router.showSplash(Duration.seconds(3), () -> ctx.show(Route.MENU));
+      router.showSplash(Main.class, Duration.seconds(3), () -> ctx.show(Route.MENU));
     } else {
       switch (scene) {
-        case "splash" -> router.showSplash(null, primaryStage::close);
+        case "splash" -> router.showSplash(Main.class, null, primaryStage::close);
         case "menu" -> ctx.show(Route.MENU);
         case "highScores" -> ctx.show(Route.HIGH_SCORE);
         case "configuration" -> ctx.show(Route.CONFIGURATION);
