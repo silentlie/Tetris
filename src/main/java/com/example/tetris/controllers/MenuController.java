@@ -1,6 +1,8 @@
 package com.example.tetris.controllers;
 
-import com.example.tetris.helpers.ScenesManager;
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.FxController;
+import com.example.tetris.helpers.Route;
 import java.util.Optional;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,53 +12,60 @@ import javafx.scene.control.ButtonType;
 import javafx.stage.Stage;
 
 /**
- * Controller class for the main menu scene.
+ * Controller for the main menu scene.
  *
- * <p>This class handles user interaction with the menu buttons and delegates scene changes
- * to {@link ScenesManager}.</p>
+ * <p>This class handles user interaction with the menu buttons and delegates
+ * navigation through the shared {@link AppContext}.</p>
  */
-public class Menu {
+public class MenuController implements FxController {
+
+  private AppContext ctx;
+
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
+  }
 
   /**
-   * Handles the Play button click event.
+   * Handles the <strong>Play</strong> button click.
    *
-   * <p>Switches to the gameplay scene.</p>
+   * <p>Navigates to the gameplay scene.</p>
    *
    * @param actionEvent the event triggered by clicking the Play button
    */
   @FXML
   private void onPlayButtonClick(ActionEvent actionEvent) {
-    ScenesManager.getInstance().showPlayScene();
+    ctx.show(Route.PLAY);
   }
 
   /**
-   * Handles the High Scores button click event.
+   * Handles the <strong>High Scores</strong> button click.
    *
-   * <p>Switches to the high scores scene.</p>
+   * <p>Navigates to the high scores scene.</p>
    *
    * @param actionEvent the event triggered by clicking the High Scores button
    */
   @FXML
   private void onHighScoresButtonClick(ActionEvent actionEvent) {
-    ScenesManager.getInstance().showHighScoreScene();
+    ctx.show(Route.HIGH_SCORE);
   }
 
   /**
-   * Handles the Configuration button click event.
+   * Handles the <strong>Configuration</strong> button click.
    *
-   * <p>Switches to the Configuration scene.</p>
+   * <p>Navigates to the configuration scene.</p>
    *
    * @param actionEvent the event triggered by clicking the Configuration button
    */
   @FXML
   private void onConfigurationButtonClick(ActionEvent actionEvent) {
-    ScenesManager.getInstance().showConfigurationScene();
+    ctx.show(Route.CONFIGURATION);
   }
 
   /**
-   * Handles the Exit button click event.
+   * Handles the <strong>Exit</strong> button click.
    *
-   * <p>Shows a confirmation dialog. If the user confirms, the application is closed.</p>
+   * <p>Shows a confirmation dialog. If the user confirms, the application window is closed.</p>
    *
    * @param actionEvent the event triggered by clicking the Exit button
    */
