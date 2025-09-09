@@ -1,6 +1,8 @@
 package com.example.tetris.controllers;
 
-import com.example.tetris.helpers.ScenesManager;
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.FxController;
+import com.example.tetris.helpers.Route;
 import java.util.List;
 import javafx.fxml.FXML;
 import javafx.scene.Node;
@@ -10,7 +12,9 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 
-public class HighScore {
+public class HighScoreController  implements FxController {
+
+  private AppContext ctx;
 
   @FXML
   private VBox root;
@@ -58,12 +62,17 @@ public class HighScore {
 
   @FXML
   private void onBackButtonClick() {
-    ScenesManager.getInstance().showMenuScene();
+    ctx.show(Route.MENU);
   }
 
 
   private record Score(String name, int score) {
 
+  }
+
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
   }
 }
 
