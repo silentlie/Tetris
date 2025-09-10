@@ -131,7 +131,21 @@ public class ScenesManager {
    * Shows the settings scene.
    */
   public void showConfigurationScene() {
-    goFxml("configuration.fxml");
+    //goFxml("configuration.fxml");
+
+    // uses fxmlloaderfactory in /helpers
+    try{
+      FXMLLoader loader = FxmlLoaderFactory.configurationLoader();
+      if (primaryStage.getScene() != null) {
+          primaryStage.getScene().setRoot(loader.load());
+      } else {
+        primaryStage.setScene(new Scene(loader.load()));
+        primaryStage.setMaximized(true);
+        primaryStage.show();
+      }
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**
