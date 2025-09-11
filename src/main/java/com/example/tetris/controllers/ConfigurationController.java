@@ -3,22 +3,18 @@ package com.example.tetris.controllers;
 import com.example.tetris.helpers.AppContext;
 import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.Route;
-
-// imports for persistence
 import com.example.tetris.models.Configuration;
 import com.example.tetris.models.Configuration.PlayerType;
 import com.example.tetris.services.ConfigurationService;
-
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 
 public final class ConfigurationController implements FxController {
 
@@ -26,29 +22,44 @@ public final class ConfigurationController implements FxController {
 
   // ---------- UI elements ---------------
   // sliders with numeric labels
-  @FXML private Slider widthSlider;
-  @FXML private Label widthValue;
-  @FXML private Slider heightSlider;
-  @FXML private Label heightValue;
-  @FXML private Slider levelSlider;
-  @FXML private Label levelValue;
+  @FXML
+  private Slider widthSlider;
+  @FXML
+  private Label widthValue;
+  @FXML
+  private Slider heightSlider;
+  @FXML
+  private Label heightValue;
+  @FXML
+  private Slider levelSlider;
+  @FXML
+  private Label levelValue;
 
   // Checkbox toggles
-  @FXML private CheckBox musicCheck;
-  @FXML private CheckBox soundCheck;
-  @FXML private CheckBox extendedCheck;
+  @FXML
+  private CheckBox musicCheck;
+  @FXML
+  private CheckBox soundCheck;
+  @FXML
+  private CheckBox extendedCheck;
 
-  // Player selectors - drop downs for human, ai and external
-  @FXML private javafx.scene.control.ChoiceBox<PlayerType> player1Choice;
-  @FXML private javafx.scene.control.ChoiceBox<PlayerType> player2Choice;
+  // Player selectors - drop-downs for human, AI and external
+  @FXML
+  private javafx.scene.control.ChoiceBox<PlayerType> player1Choice;
+  @FXML
+  private javafx.scene.control.ChoiceBox<PlayerType> player2Choice;
 
   // Container for player 2 controls so they can be enabled/disabled as a group
-  @FXML private javafx.scene.layout.HBox player2Box;
+  @FXML
+  private javafx.scene.layout.HBox player2Box;
 
   // Action buttons
-  @FXML private Button saveButton;
-  @FXML private Button resetButton;
-  @FXML private Button backButton;
+  @FXML
+  private Button saveButton;
+  @FXML
+  private Button resetButton;
+  @FXML
+  private Button backButton;
 
 
   // --------- Internal code --------------
@@ -73,9 +84,12 @@ public final class ConfigurationController implements FxController {
     }
 
     // Set slider ranges
-    widthSlider.setMin(5); widthSlider.setMax(15);
-    heightSlider.setMin(15); heightSlider.setMax(30);
-    levelSlider.setMin(1); levelSlider.setMax(10);
+    widthSlider.setMin(5);
+    widthSlider.setMax(15);
+    heightSlider.setMin(15);
+    heightSlider.setMax(30);
+    levelSlider.setMin(1);
+    levelSlider.setMax(10);
 
     // Bind slider values to live numeric labels
     widthValue.textProperty().bind(
@@ -88,7 +102,6 @@ public final class ConfigurationController implements FxController {
         Bindings.createStringBinding(() -> String.valueOf((int) levelSlider.getValue()),
             levelSlider.valueProperty()));
 
-
     // load persisting configuration
     cachedConfig = service.load();
 
@@ -99,12 +112,10 @@ public final class ConfigurationController implements FxController {
     // apply loaded config to ui
     setFormFromConfig(cachedConfig);
 
-
     // Disable player 2 group if extend mode is off
     player2Box.setDisable(!extendedCheck.isSelected());
-    extendedCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-      player2Box.setDisable(!newVal);
-    });
+    extendedCheck.selectedProperty()
+        .addListener((obs, oldVal, newVal) -> player2Box.setDisable(!newVal));
 
     // Button actions
     saveButton.setOnAction(e -> handleSave());
@@ -134,7 +145,8 @@ public final class ConfigurationController implements FxController {
   private void handleBack() {
     Configuration current = formToConfig();
     if (!current.equals(cachedConfig)) {
-      Alert alert = new Alert(AlertType.CONFIRMATION, "You have unsaved changes. Do you want to discard them?", ButtonType.YES, ButtonType.NO);
+      Alert alert = new Alert(AlertType.CONFIRMATION,
+          "You have unsaved changes. Do you want to discard them?", ButtonType.YES, ButtonType.NO);
       alert.setTitle("Unsaved Changes");
       alert.setHeaderText(null);
 
@@ -150,7 +162,6 @@ public final class ConfigurationController implements FxController {
     }
   }
 
-
   // --------- Helpers -----------
 
   // Convert current UI state into a configuration record
@@ -158,15 +169,9 @@ public final class ConfigurationController implements FxController {
     PlayerType p1 = player1Choice.getValue() != null ? player1Choice.getValue() : PlayerType.HUMAN;
     PlayerType p2 = player2Choice.getValue() != null ? player2Choice.getValue() : PlayerType.HUMAN;
 
-    return new Configuration(
-        (int) widthSlider.getValue(),
-        (int) heightSlider.getValue(),
-        (int) levelSlider.getValue(),
-        musicCheck.isSelected(),
-        soundCheck.isSelected(),
-        extendedCheck.isSelected(),
-        p1, p2
-    );
+    return new Configuration((int) widthSlider.getValue(), (int) heightSlider.getValue(),
+        (int) levelSlider.getValue(), musicCheck.isSelected(), soundCheck.isSelected(),
+        extendedCheck.isSelected(), p1, p2);
   }
 
   // Apply a configuration record's values to the ui controls

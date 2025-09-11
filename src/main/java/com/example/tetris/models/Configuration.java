@@ -17,16 +17,8 @@ player 2 = HUMAN
 Define an enum PlayerType with values: HUMAN, AI, EXTERNAL
 */
 
-public record Configuration(
-    int width,
-    int height,
-    int level,
-    boolean music,
-    boolean sound,
-    boolean extendMode,
-    PlayerType player1,
-    PlayerType player2
-) {
+public record Configuration(int width, int height, int level, boolean music, boolean sound,
+                            boolean extendMode, PlayerType player1, PlayerType player2) {
 
   // Default settings
   public static final int DEFAULT_WIDTH = 10;
@@ -39,7 +31,7 @@ public record Configuration(
   public static final PlayerType DEFAULT_PLAYER2 = PlayerType.HUMAN;
 
   // Canonical Constructor for Validation
-  public Configuration{
+  public Configuration {
     if (width < 1) {
       throw new IllegalArgumentException("Width must be greater than or equal to 1");
     }
@@ -56,7 +48,8 @@ public record Configuration(
 
   // No-Argument Constructor with Default Values
   public Configuration() {
-    this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_LEVEL, DEFAULT_MUSIC, DEFAULT_SOUND, DEFAULT_EXTEND_MODE, DEFAULT_PLAYER1, DEFAULT_PLAYER2);
+    this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_LEVEL, DEFAULT_MUSIC, DEFAULT_SOUND,
+        DEFAULT_EXTEND_MODE, DEFAULT_PLAYER1, DEFAULT_PLAYER2);
   }
 
   // ENUM
