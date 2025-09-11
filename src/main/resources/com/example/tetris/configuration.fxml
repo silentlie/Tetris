@@ -14,8 +14,8 @@
 <VBox xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.controllers.ConfigurationController"
-  spacing="12" alignment="CENTER">
-
+  spacing="12" alignment="CENTER"
+>
   <padding>
     <Insets top="16" right="16" bottom="16" left="16"/>
   </padding>

@@ -2,8 +2,10 @@ package com.example.tetris.controllers;
 
 import static com.example.tetris.models.Game.K;
 
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.GameTimer;
-import com.example.tetris.helpers.ScenesManager;
+import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Game;
 import com.example.tetris.models.Tetromino;
 import com.example.tetris.models.TetrominoType;
@@ -27,7 +29,9 @@ import javafx.scene.paint.Color;
  * (gravity, soft drop, locking pieces).
  * </p>
  */
-public class Play extends GameTimer {
+public class PlayController extends GameTimer implements FxController {
+
+  private AppContext ctx;
 
   @FXML
   private Pane boardHolder;
@@ -53,10 +57,12 @@ public class Play extends GameTimer {
 
     Optional<String> result = dialog.showAndWait();
     if (result.isEmpty() || result.get().trim().isEmpty()) {
-      ScenesManager.getInstance().showMenuScene();
+      ctx.show(Route.MENU);
       return;
     }
-    game = new Game(result.get().trim());
+    long seed = System.nanoTime();
+    // TODO: using configuration instead of hard code
+    game = new Game(result.get().trim(), seed, 10, 20);
 
     // Resize canvas dynamically and trigger redraw.
     boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
@@ -221,7 +227,7 @@ public class Play extends GameTimer {
       alert.setContentText("Thanks for playing, " + game.getPlayerName() + "!");
 
       alert.showAndWait();
-      ScenesManager.getInstance().showMenuScene();
+      ctx.show(Route.MENU);
     });
   }
 
@@ -239,7 +245,7 @@ public class Play extends GameTimer {
 
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Game Paused");
-    alert.setHeaderText("Pause Menu");
+    alert.setHeaderText("Pause MenuController");
     alert.setContentText("What would you like to do?");
 
     ButtonType leave = new ButtonType("Leave", ButtonBar.ButtonData.OK_DONE);
@@ -274,8 +280,8 @@ public class Play extends GameTimer {
     g.setFill(Color.web("#111111"));
     g.fillRect(0, 0, width, height);
 
-    final int cols = Game.WIDTH;
-    final int rows = Game.HEIGHT;
+    final int cols = game.width;
+    final int rows = game.height;
 
     // Compute uniform cell size and board offset (center the board).
     double cell = Math.floor(Math.min(width / cols, height / rows));
@@ -313,5 +319,10 @@ public class Play extends GameTimer {
     }
 
     dirty = false;
+  }
+
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
   }
 }

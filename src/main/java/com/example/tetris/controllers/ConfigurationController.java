@@ -1,6 +1,8 @@
 package com.example.tetris.controllers;
 
-import com.example.tetris.helpers.ScenesManager;
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.FxController;
+import com.example.tetris.helpers.Route;
 
 // imports for persistence
 import com.example.tetris.models.Configuration;
@@ -18,9 +20,9 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+public final class ConfigurationController implements FxController {
 
-
-public final class ConfigurationController {
+  private AppContext ctx;
 
   // ---------- UI elements ---------------
   // sliders with numeric labels
@@ -57,6 +59,11 @@ public final class ConfigurationController {
   // Setter injection from FXMLLoader factory
   public void setConfigurationService(ConfigurationService service) {
     this.service = service;
+  }
+
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
   }
 
   @FXML
@@ -133,13 +140,13 @@ public final class ConfigurationController {
 
       alert.showAndWait().ifPresent(response -> {
         if (response == ButtonType.YES) {
-          ScenesManager.getInstance().showMenuScene();
+          ctx.show(Route.MENU);
         }
         // else do nothing - stay on screen
       });
 
     } else {
-      ScenesManager.getInstance().showMenuScene();
+      ctx.show(Route.MENU);
     }
   }
 
