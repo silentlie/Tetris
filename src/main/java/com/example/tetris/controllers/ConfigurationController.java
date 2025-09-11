@@ -22,7 +22,8 @@ import javafx.scene.control.ButtonType;
 
 public final class ConfigurationController {
 
-  // sliders + numeric labels
+  // ---------- UI elements ---------------
+  // sliders with numeric labels
   @FXML private Slider widthSlider;
   @FXML private Label widthValue;
   @FXML private Slider heightSlider;
@@ -30,26 +31,30 @@ public final class ConfigurationController {
   @FXML private Slider levelSlider;
   @FXML private Label levelValue;
 
-  // toggles
+  // Checkbox toggles
   @FXML private CheckBox musicCheck;
   @FXML private CheckBox soundCheck;
   @FXML private CheckBox extendedCheck;
 
-  // Player selectors
+  // Player selectors - drop downs for human, ai and external
   @FXML private javafx.scene.control.ChoiceBox<PlayerType> player1Choice;
   @FXML private javafx.scene.control.ChoiceBox<PlayerType> player2Choice;
+
+  // Container for player 2 controls so they can be enabled/disabled as a group
   @FXML private javafx.scene.layout.HBox player2Box;
 
-  // Config save, reset, back buttons
+  // Action buttons
   @FXML private Button saveButton;
   @FXML private Button resetButton;
   @FXML private Button backButton;
 
-  // Services and cached config
-  private ConfigurationService service;
-  private Configuration cachedConfig;
 
-  // Setter injection called FXMLLoader factory
+  // --------- Internal code --------------
+  // Services and cached config
+  private ConfigurationService service; // used to load/save config.json
+  private Configuration cachedConfig; // last saved/loaded config for change detection
+
+  // Setter injection from FXMLLoader factory
   public void setConfigurationService(ConfigurationService service) {
     this.service = service;
   }
@@ -65,7 +70,7 @@ public final class ConfigurationController {
     heightSlider.setMin(15); heightSlider.setMax(30);
     levelSlider.setMin(1); levelSlider.setMax(10);
 
-    // live numeric labels
+    // Bind slider values to live numeric labels
     widthValue.textProperty().bind(
         Bindings.createStringBinding(() -> String.valueOf((int) widthSlider.getValue()),
             widthSlider.valueProperty()));
@@ -77,15 +82,14 @@ public final class ConfigurationController {
             levelSlider.valueProperty()));
 
 
-    // load and display config
+    // load persisting configuration
     cachedConfig = service.load();
 
-
-    // Populate player choice boxes
+    // Populate player choice boxes with enum values
     player1Choice.getItems().setAll(PlayerType.values());
     player2Choice.getItems().setAll(PlayerType.values());
 
-    // apply config to ui
+    // apply loaded config to ui
     setFormFromConfig(cachedConfig);
 
 
@@ -95,19 +99,23 @@ public final class ConfigurationController {
       player2Box.setDisable(!newVal);
     });
 
-    // Button actions can now use service and cachedConfig
+    // Button actions
     saveButton.setOnAction(e -> handleSave());
     resetButton.setOnAction(e -> handleReset());
     backButton.setOnAction(e -> handleBack());
 
   }
 
+  // --------- Button Handlers ------------
+
+  // Save current form values to config.json and update cachedConfig
   private void handleSave() {
     Configuration updated = formToConfig();
     service.save(updated);
     cachedConfig = updated;
   }
 
+  // Reset form to default values, persist them and updated cachedConfig
   private void handleReset() {
     Configuration defaults = new Configuration();
     setFormFromConfig(defaults);
@@ -115,6 +123,7 @@ public final class ConfigurationController {
     cachedConfig = defaults;
   }
 
+  // If there are any unsaved changes, confirm before returning to menu
   private void handleBack() {
     Configuration current = formToConfig();
     if (!current.equals(cachedConfig)) {
@@ -134,7 +143,10 @@ public final class ConfigurationController {
     }
   }
 
-  // Helpers
+
+  // --------- Helpers -----------
+
+  // Convert current UI state into a configuration record
   private Configuration formToConfig() {
     PlayerType p1 = player1Choice.getValue() != null ? player1Choice.getValue() : PlayerType.HUMAN;
     PlayerType p2 = player2Choice.getValue() != null ? player2Choice.getValue() : PlayerType.HUMAN;
@@ -150,6 +162,7 @@ public final class ConfigurationController {
     );
   }
 
+  // Apply a configuration record's values to the ui controls
   private void setFormFromConfig(Configuration cfg) {
     widthSlider.setValue(cfg.width());
     heightSlider.setValue(cfg.height());
