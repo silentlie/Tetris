@@ -13,10 +13,11 @@ import java.nio.file.CopyOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.function.Consumer;
 
 /**
- * Utility methods for serializing/deserializing JSON using a single, preconfigured Jackson
- * {@link ObjectMapper}.
+ * Utility methods for serializing/deserializing JSON via a single, shared {@link ObjectMapper}
+ * (singleton).
  *
  * <p><strong>TypeReference quick guide (for Lists/Maps):</strong>
  * Java's type erasure hides generic parameters at runtime, so Jackson needs extra help to
@@ -25,44 +26,63 @@ import java.nio.file.StandardCopyOption;
  * <pre>{@code
  * // List<T>
  * List<Configuration> list =
- *     JsonUtil.fromJson(json, new TypeReference<List<Configuration>>() {});
+ *     JsonUtil.getInstance().fromJson(json, new TypeReference<List<Configuration>>() {});
  *
  * // Map<K,V>
  * Map<String, Configuration> map =
- *     JsonUtil.fromJson(json, new TypeReference<Map<String, Configuration>>() {});
+ *     JsonUtil.getInstance().fromJson(json, new TypeReference<Map<String, Configuration>>() {});
  *
  * // Nested generics (e.g., Map<String, List<Configuration>>)
  * Map<String, List<Configuration>> nested =
- *     JsonUtil.fromJson(json, new TypeReference<Map<String, List<Configuration>>>() {});
+ *     JsonUtil.getInstance().fromJson(json, new TypeReference<Map<String, List<Configuration>>>() {});
  *
  * // (Optional) reuse a constant to avoid reallocating:
  * private static final TypeReference<List<Configuration>> LIST_OF_CFG =
  *     new TypeReference<>() {};
- * List<Configuration> again = JsonUtil.fromJson(json, LIST_OF_CFG);
+ * List<Configuration> again = JsonUtil.getInstance().fromJson(json, LIST_OF_CFG);
  * }</pre>
  *
- * <p><strong>Thread-safety:</strong> The mapper is configured once and then used concurrently.
+ * <p><strong>Thread-safety:</strong> The single mapper is configured once (ideally at startup)
+ * and then used concurrently.
  * <br><strong>Pretty printing:</strong> {@link SerializationFeature#INDENT_OUTPUT} is enabled by
  * default.
  */
-public class JsonUtil {
+public final class JsonUtil {
+
+  /**
+   * The one and only instance.
+   */
+  private static final JsonUtil INSTANCE = new JsonUtil();
 
   /**
    * Shared, preconfigured {@link ObjectMapper}.
-   *
-   * <p>Defaults:
-   * <ul>
-   *   <li>{@link SerializationFeature#INDENT_OUTPUT} enabled</li>
-   * </ul>
-   * Add modules (e.g., Java Time, Kotlin) here if your project needs them.
    */
-  private static final ObjectMapper MAPPER = new ObjectMapper().enable(
-      SerializationFeature.INDENT_OUTPUT);
+  private final ObjectMapper mapper;
 
   /**
-   * Hidden constructor — this is a static utility.
+   * Hidden constructor — singleton.
    */
   private JsonUtil() {
+    this.mapper = new ObjectMapper()
+        .enable(SerializationFeature.INDENT_OUTPUT);
+    // Add modules here if your project needs them, e.g. JavaTimeModule.
+    // mapper.registerModule(new JavaTimeModule());
+  }
+
+  /**
+   * Access the singleton instance.
+   */
+  public static JsonUtil getInstance() {
+    return INSTANCE;
+  }
+
+  /**
+   * Optional: mutate mapper configuration <em>once at startup</em> (before concurrent use). Keep
+   * usage disciplined to preserve thread-safety guarantees.
+   */
+  public synchronized JsonUtil configure(Consumer<ObjectMapper> configurer) {
+    configurer.accept(this.mapper);
+    return this;
   }
 
   /**
@@ -72,9 +92,9 @@ public class JsonUtil {
    * @return JSON string
    * @throws UncheckedIOException if serialization fails
    */
-  public static String toJson(Object value) {
+  public String toJson(Object value) {
     try {
-      return MAPPER.writeValueAsString(value);
+      return mapper.writeValueAsString(value);
     } catch (JsonProcessingException e) {
       throw wrap(e, "Serializing to JSON string");
     }
@@ -91,9 +111,9 @@ public class JsonUtil {
    * @return deserialized instance
    * @throws UncheckedIOException if parsing fails
    */
-  public static <T> T fromJson(String json, Class<T> type) {
+  public <T> T fromJson(String json, Class<T> type) {
     try {
-      return MAPPER.readValue(json, type);
+      return mapper.readValue(json, type);
     } catch (IOException e) {
       throw wrap(e, "Parsing JSON string -> " + type.getSimpleName());
     }
@@ -110,15 +130,15 @@ public class JsonUtil {
    * <pre>{@code
    * // List<T>
    * List<Configuration> cfgs =
-   *     JsonUtil.fromJson(json, new TypeReference<List<Configuration>>() {});
+   *     JsonUtil.getInstance().fromJson(json, new TypeReference<List<Configuration>>() {});
    *
    * // Map<K,V>
    * Map<String, Configuration> byName =
-   *     JsonUtil.fromJson(json, new TypeReference<Map<String, Configuration>>() {});
+   *     JsonUtil.getInstance().fromJson(json, new TypeReference<Map<String, Configuration>>() {});
    *
    * // Nested generics
    * Map<String, List<Configuration>> grouped =
-   *     JsonUtil.fromJson(json, new TypeReference<Map<String, List<Configuration>>>() {});
+   *     JsonUtil.getInstance().fromJson(json, new TypeReference<Map<String, List<Configuration>>>() {});
    * }</pre>
    *
    * @param json    JSON content
@@ -127,9 +147,9 @@ public class JsonUtil {
    * @return deserialized instance
    * @throws UncheckedIOException if parsing fails
    */
-  public static <T> T fromJson(String json, TypeReference<T> typeRef) {
+  public <T> T fromJson(String json, TypeReference<T> typeRef) {
     try {
-      return MAPPER.readValue(json, typeRef);
+      return mapper.readValue(json, typeRef);
     } catch (IOException e) {
       throw wrap(e, "Parsing JSON string -> " + typeRef.getType());
     }
@@ -143,13 +163,13 @@ public class JsonUtil {
    * @param value object to serialize
    * @throws UncheckedIOException if writing fails
    */
-  public static void write(Path path, Object value) {
+  public void write(Path path, Object value) {
     try {
       Files.createDirectories(path.getParent());
       // Atomic-ish write: write temp then move
       Path tmp = tempSibling(path);
       try (BufferedWriter w = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8)) {
-        MAPPER.writeValue(w, value);
+        mapper.writeValue(w, value);
       }
       Files.move(tmp, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
     } catch (IOException e) {
@@ -166,9 +186,9 @@ public class JsonUtil {
    * @return deserialized instance
    * @throws UncheckedIOException if reading or parsing fails
    */
-  public static <T> T read(Path path, Class<T> type) {
+  public <T> T read(Path path, Class<T> type) {
     try (BufferedReader r = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-      return MAPPER.readValue(r, type);
+      return mapper.readValue(r, type);
     } catch (IOException e) {
       throw wrap(e, "Reading JSON from " + path + " -> " + type.getSimpleName());
     }
@@ -182,15 +202,15 @@ public class JsonUtil {
    * <pre>{@code
    * // List<T>
    * List<Configuration> list =
-   *     JsonUtil.read(path, new TypeReference<List<Configuration>>() {});
+   *     JsonUtil.getInstance().read(path, new TypeReference<List<Configuration>>() {});
    *
    * // Map<K,V>
    * Map<String, Configuration> map =
-   *     JsonUtil.read(path, new TypeReference<Map<String, Configuration>>() {});
+   *     JsonUtil.getInstance().read(path, new TypeReference<Map<String, Configuration>>() {});
    *
    * // Deeply nested
    * Map<String, List<Configuration>> nested =
-   *     JsonUtil.read(path, new TypeReference<Map<String, List<Configuration>>>() {});
+   *     JsonUtil.getInstance().read(path, new TypeReference<Map<String, List<Configuration>>>() {});
    * }</pre>
    *
    * @param path    source path
@@ -199,9 +219,9 @@ public class JsonUtil {
    * @return deserialized instance
    * @throws UncheckedIOException if reading or parsing fails
    */
-  public static <T> T read(Path path, TypeReference<T> typeRef) {
+  public <T> T read(Path path, TypeReference<T> typeRef) {
     try (BufferedReader r = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-      return MAPPER.readValue(r, typeRef);
+      return mapper.readValue(r, typeRef);
     } catch (IOException e) {
       throw wrap(e, "Reading JSON from " + path + " -> " + typeRef.getType());
     }
