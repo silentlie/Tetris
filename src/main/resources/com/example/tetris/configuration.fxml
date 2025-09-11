@@ -9,11 +9,13 @@
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+
+<?import javafx.scene.control.ChoiceBox?>
 <VBox xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.controllers.ConfigurationController"
-  spacing="12" alignment="CENTER"
->
+  spacing="12" alignment="CENTER">
+
   <padding>
     <Insets top="16" right="16" bottom="16" left="16"/>
   </padding>
@@ -44,40 +46,70 @@
     <Label fx:id="levelValue" text="1"/>
   </HBox>
 
+  <!-- Toggles -->
+  <HBox spacing="16" alignment="CENTER_LEFT">
+    <CheckBox fx:id="musicCheck" text="Music"/>
+    <CheckBox fx:id="soundCheck" text="Sound"/>
+    <CheckBox fx:id="extendedCheck" text="Extend Mode"/>
+  </HBox>
+
+  <!-- Player Selector -->
   <!-- Toggles with On/Off mirror -->
   <GridPane hgap="10" vgap="8">
     <columnConstraints>
       <ColumnConstraints minWidth="220"/>
       <ColumnConstraints minWidth="100"/>
     </columnConstraints>
-    <Label text="Music (On/Off):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
-      <CheckBox fx:id="musicCheck"/>
-      <Label fx:id="musicValue" text="On"/>
-    </HBox>
 
-    <Label text="Sound Effect (On/Off):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="1" GridPane.columnIndex="1">
-      <CheckBox fx:id="soundCheck"/>
-      <Label fx:id="soundValue" text="On"/>
-    </HBox>
+    <Label text="Player 1:" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
+    <ChoiceBox fx:id="player1Choice" GridPane.rowIndex="0" GridPane.columnIndex="1"/>
 
-    <Label text="AI Play (On/Off):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">
-      <CheckBox fx:id="aiPlayCheck"/>
-      <Label fx:id="aiPlayValue" text="Off"/>
-    </HBox>
+    <Label text="Player 2:" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
 
-    <Label text="Extend Mode (On/Off):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="3" GridPane.columnIndex="1">
-      <CheckBox fx:id="extendedCheck"/>
-      <Label fx:id="extendedValue" text="Off"/>
+    <!-- Group all player 2 controls -->
+    <HBox fx:id="player2Box" spacing="8" alignment="CENTER_LEFT"
+      GridPane.rowIndex="1" GridPane.columnIndex="1">
+      <ChoiceBox fx:id="player2Choice"/>
     </HBox>
   </GridPane>
 
+
+  <!-- Actions -->
   <HBox spacing="12" alignment="CENTER">
     <Button fx:id="saveButton" text="Save"/>
     <Button fx:id="resetButton" text="Reset"/>
     <Button fx:id="backButton" text="Back"/>
   </HBox>
 </VBox>
+
+<!--    <Label text="Music (On/Off):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>-->
+<!--    <HBox spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">-->
+<!--      <CheckBox fx:id="musicCheck"/>-->
+<!--      <Label fx:id="musicValue" text="On"/>-->
+<!--    </HBox>-->
+
+<!--    <Label text="Sound Effect (On/Off):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>-->
+<!--    <HBox spacing="8" GridPane.rowIndex="1" GridPane.columnIndex="1">-->
+<!--      <CheckBox fx:id="soundCheck"/>-->
+<!--      <Label fx:id="soundValue" text="On"/>-->
+<!--    </HBox>-->
+
+<!--    <Label text="AI Play (On/Off):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>-->
+<!--    <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">-->
+<!--      <CheckBox fx:id="aiPlayCheck"/>-->
+<!--      <Label fx:id="aiPlayValue" text="Off"/>-->
+<!--    </HBox>-->
+
+<!--    <Label text="Extend Mode (On/Off):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>-->
+<!--    <HBox spacing="8" GridPane.rowIndex="3" GridPane.columnIndex="1">-->
+<!--      <CheckBox fx:id="extendedCheck"/>-->
+<!--      <Label fx:id="extendedValue" text="Off"/>-->
+<!--    </HBox>-->
+<!--  </GridPane>-->
+
+<!--  <HBox spacing="12" alignment="CENTER">-->
+<!--    <Button fx:id="saveButton" text="Save"/>-->
+<!--    <Button fx:id="resetButton" text="Reset"/>-->
+<!--    <Button fx:id="backButton" text="Back"/>-->
+<!--  </HBox>-->
+

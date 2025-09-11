@@ -33,9 +33,14 @@ public final class ConfigurationController {
   // toggles
   @FXML private CheckBox musicCheck;
   @FXML private CheckBox soundCheck;
-  @FXML private CheckBox aiPlayCheck;
   @FXML private CheckBox extendedCheck;
 
+  // Player selectors
+  @FXML private javafx.scene.control.ChoiceBox<PlayerType> player1Choice;
+  @FXML private javafx.scene.control.ChoiceBox<PlayerType> player2Choice;
+  @FXML private javafx.scene.layout.HBox player2Box;
+
+  // Config save, reset, back buttons
   @FXML private Button saveButton;
   @FXML private Button resetButton;
   @FXML private Button backButton;
@@ -55,7 +60,6 @@ public final class ConfigurationController {
       throw new IllegalStateException("ConfigurationService not injected.");
     }
 
-
     // Set slider ranges
     widthSlider.setMin(5); widthSlider.setMax(15);
     heightSlider.setMin(15); heightSlider.setMax(30);
@@ -73,16 +77,23 @@ public final class ConfigurationController {
             levelSlider.valueProperty()));
 
 
-
     // load and display config
     cachedConfig = service.load();
+
+
+    // Populate player choice boxes
+    player1Choice.getItems().setAll(PlayerType.values());
+    player2Choice.getItems().setAll(PlayerType.values());
+
+    // apply config to ui
     setFormFromConfig(cachedConfig);
 
-    // Disable Player 2 option when extend mode is off
+
+    // Disable player 2 group if extend mode is off
+    player2Box.setDisable(!extendedCheck.isSelected());
     extendedCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
-      aiPlayCheck.setDisable(!newVal);
+      player2Box.setDisable(!newVal);
     });
-    aiPlayCheck.setDisable(!extendedCheck.isSelected()); // initialise state
 
     // Button actions can now use service and cachedConfig
     saveButton.setOnAction(e -> handleSave());
@@ -124,8 +135,10 @@ public final class ConfigurationController {
   }
 
   // Helpers
-
   private Configuration formToConfig() {
+    PlayerType p1 = player1Choice.getValue() != null ? player1Choice.getValue() : PlayerType.HUMAN;
+    PlayerType p2 = player2Choice.getValue() != null ? player2Choice.getValue() : PlayerType.HUMAN;
+
     return new Configuration(
         (int) widthSlider.getValue(),
         (int) heightSlider.getValue(),
@@ -133,8 +146,7 @@ public final class ConfigurationController {
         musicCheck.isSelected(),
         soundCheck.isSelected(),
         extendedCheck.isSelected(),
-        Configuration.PlayerType.HUMAN,
-        aiPlayCheck.isSelected() ? Configuration.PlayerType.AI : Configuration.PlayerType.HUMAN
+        p1, p2
     );
   }
 
@@ -145,6 +157,8 @@ public final class ConfigurationController {
     musicCheck.setSelected(cfg.music());
     soundCheck.setSelected(cfg.sound());
     extendedCheck.setSelected(cfg.extendMode());
-    aiPlayCheck.setSelected(cfg.player2() == Configuration.PlayerType.AI);
+    player1Choice.setValue(cfg.player1());
+    player2Choice.setValue(cfg.player2());
+    player2Box.setDisable(!cfg.extendMode());
   }
 }

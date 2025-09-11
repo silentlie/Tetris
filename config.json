@@ -4,7 +4,7 @@
   "level" : 1,
   "music" : true,
   "sound" : true,
-  "extendMode" : false,
-  "player1" : "HUMAN",
-  "player2" : "HUMAN"
+  "extendMode" : true,
+  "player1" : "AI",
+  "player2" : "EXTERNAL"
 }
