@@ -26,20 +26,35 @@ import java.util.function.Consumer;
  * <pre>{@code
  * // List<T>
  * List<Configuration> list =
- *     JsonUtil.getInstance().fromJson(json, new TypeReference<List<Configuration>>() {});
+ *     JsonUtil.getInstance().fromJson(
+ *         json,
+ *         new TypeReference<Map<String,
+ *         List<Configuration>>>() {}
+ *     );
  *
  * // Map<K,V>
  * Map<String, Configuration> map =
- *     JsonUtil.getInstance().fromJson(json, new TypeReference<Map<String, Configuration>>() {});
+ *     JsonUtil.getInstance().fromJson(
+ *         json,
+ *         new TypeReference<Map<String,
+ *         Configuration>>() {}
+ *     );
  *
  * // Nested generics (e.g., Map<String, List<Configuration>>)
  * Map<String, List<Configuration>> nested =
- *     JsonUtil.getInstance().fromJson(json, new TypeReference<Map<String, List<Configuration>>>() {});
+ *     JsonUtil.getInstance().fromJson(
+ *         json,
+ *         new TypeReference<Map<String,
+ *         List<Configuration>>>() {}
+ *     );
  *
  * // (Optional) reuse a constant to avoid reallocating:
  * private static final TypeReference<List<Configuration>> LIST_OF_CFG =
  *     new TypeReference<>() {};
- * List<Configuration> again = JsonUtil.getInstance().fromJson(json, LIST_OF_CFG);
+ * List<Configuration> again = JsonUtil.getInstance().fromJson(
+ *     json,
+ *     LIST_OF_CFG
+ * );
  * }</pre>
  *
  * <p><strong>Thread-safety:</strong> The single mapper is configured once (ideally at startup)
