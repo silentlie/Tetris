@@ -1,13 +1,10 @@
 package com.example.tetris.services;
 
-import com.example.tetris.helpers.AppContext;
-import com.example.tetris.helpers.ConfigurationCache;
 import com.example.tetris.models.Configuration;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.example.tetris.helpers.JsonUtil;
 
-import java.io.IOException;
+
 import java.nio.file.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -21,12 +18,11 @@ import java.util.logging.Logger;
 
 public class JsonConfigurationService implements ConfigurationService {
 
-  private static final Logger LOG = Logger.getLogger(JsonConfigurationService.class.getName()); // Logger for warnings/info messages
-  private static final String CONFIG_FILE_NAME = "config.json"; // File name of the JSON config file
+  private static final Logger LOG = Logger.getLogger(JsonConfigurationService.class.getName());
+  private static final String CONFIG_FILE_NAME = "config.json";
 
-  private final Path configPath;  // Path to the config file in the root directory.
-  private final ObjectMapper mapper = new ObjectMapper().findAndRegisterModules();  // Jackson ObjectMapper used for JSON serialisation/deserialisation
-
+  private final Path configPath;
+  private final JsonUtil json = JsonUtil.getInstance();
   /**
    * Constructor that determines the absolute path of config.json
    * in the application root directory
@@ -51,7 +47,7 @@ public class JsonConfigurationService implements ConfigurationService {
         return createAndSaveDefault();
       }
       // Parse existing JSON into a Configuration object
-      return mapper.readValue(configPath.toFile(), Configuration.class);
+      return json.read(configPath, Configuration.class);
     } catch(Exception e) {
       // On any error, log and reset to defaults
       LOG.warning("Failed to load config.json: Using defaults. Reason: " + e.getMessage());
@@ -66,32 +62,8 @@ public class JsonConfigurationService implements ConfigurationService {
    */
   @Override
   public void save(Configuration config) {
-    Path dir = configPath.getParent();
-    if (dir == null) dir = Path.of(".");  // fallback to current directory
-
-    try {
-      // Write json to a temporary file in the same directory
-      Path temp = Files.createTempFile(dir, "config", ".tmp");
-      try {
-        mapper.writerWithDefaultPrettyPrinter().writeValue(temp.toFile(), config);
-        try {
-          // Atomic move: replace old file with temp in one step
-          Files.move(temp, configPath,
-                      StandardCopyOption.REPLACE_EXISTING,
-                      StandardCopyOption.ATOMIC_MOVE);
-        } catch (AtomicMoveNotSupportedException amnse) {
-          // If atomic moves are not supported then fallback to regular replace
-          LOG.log(Level.INFO, "Atomic move not supported; falling back to non-atomic replace.");
-          Files.move(temp, configPath, StandardCopyOption.REPLACE_EXISTING);
-        }
-      } finally {
-        // Best effort to clean-up and remove temp files if it was not moved
-        try { Files.deleteIfExists(temp);} catch(IOException ignore) {}
-      }
-    } catch (IOException ioe) {
-      // Error if saving completely fails
-      throw new RuntimeException("Failed to save configuration to " + configPath, ioe);
-    }
+    // Atomic write handled inside Jsonutil.write
+    json.write(configPath, config);
   }
 
   /**
