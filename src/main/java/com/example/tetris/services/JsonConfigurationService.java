@@ -1,5 +1,7 @@
 package com.example.tetris.services;
 
+import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.ConfigurationCache;
 import com.example.tetris.models.Configuration;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -62,8 +64,6 @@ public class JsonConfigurationService implements ConfigurationService {
    * Saves to provided Configuration to config.json.
    * Uses a temporary file and atomic move to avoid any corruption/issues.
    */
-
-
   @Override
   public void save(Configuration config) {
     Path dir = configPath.getParent();
