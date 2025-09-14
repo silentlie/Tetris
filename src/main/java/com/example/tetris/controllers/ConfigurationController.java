@@ -18,9 +18,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.control.Slider;
-import javafx.scene.control.ChoiceBox;
+
 
 
 /**
