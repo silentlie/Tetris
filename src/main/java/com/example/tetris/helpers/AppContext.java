@@ -1,5 +1,7 @@
 package com.example.tetris.helpers;
 
+import com.example.tetris.services.ConfigurationService;
+
 /**
  * Shared application context passed to all controllers.
  *
@@ -31,14 +33,21 @@ package com.example.tetris.helpers;
  */
 public class AppContext {
   private final Router router;
+  private final ConfigurationService configurationService;
+  private final ConfigurationCache configurationCache;
 
   /**
    * Creates a new application context bound to the given router.
    *
    * @param router the router responsible for navigation
    */
-  public AppContext(Router router) {
+  public AppContext(Router router,
+                    ConfigurationService configurationService,
+                    ConfigurationCache configurationCache) {
+
     this.router = router;
+    this.configurationService = configurationService;
+    this.configurationCache = configurationCache;
   }
 
   /**
@@ -48,5 +57,13 @@ public class AppContext {
    */
   public void show(Route route) {
     router.show(route, this);
+  }
+
+  public ConfigurationService getConfigurationService() {
+    return configurationService;
+  }
+
+  public ConfigurationCache getConfigurationCache() {
+    return configurationCache;
   }
 }

@@ -1,14 +1,18 @@
 package com.example.tetris;
 
 import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.ConfigurationCache;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.helpers.Router;
 import com.example.tetris.helpers.ViewLoader;
+import com.example.tetris.services.ConfigurationService;
+import com.example.tetris.services.JsonConfigurationService;
 import java.io.IOException;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 
 /**
  * Main entry point of the Tetris JavaFX application.
@@ -69,7 +73,14 @@ public class Main extends Application {
     System.out.println(scene);
     ViewLoader loader = new ViewLoader(Main.class);
     Router router = new Router(primaryStage, loader);
-    AppContext ctx = new AppContext(router);
+
+    // Build persistence
+    ConfigurationService configService = new JsonConfigurationService();
+    ConfigurationCache configCache = new ConfigurationCache();
+
+    // Pass service and cache into AppContext
+    AppContext ctx = new AppContext(router, configService, configCache);
+
     if (null == scene) {
       router.showSplash(Main.class, Duration.seconds(3), () -> ctx.show(Route.MENU));
     } else {

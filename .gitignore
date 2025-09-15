@@ -41,3 +41,4 @@ build/
 highScores
 settings.properties
 save
+config.json

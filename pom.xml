@@ -64,11 +64,7 @@
   </build>
   <dependencies>
 
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-      <version>2.20.0</version>
-    </dependency>
+
     <!-- JavaFX Core -->
     <dependency>
       <artifactId>javafx-controls</artifactId>
@@ -80,6 +76,14 @@
       <groupId>org.openjfx</groupId>
       <version>21.0.7</version>
     </dependency>
+
+    <!-- Jackson -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.17.1</version>
+    </dependency>
+
 
     <!-- JUnit -->
     <dependency>

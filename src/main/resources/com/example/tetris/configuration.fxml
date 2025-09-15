@@ -1,83 +1,91 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.Slider?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.VBox?>
-<VBox xmlns="http://javafx.com/javafx"
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<GridPane xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.controllers.ConfigurationController"
-  spacing="12" alignment="CENTER"
->
+  hgap="12" vgap="10" prefWidth="720" prefHeight="460"
+  styleClass="config-root">
+
+  <!-- 3 columns -->
+  <columnConstraints>
+    <ColumnConstraints percentWidth="33.33"/>
+    <ColumnConstraints percentWidth="33.33"/>
+    <ColumnConstraints percentWidth="33.34"/>
+  </columnConstraints>
+
+  <!-- 10 equal-height rows -->
+  <rowConstraints>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="10"/>
+  </rowConstraints>
+
   <padding>
     <Insets top="16" right="16" bottom="16" left="16"/>
   </padding>
 
-  <Label text="Configuration" style="-fx-font-size: 20px; -fx-font-weight: bold;"/>
+  <!-- Header spans all 3 columns -->
+  <Label text="Configuration"
+    style="-fx-font-size: 20px; -fx-font-weight: bold;"
+    GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="3"/>
 
-  <!-- Field Width -->
-  <HBox spacing="10" alignment="CENTER_LEFT">
-    <Label text="Field Width (No of cells):"/>
-    <Slider fx:id="widthSlider" min="5" max="15" majorTickUnit="1" blockIncrement="1"
-      showTickMarks="true" showTickLabels="true" snapToTicks="true" prefWidth="320"/>
-    <Label fx:id="widthValue" text="10"/>
+  <!-- Width -->
+  <Label text="Field Width (No of cells):"
+    GridPane.rowIndex="1" GridPane.columnIndex="0"/>
+  <Slider fx:id="widthSlider" min="5" max="15" majorTickUnit="1" blockIncrement="1"
+    showTickMarks="true" showTickLabels="true" snapToTicks="true"
+    GridPane.rowIndex="1" GridPane.columnIndex="1"/>
+  <Label fx:id="widthValue" text="10"
+    GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+
+  <!-- Height -->
+  <Label text="Field Height (No of cells):"
+    GridPane.rowIndex="2" GridPane.columnIndex="0"/>
+  <Slider fx:id="heightSlider" min="15" max="30" majorTickUnit="1" blockIncrement="1"
+    showTickMarks="true" showTickLabels="true" snapToTicks="true"
+    GridPane.rowIndex="2" GridPane.columnIndex="1"/>
+  <Label fx:id="heightValue" text="20"
+    GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+
+  <!-- Level -->
+  <Label text="Game Level:"
+    GridPane.rowIndex="3" GridPane.columnIndex="0"/>
+  <Slider fx:id="levelSlider" min="1" max="10" majorTickUnit="1" blockIncrement="1"
+    showTickMarks="true" showTickLabels="true" snapToTicks="true"
+    GridPane.rowIndex="3" GridPane.columnIndex="1"/>
+  <Label fx:id="levelValue" text="1"
+    GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+
+  <!-- Toggles -->
+  <HBox spacing="16" alignment="CENTER_LEFT"
+    GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="3">
+    <CheckBox fx:id="musicCheck" text="Music"/>
+    <CheckBox fx:id="soundCheck" text="Sound"/>
+    <CheckBox fx:id="extendedCheck" text="Extend Mode"/>
   </HBox>
 
-  <!-- Field Height -->
-  <HBox spacing="10" alignment="CENTER_LEFT">
-    <Label text="Field Height (No of cells):"/>
-    <Slider fx:id="heightSlider" min="15" max="30" majorTickUnit="1" blockIncrement="1"
-      showTickMarks="true" showTickLabels="true" snapToTicks="true" prefWidth="320"/>
-    <Label fx:id="heightValue" text="20"/>
-  </HBox>
+  <!-- Players -->
+  <Label text="Player 1:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
+  <ChoiceBox fx:id="player1Choice" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
 
-  <!-- Game Level -->
-  <HBox spacing="10" alignment="CENTER_LEFT">
-    <Label text="Game Level:"/>
-    <Slider fx:id="levelSlider" min="1" max="10" majorTickUnit="1" blockIncrement="1"
-      showTickMarks="true" showTickLabels="true" snapToTicks="true" prefWidth="320"/>
-    <Label fx:id="levelValue" text="1"/>
-  </HBox>
+  <Label text="Player 2:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
+  <ChoiceBox fx:id="player2Choice" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
 
-  <!-- Toggles with On/Off mirror -->
-  <GridPane hgap="10" vgap="8">
-    <columnConstraints>
-      <ColumnConstraints minWidth="220"/>
-      <ColumnConstraints minWidth="100"/>
-    </columnConstraints>
-    <Label text="Music (On/Off):" GridPane.rowIndex="0" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="0" GridPane.columnIndex="1">
-      <CheckBox fx:id="musicCheck"/>
-      <Label fx:id="musicValue" text="On"/>
-    </HBox>
-
-    <Label text="Sound Effect (On/Off):" GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="1" GridPane.columnIndex="1">
-      <CheckBox fx:id="soundCheck"/>
-      <Label fx:id="soundValue" text="On"/>
-    </HBox>
-
-    <Label text="AI Play (On/Off):" GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="2" GridPane.columnIndex="1">
-      <CheckBox fx:id="aiPlayCheck"/>
-      <Label fx:id="aiPlayValue" text="Off"/>
-    </HBox>
-
-    <Label text="Extend Mode (On/Off):" GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-    <HBox spacing="8" GridPane.rowIndex="3" GridPane.columnIndex="1">
-      <CheckBox fx:id="extendedCheck"/>
-      <Label fx:id="extendedValue" text="Off"/>
-    </HBox>
-  </GridPane>
-
-  <HBox spacing="12" alignment="CENTER">
+  <!-- Actions -->
+  <HBox spacing="12" alignment="CENTER_RIGHT"
+    GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.columnSpan="2">
     <Button fx:id="saveButton" text="Save"/>
     <Button fx:id="resetButton" text="Reset"/>
     <Button fx:id="backButton" text="Back"/>
   </HBox>
-</VBox>
+</GridPane>
