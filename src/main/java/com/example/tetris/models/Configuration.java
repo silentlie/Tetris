@@ -10,6 +10,7 @@ public record Configuration(
     PlayerType player1,
     PlayerType player2
 ) {
+
   // Defaults
   public static final int DEFAULT_WIDTH = 10;
   public static final int DEFAULT_HEIGHT = 20;
@@ -24,19 +25,39 @@ public record Configuration(
   public enum PlayerType {
     HUMAN("Human"), AI("AI"), EXTERNAL("External");
     private final String label;
-    PlayerType(String label) { this.label = label; }
-    public String label() { return label; }
-    @Override public String toString() { return label; }
+
+    PlayerType(String label) {
+      this.label = label;
+    }
+
+    public String label() {
+      return label;
+    }
+
+    @Override
+    public String toString() {
+      return label;
+    }
   }
 
   // Canonical constructor for validation
   public Configuration {
-    if (width  < 1) width  = DEFAULT_WIDTH;
-    if (height < 1) height = DEFAULT_HEIGHT;
-    if (level  < 1) level  = DEFAULT_LEVEL;
+    if (width < 1) {
+      width = DEFAULT_WIDTH;
+    }
+    if (height < 1) {
+      height = DEFAULT_HEIGHT;
+    }
+    if (level < 1) {
+      level = DEFAULT_LEVEL;
+    }
 
-    if (player1 == null) player1 = DEFAULT_PLAYER1;
-    if (player2 == null) player2 = DEFAULT_PLAYER2;
+    if (player1 == null) {
+      player1 = DEFAULT_PLAYER1;
+    }
+    if (player2 == null) {
+      player2 = DEFAULT_PLAYER2;
+    }
 
   }
 

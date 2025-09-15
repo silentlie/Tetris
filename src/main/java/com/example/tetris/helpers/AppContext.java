@@ -6,11 +6,11 @@ import com.example.tetris.services.ConfigurationService;
  * Shared application context passed to all controllers.
  *
  * <p>The {@code AppContext} provides access to global services and state
- * for the running application. At minimum, it wraps a {@link Router} so
- * controllers can trigger navigation without directly depending on stage
- * or loader details.</p>
+ * for the running application. At minimum, it wraps a {@link Router} so controllers can trigger
+ * navigation without directly depending on stage or loader details. It also exposes the
+ * {@link ConfigurationService} for accessing and persisting application settings.</p>
  *
- * <p>Typical usage inside a controller:</p>
+ * <p><strong>Typical usage inside a controller:</strong></p>
  * <pre>{@code
  * public final class MenuController implements FxController {
  *   private AppContext app;
@@ -27,31 +27,27 @@ import com.example.tetris.services.ConfigurationService;
  * }
  * }</pre>
  *
- * <p>This class can also be extended in the future to hold additional
- * shared state, such as configuration settings, high scores, or user
- * session data.</p>
+ * <p>This class can be extended in the future to hold additional shared state,
+ * such as high scores, user session data, or other services.</p>
  */
 public class AppContext {
+
   private final Router router;
   private final ConfigurationService configurationService;
-  private final ConfigurationCache configurationCache;
 
   /**
-   * Creates a new application context bound to the given router.
+   * Creates a new application context bound to the given router and configuration service.
    *
-   * @param router the router responsible for navigation
+   * @param router               the router responsible for navigation between views
+   * @param configurationService service for loading and saving persistent configuration
    */
-  public AppContext(Router router,
-                    ConfigurationService configurationService,
-                    ConfigurationCache configurationCache) {
-
+  public AppContext(Router router, ConfigurationService configurationService) {
     this.router = router;
     this.configurationService = configurationService;
-    this.configurationCache = configurationCache;
   }
 
   /**
-   * Navigates to the given route using the underlying router.
+   * Navigates to the given route using the underlying {@link Router}.
    *
    * @param route the target route to display
    */
@@ -59,11 +55,12 @@ public class AppContext {
     router.show(route, this);
   }
 
-  public ConfigurationService getConfigurationService() {
+  /**
+   * Returns the configuration service for reading and writing application settings.
+   *
+   * @return the configuration service bound to this context
+   */
+  public ConfigurationService getConfigService() {
     return configurationService;
-  }
-
-  public ConfigurationCache getConfigurationCache() {
-    return configurationCache;
   }
 }

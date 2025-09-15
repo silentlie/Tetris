@@ -5,7 +5,6 @@ import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Configuration;
 import com.example.tetris.models.Configuration.PlayerType;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
 import javafx.fxml.FXML;
@@ -24,26 +23,40 @@ public final class ConfigurationController implements FxController {
 
 
   // sliders + numeric labels
-  @FXML private Slider widthSlider;
-  @FXML private Label widthValue;
-  @FXML private Slider heightSlider;
-  @FXML private Label heightValue;
-  @FXML private Slider levelSlider;
-  @FXML private Label levelValue;
+  @FXML
+  private Slider widthSlider;
+  @FXML
+  private Label widthValue;
+  @FXML
+  private Slider heightSlider;
+  @FXML
+  private Label heightValue;
+  @FXML
+  private Slider levelSlider;
+  @FXML
+  private Label levelValue;
 
   // toggles
-  @FXML private CheckBox musicCheck;
-  @FXML private CheckBox soundCheck;
-  @FXML private CheckBox extendedCheck;
+  @FXML
+  private CheckBox musicCheck;
+  @FXML
+  private CheckBox soundCheck;
+  @FXML
+  private CheckBox extendedCheck;
 
   // players
-  @FXML private ChoiceBox<PlayerType> player1Choice;
-  @FXML private ChoiceBox<PlayerType> player2Choice;
+  @FXML
+  private ChoiceBox<PlayerType> player1Choice;
+  @FXML
+  private ChoiceBox<PlayerType> player2Choice;
 
   // actions
-  @FXML private Button saveButton;
-  @FXML private Button resetButton;
-  @FXML private Button backButton;
+  @FXML
+  private Button saveButton;
+  @FXML
+  private Button resetButton;
+  @FXML
+  private Button backButton;
 
   @FXML
   private void initialize() {
@@ -78,7 +91,7 @@ public final class ConfigurationController implements FxController {
     this.ctx = ctx;
 
     // Load baseline config through appcontext service
-    Configuration baseline = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
+    Configuration baseline = ctx.getConfigService().getCache();
     setFormFromConfig(baseline);
 
     // initial state for P2
@@ -89,8 +102,7 @@ public final class ConfigurationController implements FxController {
 
   private void handleSave() {
     Configuration updated = formToConfig();
-    ctx.getConfigurationService().save(updated);
-    ctx.getConfigurationCache().set(updated);
+    ctx.getConfigService().save(updated);
   }
 
   private void handleReset() {
@@ -100,11 +112,12 @@ public final class ConfigurationController implements FxController {
 
   private void handleBack() {
     Configuration current = formToConfig();
-    Configuration baseline = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
+    Configuration baseline = ctx.getConfigService().getCache();
 
     if (!current.equals(baseline)) {
       Alert alert = new Alert(AlertType.CONFIRMATION,
-          "Are you sure you want to exit? Unsaved changes will be lost.", ButtonType.YES, ButtonType.NO);
+          "Are you sure you want to exit? Unsaved changes will be lost.", ButtonType.YES,
+          ButtonType.NO);
       alert.setHeaderText(null);
       alert.showAndWait().ifPresent(btn -> {
         if (btn == ButtonType.YES) {
@@ -120,8 +133,10 @@ public final class ConfigurationController implements FxController {
   // --- Helpers ---
 
   private Configuration formToConfig() {
-    PlayerType p1 = (player1Choice.getValue() == null) ? PlayerType.HUMAN : player1Choice.getValue();
-    PlayerType p2 = (player2Choice.getValue() == null) ? PlayerType.HUMAN   : player2Choice.getValue();
+    PlayerType p1 =
+        (player1Choice.getValue() == null) ? PlayerType.HUMAN : player1Choice.getValue();
+    PlayerType p2 =
+        (player2Choice.getValue() == null) ? PlayerType.HUMAN : player2Choice.getValue();
     return new Configuration(
         (int) widthSlider.getValue(),
         (int) heightSlider.getValue(),
