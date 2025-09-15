@@ -6,5 +6,5 @@
   "sound" : true,
   "extendMode" : false,
   "player1" : "HUMAN",
-  "player2" : "OFF"
+  "player2" : "HUMAN"
 }

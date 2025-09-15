@@ -18,11 +18,11 @@ public record Configuration(
   public static final boolean DEFAULT_SOUND = true;
   public static final boolean DEFAULT_EXTEND_MODE = false;
   public static final PlayerType DEFAULT_PLAYER1 = PlayerType.HUMAN;
-  public static final PlayerType DEFAULT_PLAYER2 = PlayerType.OFF;
+  public static final PlayerType DEFAULT_PLAYER2 = PlayerType.HUMAN;
 
   // Enum with labels (for UI)
   public enum PlayerType {
-    HUMAN("Human"), AI("AI"), OFF("Off");
+    HUMAN("Human"), AI("AI"), EXTERNAL("External");
     private final String label;
     PlayerType(String label) { this.label = label; }
     public String label() { return label; }
@@ -38,8 +38,6 @@ public record Configuration(
     if (player1 == null) player1 = DEFAULT_PLAYER1;
     if (player2 == null) player2 = DEFAULT_PLAYER2;
 
-    // If extend mode is off, force P2 to OFF
-    if (!extendMode) player2 = PlayerType.OFF;
   }
 
   // default config

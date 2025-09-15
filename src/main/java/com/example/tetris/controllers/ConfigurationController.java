@@ -1,12 +1,10 @@
 package com.example.tetris.controllers;
 
 import com.example.tetris.helpers.AppContext;
-import com.example.tetris.helpers.ConfigurationCache;
 import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Configuration;
 import com.example.tetris.models.Configuration.PlayerType;
-import com.example.tetris.services.ConfigurationService;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
@@ -23,9 +21,7 @@ import javafx.scene.control.Slider;
 public final class ConfigurationController implements FxController {
 
   private AppContext ctx;
-  private ConfigurationService service;
-  private ConfigurationCache cache;
-  private Configuration cachedConfig;
+
 
   // sliders + numeric labels
   @FXML private Slider widthSlider;
@@ -69,7 +65,6 @@ public final class ConfigurationController implements FxController {
     // toggle P2 availability with extend mode
     extendedCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
       player2Choice.setDisable(!newVal);
-      if (!newVal) player2Choice.setValue(PlayerType.OFF);
     });
 
     // buttons
@@ -81,37 +76,39 @@ public final class ConfigurationController implements FxController {
   @Override
   public void setContext(AppContext ctx) {
     this.ctx = ctx;
-    this.service = ctx.getConfigurationService();
-    this.cache   = ctx.getConfigurationCache();
 
-    this.cachedConfig = cache.getOrLoad(service);
-    setFormFromConfig(cachedConfig);
+    // Load baseline config through appcontext service
+    Configuration baseline = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
+    setFormFromConfig(baseline);
 
     // initial state for P2
     player2Choice.setDisable(!extendedCheck.isSelected());
   }
 
-  // --- handlers ---
+  // --- button handlers ---
 
   private void handleSave() {
     Configuration updated = formToConfig();
-    service.save(updated);
-    cache.set(updated);
-    cachedConfig = updated;
+    ctx.getConfigurationService().save(updated);
+    ctx.getConfigurationCache().set(updated);
   }
 
   private void handleReset() {
     setFormFromConfig(new Configuration()); // UI only; do not save
   }
 
+
   private void handleBack() {
     Configuration current = formToConfig();
-    if (!current.equals(cachedConfig)) {
+    Configuration baseline = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
+
+    if (!current.equals(baseline)) {
       Alert alert = new Alert(AlertType.CONFIRMATION,
-          "You have unsaved changes. Discard and go back?", ButtonType.YES, ButtonType.NO);
+          "Are you sure you want to exit? Unsaved changes will be lost.", ButtonType.YES, ButtonType.NO);
       alert.setHeaderText(null);
       alert.showAndWait().ifPresent(btn -> {
         if (btn == ButtonType.YES) {
+          setFormFromConfig(baseline); // Reverts ui to back to baseline
           ctx.show(Route.MENU);
         }
       });
@@ -120,11 +117,11 @@ public final class ConfigurationController implements FxController {
     }
   }
 
-  // --- helpers ---
+  // --- Helpers ---
 
   private Configuration formToConfig() {
     PlayerType p1 = (player1Choice.getValue() == null) ? PlayerType.HUMAN : player1Choice.getValue();
-    PlayerType p2 = (player2Choice.getValue() == null) ? PlayerType.OFF   : player2Choice.getValue();
+    PlayerType p2 = (player2Choice.getValue() == null) ? PlayerType.HUMAN   : player2Choice.getValue();
     return new Configuration(
         (int) widthSlider.getValue(),
         (int) heightSlider.getValue(),
