@@ -1,6 +1,7 @@
 module com.example.tetris {
   requires javafx.controls;
   requires javafx.fxml;
+  requires javafx.media;
   requires com.fasterxml.jackson.databind;
   requires java.logging;
 

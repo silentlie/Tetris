@@ -5,8 +5,11 @@ import com.example.tetris.helpers.ConfigurationCache;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.helpers.Router;
 import com.example.tetris.helpers.ViewLoader;
+import com.example.tetris.models.Configuration;
 import com.example.tetris.services.ConfigurationService;
 import com.example.tetris.services.JsonConfigurationService;
+import com.example.tetris.services.AudioService;
+import com.example.tetris.services.JavaFxAudioService;
 import java.io.IOException;
 import java.util.Map;
 import javafx.application.Application;
@@ -41,6 +44,8 @@ public class Main extends Application {
   public static void main(String[] args) {
     launch(args);
   }
+
+  private AppContext ctx;
 
   /**
    * Configures and displays the primary stage.
@@ -78,8 +83,36 @@ public class Main extends Application {
     ConfigurationService configService = new JsonConfigurationService();
     ConfigurationCache configCache = new ConfigurationCache();
 
+    // Audio service
+    AudioService audio = new JavaFxAudioService();
+
     // Pass service and cache into AppContext
-    AppContext ctx = new AppContext(router, configService, configCache);
+    ctx = new AppContext(router, configService, configCache, audio);
+
+    // Get audio from current configuration
+    // ------------- Not sure if this belongs here ? load config and apply it to audio
+    Configuration cfg = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
+    ctx.getAudioService().setMusicEnabled(cfg.music());
+    ctx.getAudioService().setSoundEnabled(cfg.sound());
+
+    if (cfg.music()) {
+      ctx.getAudioService().startMusic();
+    }
+
+    // Pause / resume music on minimise
+    primaryStage.iconifiedProperty().addListener((obs, was, iconified) -> {
+      if (iconified) {
+        ctx.getAudioService().stopMusic();
+      } else {
+        // read latest
+        boolean musicOn = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService()).music();
+        if (musicOn) {
+          ctx.getAudioService().startMusic();
+        }
+      }
+    });
+
+    // ------------------------------------------------------------
 
     if (null == scene) {
       router.showSplash(Main.class, Duration.seconds(3), () -> ctx.show(Route.MENU));
@@ -93,6 +126,13 @@ public class Main extends Application {
         default -> {
         }
       }
+    }
+  }
+
+  @Override
+  public void stop() {
+    if (ctx != null && ctx.getAudioService() != null) {
+      ctx.getAudioService().dispose();
     }
   }
 }

@@ -72,6 +72,11 @@
       <version>21.0.7</version>
     </dependency>
     <dependency>
+      <groupId>org.openjfx</groupId>
+      <artifactId>javafx-media</artifactId>
+      <version>21.0.7</version>
+    </dependency>
+    <dependency>
       <artifactId>javafx-fxml</artifactId>
       <groupId>org.openjfx</groupId>
       <version>21.0.7</version>

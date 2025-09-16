@@ -5,6 +5,7 @@ import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Configuration;
 import com.example.tetris.models.Configuration.PlayerType;
+import com.example.tetris.services.AudioService;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.IntegerBinding;
@@ -80,6 +81,21 @@ public final class ConfigurationController implements FxController {
     // Load baseline config through appcontext service
     Configuration baseline = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
     setFormFromConfig(baseline);
+
+    // AUDIO - not sure if this belongs here
+    AudioService audio = ctx.getAudioService();
+    musicCheck.selectedProperty().addListener((obs, oldVal, on) -> {
+      audio.setMusicEnabled(on);
+      if (on) {
+        audio.startMusic();
+      }else {
+        audio.stopMusic();
+      }
+    });
+
+    soundCheck.selectedProperty().addListener((obs, oldVal, on) -> {
+      audio.setSoundEnabled(on);
+    });
 
     // initial state for P2
     player2Choice.setDisable(!extendedCheck.isSelected());

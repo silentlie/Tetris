@@ -109,6 +109,10 @@ public class Game {
   /** Pseudorandom generator for piece selection; seeded for reproducibility. */
   private final SplittableRandom rng;
 
+  /** Field for tracking cleared lines to play sound effect. */
+  private int lastClearedLines = 0; // for sfx
+
+
   /**
    * Constructs a new game instance and spawns the first tetromino.
    *
@@ -309,6 +313,8 @@ public class Game {
     for (int y = 0; y < cleared; y++) {
       Arrays.fill(board[y], null);
     }
+
+    int clearedCount = cleared; // remember how many lines were cleared in this lock
     if (cleared == 0) {
       streak = 0;
     }
@@ -318,6 +324,15 @@ public class Game {
       score += streak * 100;
       cleared--;
     }
+
+    lastClearedLines = clearedCount; // publish after scoring
+  }
+
+  /** Returns number of lines clared by the most recent lock and resets it to 0. */
+  public int getAndResetLastClearedLines() {
+    int n = lastClearedLines;
+    lastClearedLines = 0;
+    return n;
   }
 
   /**

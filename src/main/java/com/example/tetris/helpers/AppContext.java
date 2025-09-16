@@ -1,6 +1,7 @@
 package com.example.tetris.helpers;
 
 import com.example.tetris.services.ConfigurationService;
+import com.example.tetris.services.AudioService;
 
 /**
  * Shared application context passed to all controllers.
@@ -35,6 +36,7 @@ public class AppContext {
   private final Router router;
   private final ConfigurationService configurationService;
   private final ConfigurationCache configurationCache;
+  private final AudioService audioService;
 
   /**
    * Creates a new application context bound to the given router.
@@ -43,11 +45,13 @@ public class AppContext {
    */
   public AppContext(Router router,
                     ConfigurationService configurationService,
-                    ConfigurationCache configurationCache) {
+                    ConfigurationCache configurationCache,
+                    AudioService audioService) {
 
     this.router = router;
     this.configurationService = configurationService;
     this.configurationCache = configurationCache;
+    this.audioService = audioService;
   }
 
   /**
@@ -66,4 +70,11 @@ public class AppContext {
   public ConfigurationCache getConfigurationCache() {
     return configurationCache;
   }
+  public AudioService getAudioService() {
+    return audioService;
+  }
 }
+
+
+
+
