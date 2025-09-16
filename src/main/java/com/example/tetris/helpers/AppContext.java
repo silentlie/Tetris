@@ -72,6 +72,10 @@ public class AppContext {
     router.show(route, this);
   }
 
+  public void evict(Route route) {
+    router.evict(route);
+  }
+
   /**
    * Returns the configuration service for reading and writing application settings.
    *

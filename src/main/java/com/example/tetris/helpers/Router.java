@@ -93,6 +93,10 @@ public class Router {
     }
   }
 
+  public void evict(Route route) {
+    loader.evict(route);
+  }
+
   /**
    * Shows a temporary splash screen image.
    *
