@@ -9,8 +9,8 @@ import com.example.tetris.controllers.PlayController;
  * Enumeration of all navigable views (routes) in the Tetris application.
  *
  * <p>Each enum constant defines the FXML resource to load and the expected
- * controller type associated with that view. This provides a type-safe way to
- * reference screens without relying on raw string paths.</p>
+ * controller type associated with that view. This provides a type-safe way to reference screens
+ * without relying on raw string paths.</p>
  *
  * <p>Usage example:</p>
  * <pre>{@code
@@ -23,16 +23,24 @@ import com.example.tetris.controllers.PlayController;
  */
 public enum Route {
 
-  /** Main menu screen. */
+  /**
+   * Main menu screen.
+   */
   MENU("menu.fxml", MenuController.class),
 
-  /** High score listing screen. */
+  /**
+   * High score listing screen.
+   */
   HIGH_SCORE("high-score.fxml", HighScoreController.class),
 
-  /** Configuration/settings screen. */
+  /**
+   * Configuration/settings screen.
+   */
   CONFIGURATION("configuration.fxml", ConfigurationController.class),
 
-  /** Gameplay screen. */
+  /**
+   * Gameplay screen.
+   */
   PLAY("play.fxml", PlayController.class);
 
   private final String fxml;

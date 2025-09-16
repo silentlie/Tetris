@@ -5,6 +5,7 @@ import java.net.URL;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 
@@ -12,10 +13,9 @@ import javafx.scene.Parent;
  * Utility responsible for loading and caching FXML-based views.
  *
  * <p>This class resolves {@link Route} definitions into their corresponding
- * {@link Parent} node hierarchies and initializes their controllers with the
- * shared {@link AppContext}. Loaded views are cached so that repeated navigation
- * to the same route does not reparse the FXML file or create a new controller
- * instance.</p>
+ * {@link Parent} node hierarchies and initializes their controllers with the shared
+ * {@link AppContext}. Loaded views are cached so that repeated navigation to the same route does
+ * not reparse the FXML file or create a new controller instance.</p>
  *
  * <p>Example usage:</p>
  * <pre>{@code
@@ -28,6 +28,7 @@ import javafx.scene.Parent;
  * }</pre>
  */
 public final class ViewLoader {
+
   private final Class<?> resourceAnchor;
 
   private final Map<Route, Parent> roots = new EnumMap<>(Route.class);
@@ -35,16 +36,16 @@ public final class ViewLoader {
   /**
    * Creates a new loader.
    *
-   * @param resourceAnchor a class whose classloader and package are used to
-   *                       resolve FXML resources (typically {@code Main.class})
+   * @param resourceAnchor a class whose classloader and package are used to resolve FXML resources
+   *                       (typically {@code Main.class})
    */
   public ViewLoader(Class<?> resourceAnchor) {
     this.resourceAnchor = resourceAnchor;
   }
 
   /**
-   * Loads the view for the given route, initializing its controller with the
-   * supplied {@link AppContext}.
+   * Loads the view for the given route, initializing its controller with the supplied
+   * {@link AppContext}.
    *
    * <p>If the view has already been loaded previously, the cached instance is
    * returned instead of parsing the FXML again.</p>
@@ -55,6 +56,7 @@ public final class ViewLoader {
    * @throws RuntimeException if the FXML file is missing or cannot be loaded
    */
   public Parent load(Route route, AppContext context) {
+    assert Platform.isFxApplicationThread() : "ViewLoader.load must run on FX thread";
     Parent cached = roots.get(route);
     if (cached != null) {
       return cached;

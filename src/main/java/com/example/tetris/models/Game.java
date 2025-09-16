@@ -12,15 +12,14 @@ import java.util.SplittableRandom;
  * Core game state and rules for a single Tetris session.
  *
  * <p>This class owns and updates the playfield (board), the currently falling
- * {@link Tetromino}, and the player's score. It implements the fundamental
- * mechanics: movement, rotation, gravity (soft drop), locking, line clearing,
- * and game-over detection.</p>
+ * {@link Tetromino}, and the player's score. It implements the fundamental mechanics: movement,
+ * rotation, gravity (soft drop), locking, line clearing, and game-over detection.</p>
  *
  * <h2>Determinism & RNG</h2>
  *
  * <p>Piece generation uses a {@link java.util.SplittableRandom} seeded via the constructor.
- * Using the same {@code seed} produces the same piece sequence (useful for replays and
- * synchronized PvP). Selection is uniform over {@link TetrominoType#values()} (no 7-bag).</p>
+ * Using the same {@code seed} produces the same piece sequence (useful for replays and synchronized
+ * PvP). Selection is uniform over {@link TetrominoType#values()} (no 7-bag).</p>
  *
  * <h2>Coordinates</h2>
  * <ul>
@@ -60,16 +59,19 @@ import java.util.SplittableRandom;
  */
 public class Game {
 
-  /** Unused constant kept for compatibility; reserved for future tuning. */
-  public static final int K = 10;
-
-  /** Number of upcoming pieces exposed to the UI (peek size). */
+  /**
+   * Number of upcoming pieces exposed to the UI (peek size).
+   */
   private static final int NEXT_QUEUE_SIZE = 3;
 
-  /** Board width in cells. */
+  /**
+   * Board width in cells.
+   */
   public final int width;
 
-  /** Board height in cells (visible rows). */
+  /**
+   * Board height in cells (visible rows).
+   */
   public final int height;
 
   private final String playerName;
@@ -83,15 +85,17 @@ public class Game {
 
   private int score = 0;
 
-  /** Current combo streak; increments once per line cleared and resets when a lock clears none. */
+  /**
+   * Current combo streak; increments once per line cleared and resets when a lock clears none.
+   */
   private int streak = 0;
 
   /**
    * The currently falling tetromino.
    *
    * <p>Never {@code null} during normal play after construction. It may become
-   * effectively invalid when a lock causes game over (e.g., blocks locked above the top
-   * or next spawn is illegal).</p>
+   * effectively invalid when a lock causes game over (e.g., blocks locked above the top or next
+   * spawn is illegal).</p>
    */
   private Tetromino tetromino;
 
@@ -103,18 +107,22 @@ public class Game {
    */
   private final ArrayDeque<TetrominoType> nextQueue = new ArrayDeque<>(NEXT_QUEUE_SIZE);
 
-  /** Seed used to initialize the piece generator for deterministic sequences. */
+  /**
+   * Seed used to initialize the piece generator for deterministic sequences.
+   */
   private final long seed;
 
-  /** Pseudorandom generator for piece selection; seeded for reproducibility. */
+  /**
+   * Pseudorandom generator for piece selection; seeded for reproducibility.
+   */
   private final SplittableRandom rng;
 
   /**
    * Constructs a new game instance and spawns the first tetromino.
    *
    * <p>Initializes the board, fills the next-queue to exactly three items,
-   * then spawns the active piece by consuming the queue head. The queue is
-   * immediately refilled to maintain its fixed size.</p>
+   * then spawns the active piece by consuming the queue head. The queue is immediately refilled to
+   * maintain its fixed size.</p>
    *
    * @param playerName the player's display name (used by UI/scoreboard); must not be {@code null}
    * @param seed       the RNG seed controlling piece sequence (store this for replays/PvP)
@@ -132,13 +140,17 @@ public class Game {
     tetromino = spawnFromQueue();
   }
 
-  /** Draws a random tetromino type using the seeded RNG (uniform; not 7-bag). */
+  /**
+   * Draws a random tetromino type using the seeded RNG (uniform; not 7-bag).
+   */
   private TetrominoType randomType() {
     TetrominoType[] values = TetrominoType.values();
     return values[rng.nextInt(values.length)];
   }
 
-  /** Tops up {@link #nextQueue} to {@value #NEXT_QUEUE_SIZE} using {@link #randomType()}. */
+  /**
+   * Tops up {@link #nextQueue} to {@value #NEXT_QUEUE_SIZE} using {@link #randomType()}.
+   */
   private void fillNextQueueToSize() {
     while (nextQueue.size() < NEXT_QUEUE_SIZE) {
       nextQueue.addLast(randomType());
@@ -149,8 +161,8 @@ public class Game {
    * Consumes the next piece from the queue and returns a newly spawned {@link Tetromino}.
    *
    * <p>After removal, the queue is refilled to maintain its fixed size. The piece spawns
-   * centered horizontally with {@link Rotation#UP}, and may begin with {@code y < 0}
-   * (above the visible top) to allow entry.</p>
+   * centered horizontally with {@link Rotation#UP}, and may begin with {@code y < 0} (above the
+   * visible top) to allow entry.</p>
    *
    * @return a freshly spawned tetromino determined by the queue head
    */
@@ -248,8 +260,8 @@ public class Game {
    * Locks the active tetromino into the board, clears completed lines, and spawns the next piece.
    *
    * <p>After locking, {@link #clearLines()} compacts the board and applies scoring/streak.
-   * Then a new piece is spawned from the next-queue; if its initial placement is illegal,
-   * the game ends.</p>
+   * Then a new piece is spawned from the next-queue; if its initial placement is illegal, the game
+   * ends.</p>
    *
    * @return {@code true} if the game is over after locking; {@code false} otherwise
    */
@@ -272,8 +284,8 @@ public class Game {
   }
 
   /**
-   * Clears all full lines, compacts remaining rows downward, inserts empty rows at the top,
-   * and updates combo streak and score.
+   * Clears all full lines, compacts remaining rows downward, inserts empty rows at the top, and
+   * updates combo streak and score.
    *
    * <p><b>Algorithm:</b></p>
    * <ol>
@@ -333,8 +345,8 @@ public class Game {
    * Returns the current score.
    *
    * <p>The score accrues via the per-line combo rule:
-   * each cleared line increments {@code streak} and awards {@code +100 × streak}.
-   * The streak resets to 0 on a lock that clears no lines.</p>
+   * each cleared line increments {@code streak} and awards {@code +100 × streak}. The streak resets
+   * to 0 on a lock that clears no lines.</p>
    *
    * @return the player's score (non-negative)
    */
@@ -377,8 +389,8 @@ public class Game {
   }
 
   /**
-   * Returns an immutable snapshot (head-first) of the upcoming piece types
-   * for UI rendering. The list size is always {@value #NEXT_QUEUE_SIZE}.
+   * Returns an immutable snapshot (head-first) of the upcoming piece types for UI rendering. The
+   * list size is always {@value #NEXT_QUEUE_SIZE}.
    *
    * @return an unmodifiable list of the next three tetromino types in spawn order
    */

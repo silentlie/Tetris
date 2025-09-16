@@ -1,11 +1,12 @@
 package com.example.tetris.controllers;
 
-import static com.example.tetris.models.Game.K;
+import static com.example.tetris.models.Configuration.MAX_LEVEL;
 
 import com.example.tetris.helpers.AppContext;
 import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.GameTimer;
 import com.example.tetris.helpers.Route;
+import com.example.tetris.models.Configuration;
 import com.example.tetris.models.Game;
 import com.example.tetris.models.Tetromino;
 import com.example.tetris.models.TetrominoType;
@@ -40,29 +41,25 @@ public class PlayController extends GameTimer implements FxController {
 
   private Game game;
   private boolean dirty = true;
+  private double initialTimeSeconds;
 
-  /**
-   * Initializes the play scene.
-   *
-   * <p>Prompts the player for their name, sets up canvas resizing, attaches keyboard handlers, and
-   * starts the game timer.
-   * </p>
-   */
-  @FXML
-  private void initialize() {
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
+    int startLevel = ctx.getConfigService().getCache().level();
+    initialTimeSeconds = 30.0 * (startLevel * startLevel - startLevel);
     TextInputDialog dialog = new TextInputDialog();
     dialog.setTitle("Player Name");
     dialog.setHeaderText("Welcome to the Game!");
     dialog.setContentText("Please enter your name:");
 
     Optional<String> result = dialog.showAndWait();
-    if (result.isEmpty() || result.get().trim().isEmpty()) {
-      ctx.show(Route.MENU);
-      return;
+    while (result.isEmpty() || result.get().trim().isEmpty()) {
+      result = dialog.showAndWait();
     }
     long seed = System.nanoTime();
-    // TODO: using configuration instead of hard code
-    game = new Game(result.get().trim(), seed, 10, 20);
+    Configuration config = ctx.getConfigService().getCache();
+    game = new Game(result.get().trim(), seed, config.width(), config.height());
 
     // Resize canvas dynamically and trigger redraw.
     boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
@@ -98,9 +95,10 @@ public class PlayController extends GameTimer implements FxController {
   @Override
   protected void gameLoop() {
     double elapsedSeconds = elapsedNanos / 1_000_000_000.0;
-    double level = (1.0 + Math.sqrt(1.0 + (2.0 * elapsedSeconds) / 15.0)) / 2.0;
-    double clampedLevel = Math.min(level, K);
-    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (K - 1));
+    double totalTime = initialTimeSeconds + elapsedSeconds;
+    double level = (1.0 + Math.sqrt(1.0 + (2.0 * totalTime) / 15.0)) / 2.0;
+    double clampedLevel = Math.min(level, MAX_LEVEL);
+    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (MAX_LEVEL - 1));
     long fallIntervalNanos = (long) (secondsPerRow * 1_000_000_000.0);
 
     while (accumulateNanos >= fallIntervalNanos) {
@@ -130,7 +128,6 @@ public class PlayController extends GameTimer implements FxController {
    * </ul>
    *
    * @param code the {@link KeyCode} pressed by the player
-   *
    * @return true if the key was handled, false otherwise
    */
   private boolean handleKey(KeyCode code) {
@@ -228,6 +225,7 @@ public class PlayController extends GameTimer implements FxController {
 
       alert.showAndWait();
       ctx.show(Route.MENU);
+      ctx.evict(Route.PLAY);
     });
   }
 
@@ -245,7 +243,7 @@ public class PlayController extends GameTimer implements FxController {
 
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Game Paused");
-    alert.setHeaderText("Pause MenuController");
+    alert.setHeaderText("Paused");
     alert.setContentText("What would you like to do?");
 
     ButtonType leave = new ButtonType("Leave", ButtonBar.ButtonData.OK_DONE);
@@ -321,8 +319,5 @@ public class PlayController extends GameTimer implements FxController {
     dirty = false;
   }
 
-  @Override
-  public void setContext(AppContext ctx) {
-    this.ctx = ctx;
-  }
+
 }

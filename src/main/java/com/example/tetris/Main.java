@@ -1,13 +1,11 @@
 package com.example.tetris;
 
 import com.example.tetris.helpers.AppContext;
-import com.example.tetris.helpers.ConfigurationCache;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.helpers.Router;
 import com.example.tetris.helpers.ViewLoader;
 import com.example.tetris.services.ConfigurationService;
 import com.example.tetris.services.JsonConfigurationService;
-import java.io.IOException;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -18,8 +16,8 @@ import javafx.util.Duration;
  * Main entry point of the Tetris JavaFX application.
  *
  * <p>This class bootstraps JavaFX, sets up the primary stage, and delegates
- * view navigation to {@link Router} and {@link ViewLoader}. The initial screen
- * can be chosen with a named launch parameter (e.g. {@code --scene=menu}).</p>
+ * view navigation to {@link Router} and {@link ViewLoader}. The initial screen can be chosen with a
+ * named launch parameter (e.g. {@code --scene=menu}).</p>
  */
 public class Main extends Application {
 
@@ -59,10 +57,9 @@ public class Main extends Application {
    * </ul>
    *
    * @param primaryStage the main application window created by JavaFX
-   * @throws IOException if loading of an FXML resource fails
    */
   @Override
-  public void start(Stage primaryStage) throws IOException {
+  public void start(Stage primaryStage) {
     // set window title
     primaryStage.setTitle("Tetris");
     // get params from args from main function
@@ -75,11 +72,10 @@ public class Main extends Application {
     Router router = new Router(primaryStage, loader);
 
     // Build persistence
-    ConfigurationService configService = new JsonConfigurationService();
-    ConfigurationCache configCache = new ConfigurationCache();
+    ConfigurationService configurationService = new JsonConfigurationService();
 
     // Pass service and cache into AppContext
-    AppContext ctx = new AppContext(router, configService, configCache);
+    AppContext ctx = new AppContext(router, configurationService);
 
     if (null == scene) {
       router.showSplash(Main.class, Duration.seconds(3), () -> ctx.show(Route.MENU));
