@@ -8,33 +8,28 @@
 <?import javafx.scene.control.Slider?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
-<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <GridPane xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.controllers.ConfigurationController"
-  hgap="12" vgap="10" prefWidth="720" prefHeight="460"
+  prefWidth="720" prefHeight="460"
 >
 
-  <!-- 3 columns -->
   <columnConstraints>
-    <ColumnConstraints percentWidth="33.33"/>
-    <ColumnConstraints percentWidth="33.33"/>
-    <ColumnConstraints percentWidth="33.34"/>
+    <ColumnConstraints percentWidth="100" halignment="LEFT"/>
+    <ColumnConstraints percentWidth="100" halignment="CENTER"/>
+    <ColumnConstraints percentWidth="100" halignment="CENTER"/>
   </columnConstraints>
 
-  <!-- 10 equal-height rows -->
   <rowConstraints>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
-    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
+    <RowConstraints percentHeight="100" valignment="CENTER" fillHeight="false"/>
   </rowConstraints>
 
   <padding>
@@ -42,57 +37,74 @@
   </padding>
 
   <!-- Header spans all 3 columns -->
+  <!-- TODO: centralize CSS class title -->
   <Label text="Configuration"
     style="-fx-font-size: 20px; -fx-font-weight: bold;"
-    GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="3"/>
+    GridPane.rowIndex="0" GridPane.columnIndex="0" GridPane.columnSpan="3"
+    GridPane.halignment="CENTER"
+  />
 
   <!-- Width -->
   <Label text="Field Width (No of cells):"
-    GridPane.rowIndex="1" GridPane.columnIndex="0"/>
-  <Slider fx:id="widthSlider" min="5" max="15" majorTickUnit="1" blockIncrement="1"
+    GridPane.rowIndex="1" GridPane.columnIndex="0"
+  />
+  <Slider fx:id="widthSlider" majorTickUnit="1" blockIncrement="1"
     showTickMarks="true" showTickLabels="true" snapToTicks="true"
-    GridPane.rowIndex="1" GridPane.columnIndex="1"/>
-  <Label fx:id="widthValue" text="10"
-    GridPane.rowIndex="1" GridPane.columnIndex="2"/>
+    GridPane.rowIndex="1" GridPane.columnIndex="1" GridPane.columnSpan="2"
+  />
 
   <!-- Height -->
   <Label text="Field Height (No of cells):"
-    GridPane.rowIndex="2" GridPane.columnIndex="0"/>
-  <Slider fx:id="heightSlider" min="15" max="30" majorTickUnit="1" blockIncrement="1"
+    GridPane.rowIndex="2" GridPane.columnIndex="0"
+  />
+  <Slider fx:id="heightSlider" majorTickUnit="1" blockIncrement="1"
     showTickMarks="true" showTickLabels="true" snapToTicks="true"
-    GridPane.rowIndex="2" GridPane.columnIndex="1"/>
-  <Label fx:id="heightValue" text="20"
-    GridPane.rowIndex="2" GridPane.columnIndex="2"/>
+    GridPane.rowIndex="2" GridPane.columnIndex="1" GridPane.columnSpan="2"
+  />
 
   <!-- Level -->
   <Label text="Game Level:"
-    GridPane.rowIndex="3" GridPane.columnIndex="0"/>
-  <Slider fx:id="levelSlider" min="1" max="10" majorTickUnit="1" blockIncrement="1"
+    GridPane.rowIndex="3" GridPane.columnIndex="0"
+  />
+  <Slider fx:id="levelSlider" majorTickUnit="1" blockIncrement="1"
     showTickMarks="true" showTickLabels="true" snapToTicks="true"
-    GridPane.rowIndex="3" GridPane.columnIndex="1"/>
-  <Label fx:id="levelValue" text="1"
-    GridPane.rowIndex="3" GridPane.columnIndex="2"/>
+    GridPane.rowIndex="3" GridPane.columnIndex="1" GridPane.columnSpan="2"
+  />
 
   <!-- Toggles -->
-  <HBox spacing="16" alignment="CENTER_LEFT"
-    GridPane.rowIndex="4" GridPane.columnIndex="0" GridPane.columnSpan="3">
-    <CheckBox fx:id="musicCheck" text="Music"/>
-    <CheckBox fx:id="soundCheck" text="Sound"/>
-    <CheckBox fx:id="extendedCheck" text="Extend Mode"/>
-  </HBox>
+  <CheckBox fx:id="musicCheck" text="Music"
+    GridPane.rowIndex="4" GridPane.columnIndex="0"
+    GridPane.halignment="CENTER"
+  />
+  <CheckBox fx:id="soundCheck" text="Sound"
+    GridPane.rowIndex="4" GridPane.columnIndex="1"
+  />
+  <CheckBox fx:id="extendedCheck" text="Extend Mode"
+    GridPane.rowIndex="4" GridPane.columnIndex="2"
+  />
 
   <!-- Players -->
   <Label text="Player 1:" GridPane.rowIndex="5" GridPane.columnIndex="0"/>
-  <ChoiceBox fx:id="player1Choice" GridPane.rowIndex="5" GridPane.columnIndex="1"/>
+  <ChoiceBox fx:id="player1Choice" GridPane.rowIndex="5" GridPane.columnIndex="1"
+    GridPane.columnSpan="2"
+  />
 
   <Label text="Player 2:" GridPane.rowIndex="6" GridPane.columnIndex="0"/>
-  <ChoiceBox fx:id="player2Choice" GridPane.rowIndex="6" GridPane.columnIndex="1"/>
+  <ChoiceBox fx:id="player2Choice" GridPane.rowIndex="6" GridPane.columnIndex="1"
+    GridPane.columnSpan="2"
+  />
 
   <!-- Actions -->
-  <HBox spacing="12" alignment="CENTER_RIGHT"
-    GridPane.rowIndex="9" GridPane.columnIndex="1" GridPane.columnSpan="2">
-    <Button fx:id="saveButton" text="Save"/>
-    <Button fx:id="resetButton" text="Reset"/>
-    <Button fx:id="backButton" text="Back"/>
-  </HBox>
+  <Button text="Save"
+    GridPane.rowIndex="7" GridPane.columnIndex="0"
+    onAction="#onSave"
+  />
+  <Button text="Reset"
+    GridPane.rowIndex="7" GridPane.columnIndex="1"
+    onAction="#onReset"
+  />
+  <Button text="Back"
+    GridPane.rowIndex="7" GridPane.columnIndex="2"
+    onAction="#onBack"
+  />
 </GridPane>

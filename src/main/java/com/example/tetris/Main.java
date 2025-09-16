@@ -6,7 +6,6 @@ import com.example.tetris.helpers.Router;
 import com.example.tetris.helpers.ViewLoader;
 import com.example.tetris.services.ConfigurationService;
 import com.example.tetris.services.JsonConfigurationService;
-import java.io.IOException;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -58,10 +57,9 @@ public class Main extends Application {
    * </ul>
    *
    * @param primaryStage the main application window created by JavaFX
-   * @throws IOException if loading of an FXML resource fails
    */
   @Override
-  public void start(Stage primaryStage) throws IOException {
+  public void start(Stage primaryStage) {
     // set window title
     primaryStage.setTitle("Tetris");
     // get params from args from main function
