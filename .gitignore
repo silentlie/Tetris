@@ -40,4 +40,4 @@ build/
 ### Game ###
 highScores.json
 save
-configuration.json
+config.json
