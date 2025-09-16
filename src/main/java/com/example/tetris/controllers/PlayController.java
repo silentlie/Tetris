@@ -42,15 +42,9 @@ public class PlayController extends GameTimer implements FxController {
   private Game game;
   private boolean dirty = true;
 
-  /**
-   * Initializes the play scene.
-   *
-   * <p>Prompts the player for their name, sets up canvas resizing, attaches keyboard handlers, and
-   * starts the game timer.
-   * </p>
-   */
-  @FXML
-  private void initialize() {
+  @Override
+  public void setContext(AppContext ctx) {
+    this.ctx = ctx;
     TextInputDialog dialog = new TextInputDialog();
     dialog.setTitle("Player Name");
     dialog.setHeaderText("Welcome to the Game!");
@@ -321,8 +315,5 @@ public class PlayController extends GameTimer implements FxController {
     dirty = false;
   }
 
-  @Override
-  public void setContext(AppContext ctx) {
-    this.ctx = ctx;
-  }
+
 }
