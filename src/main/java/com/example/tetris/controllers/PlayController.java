@@ -243,7 +243,7 @@ public class PlayController extends GameTimer implements FxController {
 
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Game Paused");
-    alert.setHeaderText("Pause MenuController");
+    alert.setHeaderText("Paused");
     alert.setContentText("What would you like to do?");
 
     ButtonType leave = new ButtonType("Leave", ButtonBar.ButtonData.OK_DONE);
