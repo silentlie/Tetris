@@ -1,6 +1,7 @@
 package com.example.tetris.helpers;
 
 import com.example.tetris.services.ConfigurationService;
+import javafx.stage.Stage;
 
 /**
  * Shared application context passed to all controllers.
@@ -47,7 +48,23 @@ public class AppContext {
   }
 
   /**
+   * Returns the primary {@link javafx.stage.Stage} managed by the underlying {@link Router}.
+   *
+   * <p>Use this for dialog ownership/modality (e.g., {@code alert.initOwner(getStage())}),
+   * window title/icon updates, or querying the current {@code Scene}. Mutating the returned stage
+   * affects the whole application.</p>
+   *
+   * @return the primary stage (never {@code null})
+   */
+  public Stage getStage() {
+    return router.getStage();
+  }
+
+  /**
    * Navigates to the given route using the underlying {@link Router}.
+   *
+   * <p>Safe to call from any thread; the router will dispatch to the JavaFX application
+   * thread as needed.</p>
    *
    * @param route the target route to display
    */
@@ -58,7 +75,7 @@ public class AppContext {
   /**
    * Returns the configuration service for reading and writing application settings.
    *
-   * @return the configuration service bound to this context
+   * @return the configuration service bound to this context (never {@code null})
    */
   public ConfigurationService getConfigService() {
     return configurationService;

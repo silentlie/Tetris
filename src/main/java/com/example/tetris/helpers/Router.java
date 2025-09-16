@@ -16,10 +16,13 @@ import javafx.util.Duration;
  * Handles navigation between application views and manages the primary stage.
  *
  * <p>The {@code Router} acts as a central navigation service: it loads views
- * defined in {@link Route} using a {@link ViewLoader} and swaps them into the
- * primary {@link Stage}. It also provides a utility method to display a
- * temporary splash screen before navigating to another route or performing
- * a custom action.</p>
+ * defined in {@link Route} using a {@link ViewLoader} and swaps them into the primary
+ * {@link Stage}. It also provides a utility method to display a temporary splash screen before
+ * navigating to another route or performing a custom action.</p>
+ *
+ * <p><strong>Threading:</strong> {@link #show(Route, AppContext)} is thread-safe and will
+ * delegate to the JavaFX application thread as needed. Other methods should be called on the FX
+ * thread unless documented otherwise.</p>
  *
  * <p>Example usage:</p>
  * <pre>{@code
@@ -28,13 +31,14 @@ import javafx.util.Duration;
  * AppContext ctx = new AppContext(router);
  *
  * // Show a splash screen for 3 seconds, then the menu:
- * router.showSplash(Duration.seconds(3), () -> ctx.show(Route.MENU));
+ * router.showSplash(Main.class, Duration.seconds(3), () -> ctx.show(Route.MENU));
  *
  * // Navigate directly to the gameplay view:
  * ctx.show(Route.PLAY);
  * }</pre>
  */
 public class Router {
+
   private final Stage stage;
   private final ViewLoader loader;
 
@@ -50,14 +54,26 @@ public class Router {
   }
 
   /**
+   * Returns the primary {@link Stage} managed by this router.
+   *
+   * <p>Useful for setting modality/owner on dialogs, adjusting window properties
+   * (icon, title), or querying the current {@link Scene}. Be aware that mutating the returned stage
+   * affects the whole app.</p>
+   *
+   * @return the primary stage (never {@code null})
+   */
+  public Stage getStage() {
+    return stage;
+  }
+
+  /**
    * Displays the view associated with the given route.
    *
    * <p>If the stage has no scene yet, a new scene is created and maximized.
-   * If a scene already exists, its root node is simply replaced while
-   * preserving stage settings.</p>
+   * If a scene already exists, its root node is replaced while preserving stage settings.</p>
    *
-   * <p>This method is thread-safe and will delegate to the JavaFX
-   * application thread if called from a background thread.</p>
+   * <p><strong>Threading:</strong> Safe to call from any thread; will dispatch to
+   * the FX application thread if necessary.</p>
    *
    * @param route   the view to display
    * @param context the shared {@link AppContext} to inject into the controller
@@ -80,16 +96,18 @@ public class Router {
   /**
    * Shows a temporary splash screen image.
    *
-   * <p>The splash is displayed in a borderless, always-on-top stage. After the
-   * given duration elapses, the splash is closed and the optional callback
+   * <p>The splash is displayed in a borderless, always-on-top stage owned by the
+   * primary stage. After the given duration elapses, the splash is closed and the optional callback
    * is invoked.</p>
    *
    * <p>If {@code duration} is {@code null}, the splash defaults to 15 seconds.</p>
    *
-   * @param resourceAnchor a class whose classloader and package are used to
-   *                       resolve FXML resources (typically {@code Main.class})
-   * @param duration how long the splash should remain visible; defaults to 15s if {@code null}
-   * @param after    action to run after the splash closes; may be {@code null}
+   * @param resourceAnchor a class whose classloader and package are used to resolve
+   *                       {@code splash.png} (typically {@code Main.class})
+   * @param duration       how long the splash remains visible; defaults to 15s if {@code null}
+   * @param after          action to run after the splash closes; may be {@code null}
+   * @throws NullPointerException if {@code splash.png} cannot be resolved relative to
+   *                              {@code resourceAnchor}
    */
   public void showSplash(Class<?> resourceAnchor, Duration duration, Runnable after) {
     String url = Objects.requireNonNull(
@@ -106,7 +124,7 @@ public class Router {
     splashStage.setScene(splashScene);
     splashStage.show();
 
-    Duration d = duration != null ? duration : Duration.seconds(15);
+    Duration d = (duration != null) ? duration : Duration.seconds(15);
     PauseTransition delay = new PauseTransition(d);
     delay.setOnFinished(e -> {
       splashStage.close();

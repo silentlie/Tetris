@@ -5,10 +5,10 @@ import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Configuration;
 import com.example.tetris.models.PlayerType;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ChoiceBox;
@@ -99,43 +99,38 @@ public final class ConfigurationController implements FxController {
   /**
    * Collects current form values, constructs a {@link Configuration}, and persists it via the
    * configuration service. The service is responsible for updating its cache.
-   *
-   * @param actionEvent the JavaFX action event (unused)
    */
   @FXML
-  private void onSave(ActionEvent actionEvent) {
+  private void onSave() {
     Configuration updated = formToConfig();
     ctx.getConfigService().save(updated);
   }
 
   /**
    * Resets the form to factory defaults using {@link Configuration#Configuration()}.
-   *
-   * @param actionEvent the JavaFX action event (unused)
    */
   @FXML
-  private void onReset(ActionEvent actionEvent) {
+  private void onReset() {
     setFormFromConfig(new Configuration());
   }
 
   /**
    * Navigates back to the menu. If the form differs from the baseline in the configuration service
    * cache, asks the user to confirm discarding unsaved changes.
-   *
-   * @param actionEvent the JavaFX action event (unused)
    */
   @FXML
-  private void onBack(ActionEvent actionEvent) {
+  private void onBack() {
     if (!formToConfig().equals(getBaseline())) {
-      Alert alert = new Alert(
-          AlertType.CONFIRMATION,
-          "Are you sure you want to exit? Unsaved changes will be lost.",
-          ButtonType.YES,
-          ButtonType.NO
-      );
-      alert.setHeaderText(null);
+      Alert alert = new Alert(AlertType.CONFIRMATION);
+      alert.setTitle("Unsaved changes");
+      alert.setHeaderText("Discard changes?");
+      alert.setContentText("You’ll lose any unsaved edits.");
+      ButtonType discard = new ButtonType("Discard", ButtonBar.ButtonData.OK_DONE);
+      ButtonType cancel = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+      alert.getButtonTypes().setAll(discard, cancel);
+      alert.initOwner(ctx.getStage());
       alert.showAndWait().ifPresent(btn -> {
-        if (btn == ButtonType.YES) {
+        if (btn == discard) {
           setFormFromConfig(getBaseline());
           ctx.show(Route.MENU);
         }

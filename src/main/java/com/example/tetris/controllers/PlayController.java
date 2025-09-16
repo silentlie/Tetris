@@ -1,11 +1,12 @@
 package com.example.tetris.controllers;
 
-import static com.example.tetris.models.Game.K;
+import static com.example.tetris.models.Configuration.MAX_LEVEL;
 
 import com.example.tetris.helpers.AppContext;
 import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.GameTimer;
 import com.example.tetris.helpers.Route;
+import com.example.tetris.models.Configuration;
 import com.example.tetris.models.Game;
 import com.example.tetris.models.Tetromino;
 import com.example.tetris.models.TetrominoType;
@@ -61,8 +62,8 @@ public class PlayController extends GameTimer implements FxController {
       return;
     }
     long seed = System.nanoTime();
-    // TODO: using configuration instead of hard code
-    game = new Game(result.get().trim(), seed, 10, 20);
+    Configuration config = ctx.getConfigService().getCache();
+    game = new Game(result.get().trim(), seed, config.width(), config.height());
 
     // Resize canvas dynamically and trigger redraw.
     boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
@@ -99,8 +100,8 @@ public class PlayController extends GameTimer implements FxController {
   protected void gameLoop() {
     double elapsedSeconds = elapsedNanos / 1_000_000_000.0;
     double level = (1.0 + Math.sqrt(1.0 + (2.0 * elapsedSeconds) / 15.0)) / 2.0;
-    double clampedLevel = Math.min(level, K);
-    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (K - 1));
+    double clampedLevel = Math.min(level, MAX_LEVEL);
+    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (MAX_LEVEL - 1));
     long fallIntervalNanos = (long) (secondsPerRow * 1_000_000_000.0);
 
     while (accumulateNanos >= fallIntervalNanos) {
@@ -130,7 +131,6 @@ public class PlayController extends GameTimer implements FxController {
    * </ul>
    *
    * @param code the {@link KeyCode} pressed by the player
-   *
    * @return true if the key was handled, false otherwise
    */
   private boolean handleKey(KeyCode code) {

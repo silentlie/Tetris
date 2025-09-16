@@ -75,6 +75,7 @@ public class MenuController implements FxController {
     alert.setTitle("Exit Confirmation");
     alert.setHeaderText("Are you sure you want to exit?");
     alert.setContentText("Confirm to close the application.");
+    alert.initOwner(ctx.getStage());
     Optional<ButtonType> result = alert.showAndWait();
 
     Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
