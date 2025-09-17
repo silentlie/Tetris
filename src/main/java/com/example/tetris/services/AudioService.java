@@ -1,34 +1,33 @@
 package com.example.tetris.services;
 
-import com.example.tetris.services.EventSfx;
 
 /**
- * Facade for all game audio. Implementation must be non-throwing and ide impotent
- * Threading: methods are expected to be called on the Javafx application thread
+ * Facade for all game audio.
  */
 
 public interface AudioService {
 
-  // Start background music if enabled; no-op if already playing or disabled
+
+  // Starts background music when enabled.
   void startMusic();
 
-  // Stop background music; safe to call when already stopped.
+  // Stops background music if it's playing.
   void stopMusic();
 
-  // Enable or disable background music at runtime. If enabled, music should begin playing.
+  // Enables or disables background music at runtime.
   void setMusicEnabled(boolean enabled);
 
-  //Enable or disable sound effects globally. When disabled, play is a no op
+  // Enables or disables sound effects globally
   void setSoundEnabled(boolean enabled);
 
-  // Play a short sound effect for the given event; must be non-blocking and low-latency.
+  // Plays a short sound effect for the given event ie moves and turns of the shapes.
   void play(EventSfx event);
 
-  //Best effort indicator for ui/status
+  // Indicator to see if music is currently playing.
   boolean isMusicPlaying();
 
-  // Release any underlying audio resources called on app shutdown.
+  // Releases any underlying audio resources. Used for app shutdown.
   default void dispose() {
-    // optional for implementation
+
   }
 }

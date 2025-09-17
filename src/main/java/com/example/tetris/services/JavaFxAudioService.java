@@ -17,9 +17,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * JavaFx based implementation of AudioService.
- * - Music is looped via MediaPlayer (MP3)
- * - SFX: preloaded AudioClip (WAV)
+ * JavaFx based implementation of {@link AudioService}.
+ * Responsibilities:
+ * - Loop background music via {@link MediaPlayer} (MP3)
+ * - Preload sfx as {@link AudioClip} (WAV)
+ * - Marshal all media operations to the JavaFx Application Threads
+ * - Be idempotent and non-throwing so callers can spam safely
  *
  */
 
@@ -27,7 +30,7 @@ public final class JavaFxAudioService implements AudioService {
 
   private static final Logger LOG = Logger.getLogger(JavaFxAudioService.class.getName());
 
-  // Resource paths
+  // Resource paths under src/main/resources/audio/
   private static final String MUSIC_PATH = "audio/background.mp3";
   private static final Map<EventSfx, String> SFX_PATHS = Map.of(
       EventSfx.MOVE_TURN, "audio/move-turn.wav",
@@ -36,20 +39,27 @@ public final class JavaFxAudioService implements AudioService {
       EventSfx.GAME_FINISHED, "audio/game-finish.wav"
   );
 
-  // Rate-limit for MOVE_TURN spam (can be tweaked to sound better)
+  // Rate-limit for tetromino move sound effect spam (can be tweaked to sound better)
   private static final Duration MOVE_TURN_MIN_INTERVAL = Duration.ofMillis(60); // modify for sound frequency.
 
+  // Global enable flags (toggled by configuration ui)
   private volatile boolean musicEnabled = true;
   private volatile boolean soundEnabled = true;
 
+  // Music player kept for instant resume.
   private MediaPlayer musicPlayer;
+
+  // Preloaded immutable map of sfx clips.
   private final EnumMap<EventSfx, AudioClip> clips = new EnumMap<>(EventSfx.class);
+
+  // Last time MOVE_TURN is allowed to play.
   private Instant lastMoveTurn = Instant.EPOCH;
 
+  // Ensures a given warning string is printed at most once per run.
   private static final Set<String> WARNED = ConcurrentHashMap.newKeySet();
 
   public JavaFxAudioService() {
-    // Preload SFX on FX thread
+    // Preload SFX on the FX thread for lower first play latency.
     runOnFx(() -> {
       for (var e: EventSfx.values()) {
         var path = SFX_PATHS.get(e);
@@ -58,6 +68,8 @@ public final class JavaFxAudioService implements AudioService {
       }
     });
   }
+
+
   // ------------- AudioService ----------------
 
   @Override
@@ -72,7 +84,7 @@ public final class JavaFxAudioService implements AudioService {
             return;
           }
           musicPlayer = new MediaPlayer((new Media(url.toExternalForm())));
-          musicPlayer.setCycleCount(MediaPlayer.INDEFINITE);
+          musicPlayer.setCycleCount(MediaPlayer.INDEFINITE); // loop forever
         }
         var status = musicPlayer.getStatus();
         if (status != MediaPlayer.Status.PLAYING) {
@@ -158,11 +170,14 @@ public final class JavaFxAudioService implements AudioService {
 
   // -------------- helpers ------------------
 
+
+  // Runs the task on the FX thread
   private static void runOnFx(Runnable r) {
     if (Platform.isFxApplicationThread()) r.run();
     else Platform.runLater(r);
   }
 
+  // Loads an audioclip from the resource path or returns null if missing.
   private static AudioClip loadClip(String path) {
     try {
       URL url = resource(path);
@@ -171,7 +186,7 @@ public final class JavaFxAudioService implements AudioService {
         return null;
       }
       AudioClip ac = new AudioClip(url.toExternalForm());
-      ac.setVolume(0.9);
+      ac.setVolume(0.9); // volume default
       return ac;
     } catch (Throwable t) {
       LOG.log(Level.WARNING, "Failed to load clip " + path, t);
@@ -179,21 +194,18 @@ public final class JavaFxAudioService implements AudioService {
     }
   }
 
-//  private static URL resource(String path) {
-//    return Thread.currentThread().getContextClassLoader().getResource(path);
-//  }
-
+  // Resolves resource path in a way that works with both the module path and the classpath.
   private static URL resource(String path) {
     Class<?> anchor = JavaFxAudioService.class;
 
-    URL url = anchor.getClassLoader().getResource(path);   // module-aware
+    URL url = anchor.getClassLoader().getResource(path);
     if (url == null) url = ClassLoader.getSystemResource(path);
     if (url == null && !path.startsWith("/")) url = anchor.getResource("/" + path);
 
     return url;
   }
 
-
+  // Logs the message once.
   private static void warnOnce(String msg) {
     if (WARNED.add(msg)) {
       LOG.log(Level.WARNING, msg);

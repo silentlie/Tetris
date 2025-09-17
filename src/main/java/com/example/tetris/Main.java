@@ -45,6 +45,7 @@ public class Main extends Application {
     launch(args);
   }
 
+  // Defines AppContext as ctx.
   private AppContext ctx;
 
   /**
@@ -83,14 +84,14 @@ public class Main extends Application {
     ConfigurationService configService = new JsonConfigurationService();
     ConfigurationCache configCache = new ConfigurationCache();
 
-    // Audio service
+    // --------------- Audio --------------------------------
+    // Create implementation and pass service into AppContext
     AudioService audio = new JavaFxAudioService();
-
-    // Pass service and cache into AppContext
     ctx = new AppContext(router, configService, configCache, audio);
 
-    // Get audio from current configuration
-    // ------------- Not sure if this belongs here ? load config and apply it to audio
+    // Get audio from persisted configuration
+    // Read once from the cache
+    // Mirror flags into the audio service, then start music if its enabled.
     Configuration cfg = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
     ctx.getAudioService().setMusicEnabled(cfg.music());
     ctx.getAudioService().setSoundEnabled(cfg.sound());
@@ -99,7 +100,7 @@ public class Main extends Application {
       ctx.getAudioService().startMusic();
     }
 
-    // Pause / resume music on minimise
+    // Pause / resume music when the app is minimised
     primaryStage.iconifiedProperty().addListener((obs, was, iconified) -> {
       if (iconified) {
         ctx.getAudioService().stopMusic();
@@ -129,8 +130,11 @@ public class Main extends Application {
     }
   }
 
+  // Audio
+  // For clean shutdown of audio resources.
   @Override
   public void stop() {
+    // Ensures media player/clips are released when the app exits.
     if (ctx != null && ctx.getAudioService() != null) {
       ctx.getAudioService().dispose();
     }

@@ -82,8 +82,10 @@ public final class ConfigurationController implements FxController {
     Configuration baseline = ctx.getConfigurationCache().getOrLoad(ctx.getConfigurationService());
     setFormFromConfig(baseline);
 
-    // AUDIO - not sure if this belongs here
+    // AUDIO
+    // Get shared audio service from context.
     AudioService audio = ctx.getAudioService();
+    // When music/sound checkboxes changes reflect it in the service.
     musicCheck.selectedProperty().addListener((obs, oldVal, on) -> {
       audio.setMusicEnabled(on);
       if (on) {
