@@ -7,6 +7,7 @@ import com.example.tetris.helpers.FxController;
 import com.example.tetris.helpers.GameTimer;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Configuration;
+import com.example.tetris.helpers.EventSfx;
 import com.example.tetris.models.Game;
 import com.example.tetris.models.Tetromino;
 import com.example.tetris.models.TetrominoType;
@@ -42,6 +43,14 @@ public class PlayController extends GameTimer implements FxController {
   private Game game;
   private boolean dirty = true;
   private double initialTimeSeconds;
+  private int lastLevelInt = 1;
+
+  // audio sfx helper
+  private void sfx(EventSfx e) {
+    if (ctx != null && ctx.getAudioService() != null) {
+      ctx.getAudioService().play(e);
+    }
+  }
 
   @Override
   public void setContext(AppContext ctx) {
@@ -98,6 +107,15 @@ public class PlayController extends GameTimer implements FxController {
     double totalTime = initialTimeSeconds + elapsedSeconds;
     double level = (1.0 + Math.sqrt(1.0 + (2.0 * totalTime) / 15.0)) / 2.0;
     double clampedLevel = Math.min(level, MAX_LEVEL);
+
+
+    // Level Up sfx. Play once when crossing an integer level.
+    int levelInt = (int) Math.max(1, Math.floor(clampedLevel));
+    if (levelInt > lastLevelInt) {
+      sfx(EventSfx.LEVEL_UP);
+      lastLevelInt = levelInt;
+    }
+
     double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (MAX_LEVEL - 1));
     long fallIntervalNanos = (long) (secondsPerRow * 1_000_000_000.0);
 
@@ -174,16 +192,19 @@ public class PlayController extends GameTimer implements FxController {
   private void rotate() {
     markDirty();
     game.rotate();
+    sfx(EventSfx.MOVE_TURN);
   }
 
   private void moveRight() {
     markDirty();
     game.moveRight();
+    sfx(EventSfx.MOVE_TURN);
   }
 
   private void moveLeft() {
     markDirty();
     game.moveLeft();
+    sfx(EventSfx.MOVE_TURN);
   }
 
   /**
@@ -193,7 +214,11 @@ public class PlayController extends GameTimer implements FxController {
    */
   private boolean softDrop() {
     markDirty();
-    return game.softDrop();
+    boolean moved = game.softDrop();
+    if (moved) {
+      sfx(EventSfx.MOVE_TURN);
+    }
+    return moved;
   }
 
   /**
@@ -203,7 +228,14 @@ public class PlayController extends GameTimer implements FxController {
    */
   private boolean lock() {
     markDirty();
-    return game.lock();
+    boolean gameOver = game.lock();
+
+    // ask game how many lines were cleared by this lock
+    int cleared = game.getAndResetLastClearedLines();
+    if (cleared > 0) {
+      sfx(EventSfx.ERASE_LINE);
+    }
+    return gameOver;
   }
 
   private void markDirty() {
@@ -214,6 +246,7 @@ public class PlayController extends GameTimer implements FxController {
    * Ends the game, stops the timer, shows the final score, and returns to the main menu scene.
    */
   public void endGame() {
+    sfx(EventSfx.GAME_FINISHED);
     if (isRunning) {
       stop();
     }

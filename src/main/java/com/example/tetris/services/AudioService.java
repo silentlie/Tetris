@@ -2,6 +2,12 @@ package com.example.tetris.services;
 
 import com.example.tetris.helpers.EventSfx;
 
+/**
+ * Small facade for game audio functions.
+ *
+ * Controllers talk to this interface instead of JavaFx media classes directly.
+ */
+
 public interface AudioService {
 
   // Starts background music. Idempotent so it won't restart if already playing.

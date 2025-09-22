@@ -94,6 +94,7 @@ public final class ConfigurationController implements FxController {
   public void setContext(AppContext ctx) {
     this.ctx = ctx;
     setFormFromConfig(getBaseline());
+    wireAudioToggles();
   }
 
   /**
@@ -208,4 +209,20 @@ public final class ConfigurationController implements FxController {
     player1Choice.setValue(cfg.player1());
     player2Choice.setValue(cfg.player2());
   }
+
+  /**
+   * Wire the music and sound checkboxes so they immediately affect audio.
+   * Persistence happens when user clicks save not on toggle.
+   */
+  private void wireAudioToggles() {
+    musicCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+      ctx.getAudioService().setMusicEnabled(newVal);
+    });
+
+    soundCheck.selectedProperty().addListener((obs, oldVal, newVal) -> {
+      ctx.getAudioService().setSoundEnabled(newVal);
+    });
+
+  }
+
 }

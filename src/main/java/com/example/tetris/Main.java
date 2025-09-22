@@ -1,11 +1,14 @@
 package com.example.tetris;
 
 import com.example.tetris.helpers.AppContext;
+import com.example.tetris.helpers.AudioSetup;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.helpers.Router;
 import com.example.tetris.helpers.ViewLoader;
 import com.example.tetris.services.ConfigurationService;
 import com.example.tetris.services.JsonConfigurationService;
+import com.example.tetris.services.AudioService;
+import com.example.tetris.services.JavaFxAudioService;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -58,6 +61,8 @@ public class Main extends Application {
    *
    * @param primaryStage the main application window created by JavaFX
    */
+  private AppContext ctx;
+
   @Override
   public void start(Stage primaryStage) {
     // set window title
@@ -74,8 +79,16 @@ public class Main extends Application {
     // Build persistence
     ConfigurationService configurationService = new JsonConfigurationService();
 
+    // Single global service including music and sfx. Preloads sfx on the fx thread.
+    AudioService audio = new JavaFxAudioService();
+
     // Pass service and cache into AppContext
-    AppContext ctx = new AppContext(router, configurationService);
+    this.ctx = new AppContext(router, configurationService, audio);
+
+    // Audio setup (apply config, start and lifecycle hooks)
+    AudioSetup.init(primaryStage, configurationService, audio);
+
+
 
     if (null == scene) {
       router.showSplash(Main.class, Duration.seconds(3), () -> ctx.show(Route.MENU));
@@ -90,5 +103,15 @@ public class Main extends Application {
         }
       }
     }
+  }
+
+  // For clean shutdown of audio resources
+  @Override
+  public void stop() {
+
+    if (ctx != null && ctx.getAudioService() != null) {
+      AudioSetup.shutdown(ctx.getAudioService());
+    }
+
   }
 }

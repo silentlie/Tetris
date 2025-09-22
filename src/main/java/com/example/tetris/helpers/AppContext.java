@@ -1,6 +1,7 @@
 package com.example.tetris.helpers;
 
 import com.example.tetris.services.ConfigurationService;
+import com.example.tetris.services.AudioService;
 import javafx.stage.Stage;
 
 /**
@@ -9,7 +10,8 @@ import javafx.stage.Stage;
  * <p>The {@code AppContext} provides access to global services and state
  * for the running application. At minimum, it wraps a {@link Router} so controllers can trigger
  * navigation without directly depending on stage or loader details. It also exposes the
- * {@link ConfigurationService} for accessing and persisting application settings.</p>
+ * {@link ConfigurationService} for accessing and persisting application settings.
+ * {@link AudioService} for music/sfx control.</p>
  *
  * <p><strong>Typical usage inside a controller:</strong></p>
  * <pre>{@code
@@ -35,16 +37,19 @@ public class AppContext {
 
   private final Router router;
   private final ConfigurationService configurationService;
+  private final AudioService audioService;
 
   /**
    * Creates a new application context bound to the given router and configuration service.
    *
    * @param router               the router responsible for navigation between views
    * @param configurationService service for loading and saving persistent configuration
+   * @param audioService         service for controlling background music and sound effects
    */
-  public AppContext(Router router, ConfigurationService configurationService) {
+  public AppContext(Router router, ConfigurationService configurationService, AudioService audioService) {
     this.router = router;
     this.configurationService = configurationService;
+    this.audioService = audioService;
   }
 
   /**
@@ -83,5 +88,10 @@ public class AppContext {
    */
   public ConfigurationService getConfigService() {
     return configurationService;
+  }
+
+  /** @return the shared audio service for music and sound effects. */
+  public AudioService getAudioService() {
+    return audioService;
   }
 }

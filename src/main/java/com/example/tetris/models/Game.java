@@ -321,15 +321,28 @@ public class Game {
     for (int y = 0; y < cleared; y++) {
       Arrays.fill(board[y], null);
     }
+
+    // record for sfx
+    lastClearedLines = cleared;
+
     if (cleared == 0) {
       streak = 0;
     }
-    while (cleared > 0) {
+
+    int linesForScoring = cleared;
+    while (linesForScoring > 0) {
       streak++;
       // May multiply with level int
       score += streak * 100;
-      cleared--;
+      linesForScoring--;
     }
+  }
+
+  private int lastClearedLines = 0;
+  public int getAndResetLastClearedLines() {
+    int n = lastClearedLines;
+    lastClearedLines = 0;
+    return n;
   }
 
   /**
