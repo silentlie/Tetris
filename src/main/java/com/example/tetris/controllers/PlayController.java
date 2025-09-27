@@ -1,246 +1,100 @@
 package com.example.tetris.controllers;
 
-import static com.example.tetris.models.Configuration.MAX_LEVEL;
-
 import com.example.tetris.helpers.AppContext;
 import com.example.tetris.helpers.FxController;
-import com.example.tetris.helpers.GameTimer;
+import com.example.tetris.helpers.GameService;
 import com.example.tetris.helpers.Route;
+import com.example.tetris.models.Board;
 import com.example.tetris.models.Configuration;
+import com.example.tetris.models.DefaultLevelCurve;
 import com.example.tetris.models.Game;
-import com.example.tetris.models.Tetromino;
+import com.example.tetris.models.GameIntent;
+import com.example.tetris.models.GameState;
+import com.example.tetris.models.PieceQueue;
+import com.example.tetris.models.PieceSupplierStrategy;
 import com.example.tetris.models.TetrominoType;
-import java.util.Optional;
+import java.util.function.Supplier;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
-import javafx.scene.canvas.Canvas;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
-import javafx.scene.control.TextInputDialog;
-import javafx.scene.input.KeyCode;
-import javafx.scene.layout.Pane;
-import javafx.scene.paint.Color;
+import javafx.scene.control.SplitPane;
+import javafx.scene.input.KeyEvent;
 
-/**
- * Controller class for the Tetris gameplay scene.
- *
- * <p>Handles player input, rendering the board and active tetromino, and drives the game loop
- * (gravity, soft drop, locking pieces).
- * </p>
- */
-public class PlayController extends GameTimer implements FxController {
+public class PlayController implements FxController {
+
+  @FXML
+  private SplitPane root;
 
   private AppContext ctx;
-
-  @FXML
-  private Pane boardHolder;
-  @FXML
-  private Canvas boardCanvas;
-
-  private Game game;
-  private boolean dirty = true;
-  private double initialTimeSeconds;
+  private GameService service;
+  private Game game1;
+  private Game game2;
 
   @Override
   public void setContext(AppContext ctx) {
     this.ctx = ctx;
-    int startLevel = ctx.getConfigService().getCache().level();
-    initialTimeSeconds = 30.0 * (startLevel * startLevel - startLevel);
-    TextInputDialog dialog = new TextInputDialog();
-    dialog.setTitle("Player Name");
-    dialog.setHeaderText("Welcome to the Game!");
-    dialog.setContentText("Please enter your name:");
-
-    Optional<String> result = dialog.showAndWait();
-    while (result.isEmpty() || result.get().trim().isEmpty()) {
-      result = dialog.showAndWait();
-    }
-    long seed = System.nanoTime();
+    // --- Config & deterministic RNGs ---
     Configuration config = ctx.getConfigService().getCache();
-    game = new Game(result.get().trim(), seed, config.width(), config.height());
+    int startLevel = config.level();
+    DefaultLevelCurve curve = new DefaultLevelCurve(startLevel);
+    service = new GameService(curve, this::endGame);
+    long seed = System.nanoTime();
+    // TODO: AI control if config.player1() == PlayerType.AI or config.player2() == PlayerType.AI
+    // TODO: connect to server at port 3000 if config.player1() == PlayerType.EXTERNAL or
+    //  config.player2() == PlayerType.EXTERNAL
+    game1 = createGame(seed, config);
+    service.addGame(game1);
 
-    // Resize canvas dynamically and trigger redraw.
-    boardHolder.layoutBoundsProperty().addListener((obs, o, b) -> {
-      boardCanvas.setWidth(b.getWidth());
-      boardCanvas.setHeight(b.getHeight());
-      markDirty();
-      render();
-    });
-
-    // Register keyboard input when scene becomes active.
-    boardHolder.sceneProperty().addListener((obs, oldScene, newScene) -> {
+    // --- Player 2 (extend mode) ---
+    if (config.extendMode()) {
+      game2 = createGame(seed, config);
+      service.addGame(game2);
+      root.setDividerPositions(0.5);
+    }
+    root.sceneProperty().addListener((obs, oldScene, newScene) -> {
       if (oldScene != null) {
         oldScene.setOnKeyPressed(null);
       }
       if (newScene != null) {
-        newScene.setOnKeyPressed(event -> {
-          if (handleKey(event.getCode())) {
-            event.consume();
-          }
-        });
+        newScene.setOnKeyPressed(this::onKeyPressed);
       }
     });
-    start();
+    service.start();
   }
 
-  /**
-   * Main game loop, invoked by {@link GameTimer}.
-   *
-   * <p>Advances game state by applying gravity based on elapsed time and player level. If a piece
-   * can no longer fall, it locks and the game ends when no new piece can spawn.
-   * </p>
-   */
-  @Override
-  protected void gameLoop() {
-    double elapsedSeconds = elapsedNanos / 1_000_000_000.0;
-    double totalTime = initialTimeSeconds + elapsedSeconds;
-    double level = (1.0 + Math.sqrt(1.0 + (2.0 * totalTime) / 15.0)) / 2.0;
-    double clampedLevel = Math.min(level, MAX_LEVEL);
-    double secondsPerRow = Math.pow(1.0 / 30.0, (clampedLevel - 1.0) / (MAX_LEVEL - 1));
-    long fallIntervalNanos = (long) (secondsPerRow * 1_000_000_000.0);
-
-    while (accumulateNanos >= fallIntervalNanos) {
-      accumulateNanos -= fallIntervalNanos;
-      if (softDrop()) {
-        continue;
-      }
-      if (lock()) {
-        endGame();
-        return;
-      }
-      accumulateNanos = 0L;
-    }
-    render();
+  private Game createGame(long seed, Configuration config) {
+    Supplier<TetrominoType> supplier1 = PieceSupplierStrategy.UNIFORM.create(seed);
+    PieceQueue queue = new PieceQueue(3, supplier1);
+    Board board = new Board(config.width(), config.height());
+    GameState state = new GameState(board, queue);
+    GameView view = new GameView();
+    root.getItems().add(view);
+    return new Game(state, view);
   }
 
-  /**
-   * Handles keyboard input for controlling tetromino and game state.
-   *
-   * <ul>
-   *   <li>{@code LEFT}  → Move piece left</li>
-   *   <li>{@code RIGHT} → Move piece right</li>
-   *   <li>{@code UP}    → Rotate piece</li>
-   *   <li>{@code DOWN}  → Soft drop (move down faster)</li>
-   *   <li>{@code SPACE} → Hard drop (instant drop to bottom)</li>
-   *   <li>{@code P}     → Pause game</li>
-   * </ul>
-   *
-   * @param code the {@link KeyCode} pressed by the player
-   * @return true if the key was handled, false otherwise
-   */
-  private boolean handleKey(KeyCode code) {
-    if (game == null) {
-      return false;
-    }
-    switch (code) {
-      case LEFT -> {
-        moveLeft();
-        return true;
-      }
-      case RIGHT -> {
-        moveRight();
-        return true;
-      }
-      case UP -> {
-        rotate();
-        return true;
-      }
-      case DOWN -> {
-        softDrop();
-        return true;
-      }
-      case SPACE -> {
-        boolean moved;
-        do {
-          moved = softDrop();
-        } while (moved);
-        if (lock()) {
-          endGame();
-        }
-        return true;
-      }
-      case P -> {
-        pauseGame();
-        return true;
-      }
-      default -> {
-        return false;
-      }
-    }
-  }
-
-  private void rotate() {
-    markDirty();
-    game.rotate();
-  }
-
-  private void moveRight() {
-    markDirty();
-    game.moveRight();
-  }
-
-  private void moveLeft() {
-    markDirty();
-    game.moveLeft();
-  }
-
-  /**
-   * Attempts to move the active piece down by one row.
-   *
-   * @return true if the piece moved down, false if blocked
-   */
-  private boolean softDrop() {
-    markDirty();
-    return game.softDrop();
-  }
-
-  /**
-   * Attempts to lock the current piece in place.
-   *
-   * @return true if the piece locked and no new piece could spawn (game over)
-   */
-  private boolean lock() {
-    markDirty();
-    return game.lock();
-  }
-
-  private void markDirty() {
-    dirty = true;
-  }
-
-  /**
-   * Ends the game, stops the timer, shows the final score, and returns to the main menu scene.
-   */
   public void endGame() {
-    if (isRunning) {
-      stop();
+    if (service != null && service.isRunning()) {
+      service.stop();
     }
     Platform.runLater(() -> {
+      // TODO: ask name for each player and save high scores
       Alert alert = new Alert(Alert.AlertType.INFORMATION);
       alert.setTitle("Game Over");
-      alert.setHeaderText("Player: " + game.getPlayerName() + "\nYour Score: " + game.getScore());
-      alert.setContentText("Thanks for playing, " + game.getPlayerName() + "!");
-
+      alert.setHeaderText(null);
+      alert.setContentText("Nice run!");
       alert.showAndWait();
       ctx.show(Route.MENU);
       ctx.evict(Route.PLAY);
     });
   }
 
-  /**
-   * Pauses the game and shows a confirmation dialog.
-   *
-   * <p>The player can choose to resume play or leave the game, returning to the main menu.
-   * </p>
-   */
   public void pauseGame() {
-    if (!isRunning) {
+    if (service == null || !service.isRunning()) {
       return;
     }
-    stop();
-
+    service.stop();
     Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
     alert.setTitle("Game Paused");
     alert.setHeaderText("Paused");
@@ -254,70 +108,49 @@ public class PlayController extends GameTimer implements FxController {
     if (result.equals(leave)) {
       endGame();
     } else {
-      start();
+      service.start();
     }
   }
 
-  /**
-   * Renders the game board and the active tetromino onto the canvas.
-   *
-   * <p>Redraw is performed only when the {@code dirty} flag is set. This avoids unnecessary
-   * rendering work.
-   * </p>
-   */
-  public void render() {
-    if (!dirty || game == null) {
-      return;
-    }
-
-    GraphicsContext g = boardCanvas.getGraphicsContext2D();
-    double width = boardCanvas.getWidth();
-    double height = boardCanvas.getHeight();
-
-    // Background
-    g.setFill(Color.web("#111111"));
-    g.fillRect(0, 0, width, height);
-
-    final int cols = game.width;
-    final int rows = game.height;
-
-    // Compute uniform cell size and board offset (center the board).
-    double cell = Math.floor(Math.min(width / cols, height / rows));
-    double boardWidth = cell * cols;
-    double boardHeight = cell * rows;
-    double offsetX = (width - boardWidth) / 2.0;
-    double offsetY = (height - boardHeight) / 2.0;
-    TetrominoType[][] board = game.getBoard();
-    for (int y = 0; y < rows; y++) {
-      for (int x = 0; x < cols; x++) {
-        Color fill = (board[y][x] != null) ? board[y][x].getColor()
-            : javafx.scene.paint.Color.web("#1f1f1f");
-        double rx = offsetX + x * cell;
-        double ry = offsetY + y * cell;
-        g.setFill(fill);
-        g.fillRect(rx, ry, cell, cell);
-
-        g.setStroke(Color.web("#2a2a2a"));
-        g.strokeRect(rx, ry, cell, cell);
+  private void onKeyPressed(KeyEvent keyEvent) {
+    keyEvent.consume();
+    switch (keyEvent.getCode()) {
+      case P, ESCAPE -> pauseGame();
+      // Player 1
+      case LEFT -> game1.apply(GameIntent.MOVE_LEFT);
+      case RIGHT -> game1.apply(GameIntent.MOVE_RIGHT);
+      case UP -> game1.apply(GameIntent.ROTATE_CW);
+      case DOWN -> game1.apply(GameIntent.SOFT_DROP);
+      case COMMA -> {
+        if (game2 != null) {
+          game2.apply(GameIntent.MOVE_LEFT);
+        } else {
+          game1.apply(GameIntent.MOVE_LEFT);
+        }
       }
-    }
-
-    Tetromino t = game.getTetromino();
-    if (t != null) {
-      g.setFill(t.type().getColor());
-      for (var c : t.getAbsoluteShape()) {
-        int x = c.x();
-        int y = c.y();
-        double rx = offsetX + x * cell;
-        double ry = offsetY + y * cell;
-        g.fillRect(rx, ry, cell, cell);
-        g.setStroke(Color.web("#2a2a2a"));
-        g.strokeRect(rx, ry, cell, cell);
+      // Player 2
+      case PERIOD -> {
+        if (game2 != null) {
+          game2.apply(GameIntent.MOVE_RIGHT);
+        } else {
+          game1.apply(GameIntent.MOVE_RIGHT);
+        }
       }
+      case L -> {
+        if (game2 != null) {
+          game2.apply(GameIntent.ROTATE_CW);
+        } else {
+          game1.apply(GameIntent.ROTATE_CW);
+        }
+      }
+      case SPACE -> {
+        if (game2 != null) {
+          game2.apply(GameIntent.SOFT_DROP);
+        } else {
+          game1.apply(GameIntent.SOFT_DROP);
+        }
+      }
+      default -> { /* ignore */ }
     }
-
-    dirty = false;
   }
-
-
 }

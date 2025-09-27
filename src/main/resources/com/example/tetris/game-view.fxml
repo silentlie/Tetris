@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.example.tetris.helpers.BoardCanvas?>
+<?import com.example.tetris.helpers.NextCanvas?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<fx:root
+  type="SplitPane"
+  xmlns="http://javafx.com/javafx"
+  xmlns:fx="http://javafx.com/fxml"
+  style="-fx-background-color: #111111"
+  dividerPositions="0.30"
+>
+  <!-- Left panel: HUD + Next Queue -->
+  <SplitPane orientation="VERTICAL" dividerPositions="0.30">
+    <VBox spacing="6" alignment="CENTER" HBox.hgrow="ALWAYS" style="-fx-background-color: #111111">
+      <padding>
+        <Insets topRightBottomLeft="8"/>
+      </padding>
+      <Label
+        text="Stats"
+        alignment="CENTER"
+        style="-fx-text-fill: #e6e6e6;"/>
+      <Separator/>
+      <Label
+        fx:id="labelInitialLevel" text="Initial Level: -"
+        style="-fx-text-fill: #e6e6e6;"
+      />
+      <Label
+        fx:id="labelCurrentLevel" text="Current Level: -"
+        style="-fx-text-fill: #e6e6e6;"
+      />
+      <Label
+        fx:id="labelScore" text="Score : 0"
+        style="-fx-text-fill: #e6e6e6;"
+      />
+      <Label
+        fx:id="labelStreak" text="Streak: 0"
+        style="-fx-text-fill: #e6e6e6;"
+      />
+
+    </VBox>
+    <NextCanvas fx:id="nextCanvas" VBox.vgrow="ALWAYS"/>
+  </SplitPane>
+
+  <!-- Main board -->
+  <BoardCanvas fx:id="boardCanvas" HBox.hgrow="ALWAYS"/>
+</fx:root>

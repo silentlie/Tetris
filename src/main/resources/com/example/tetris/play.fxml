@@ -1,15 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.canvas.Canvas?>
-<?import javafx.scene.layout.Pane?>
-<Pane xmlns="http://javafx.com/javafx"
+<?import javafx.scene.control.SplitPane?>
+<SplitPane xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.controllers.PlayController"
-  fx:id="boardHolder"
+  fx:id="root"
 >
-  <padding>
-    <Insets topRightBottomLeft="12"/>
-  </padding>
-  <Canvas fx:id="boardCanvas"/>
-</Pane>
+</SplitPane>

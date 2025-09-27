@@ -40,6 +40,8 @@ public record Configuration(
     PlayerType player2
 ) {
 
+  public static final int NEXT_QUEUE_SIZE = 3;
+
   /**
    * Default board width (cells).
    */
