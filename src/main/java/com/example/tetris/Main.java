@@ -1,11 +1,11 @@
 package com.example.tetris;
 
-import com.example.tetris.helpers.AppContext;
-import com.example.tetris.helpers.Route;
-import com.example.tetris.helpers.Router;
-import com.example.tetris.helpers.ViewLoader;
-import com.example.tetris.services.ConfigurationService;
-import com.example.tetris.services.JsonConfigurationService;
+import com.example.tetris.app.context.AppContext;
+import com.example.tetris.app.navigation.Route;
+import com.example.tetris.app.navigation.Router;
+import com.example.tetris.app.navigation.ViewLoader;
+import com.example.tetris.service.ConfigurationService;
+import com.example.tetris.service.JsonConfigurationService;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -16,8 +16,8 @@ import javafx.util.Duration;
  * Main entry point of the Tetris JavaFX application.
  *
  * <p>This class bootstraps JavaFX, sets up the primary stage, and delegates
- * view navigation to {@link Router} and {@link ViewLoader}. The initial screen can be chosen with a
- * named launch parameter (e.g. {@code --scene=menu}).</p>
+ * views navigation to {@link Router} and {@link ViewLoader}. The initial screen can be chosen with
+ * a named launch parameter (e.g. {@code --scene=menu}).</p>
  */
 public class Main extends Application {
 
@@ -29,8 +29,8 @@ public class Main extends Application {
    * <ul>
    *   <li>{@code splash} – show only the splash screen (15 s) and then exit</li>
    *   <li>{@code menu} – show the main menu</li>
-   *   <li>{@code highScores} – show the high scores view</li>
-   *   <li>{@code configuration} – show the configuration view</li>
+   *   <li>{@code highScores} – show the high scores views</li>
+   *   <li>{@code configuration} – show the configuration views</li>
    *   <li>{@code play} – start gameplay directly</li>
    * </ul>
    *
@@ -50,9 +50,9 @@ public class Main extends Application {
    * <ul>
    *   <li>{@code splash} – show the splash screen for 15 s and then close</li>
    *   <li>{@code menu} – show the main menu</li>
-   *   <li>{@code highScores} – show the high scores view</li>
-   *   <li>{@code configuration} – show the configuration view</li>
-   *   <li>{@code play} – show the gameplay view</li>
+   *   <li>{@code highScores} – show the high scores views</li>
+   *   <li>{@code configuration} – show the configuration views</li>
+   *   <li>{@code play} – show the gameplay views</li>
    *   <li>other values – ignored (no scene shown)</li>
    * </ul>
    *
