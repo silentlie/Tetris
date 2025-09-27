@@ -136,4 +136,58 @@ public class GameState {
   public List<TetrominoType> getQueue() {
     return queue.peek();
   }
+
+  public PureGame toCells() {
+    int[][] cells = new int[getHeight()][getWidth()];
+    for (int y = 0; y < getHeight(); y++) {
+      for (int x = 0; x < getWidth(); x++) {
+        cells[y][x] = (getCell(x, y) == null) ? 0 : 1;
+      }
+    }
+    int[][] currentShape = toShapeMatrix(tetromino.getAbsoluteShape());
+    List<TetrominoType> peek = getQueue();
+    TetrominoType nextType = peek.getFirst();
+    Tetromino preview = new Tetromino(nextType, new Cell(0, 0), Rotation.UP);
+    int[][] nextShape = toShapeMatrix(preview.getAbsoluteShape());
+    return new PureGame(getWidth(), getHeight(), cells, currentShape, nextShape);
+  }
+
+  private static int[][] toShapeMatrix(List<Cell> cells) {
+    if (cells == null || cells.isEmpty()) {
+      return new int[0][0];
+    }
+
+    int minX = Integer.MAX_VALUE;
+    int minY = Integer.MAX_VALUE;
+    int maxX = Integer.MIN_VALUE;
+    int maxY = Integer.MIN_VALUE;
+
+    for (Cell c : cells) {
+      if (c.x() < minX) {
+        minX = c.x();
+      }
+      if (c.y() < minY) {
+        minY = c.y();
+      }
+      if (c.x() > maxX) {
+        maxX = c.x();
+      }
+      if (c.y() > maxY) {
+        maxY = c.y();
+      }
+    }
+
+    int w = maxX - minX + 1;
+    int h = maxY - minY + 1;
+    int[][] bits = new int[h][w];
+
+    for (Cell c : cells) {
+      int nx = c.x() - minX;
+      int ny = c.y() - minY;
+      if (ny >= 0 && ny < h && nx >= 0 && nx < w) {
+        bits[ny][nx] = 1;
+      }
+    }
+    return bits;
+  }
 }
