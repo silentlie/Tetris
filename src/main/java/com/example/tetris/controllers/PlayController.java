@@ -6,8 +6,8 @@ import com.example.tetris.helpers.GameService;
 import com.example.tetris.helpers.Route;
 import com.example.tetris.models.Board;
 import com.example.tetris.models.Configuration;
-import com.example.tetris.models.DefaultLevelCurve;
 import com.example.tetris.models.Game;
+import com.example.tetris.models.GameClock;
 import com.example.tetris.models.GameIntent;
 import com.example.tetris.models.GameState;
 import com.example.tetris.models.PieceQueue;
@@ -37,9 +37,7 @@ public class PlayController implements FxController {
     this.ctx = ctx;
     // --- Config & deterministic RNGs ---
     Configuration config = ctx.getConfigService().getCache();
-    int startLevel = config.level();
-    DefaultLevelCurve curve = new DefaultLevelCurve(startLevel);
-    service = new GameService(curve, this::endGame);
+    service = new GameService(this::endGame);
     long seed = System.nanoTime();
     // TODO: AI control if config.player1() == PlayerType.AI or config.player2() == PlayerType.AI
     // TODO: connect to server at port 3000 if config.player1() == PlayerType.EXTERNAL or
@@ -65,13 +63,14 @@ public class PlayController implements FxController {
   }
 
   private Game createGame(long seed, Configuration config) {
-    Supplier<TetrominoType> supplier1 = PieceSupplierStrategy.UNIFORM.create(seed);
-    PieceQueue queue = new PieceQueue(3, supplier1);
+    Supplier<TetrominoType> supplier = PieceSupplierStrategy.UNIFORM.create(seed);
+    PieceQueue queue = new PieceQueue(3, supplier);
     Board board = new Board(config.width(), config.height());
     GameState state = new GameState(board, queue);
     GameView view = new GameView();
     root.getItems().add(view);
-    return new Game(state, view);
+    GameClock clock = new GameClock(config.level());
+    return new Game(state, view, clock);
   }
 
   public void endGame() {

@@ -1,8 +1,11 @@
 package com.example.tetris.controllers;
 
+import static com.example.tetris.helpers.TimeUtil.formatElapsedNanos;
+
 import com.example.tetris.Main;
 import com.example.tetris.helpers.BoardCanvas;
 import com.example.tetris.helpers.NextCanvas;
+import com.example.tetris.models.GameClock;
 import com.example.tetris.models.GameState;
 import java.io.IOException;
 import javafx.fxml.FXML;
@@ -25,6 +28,10 @@ public class GameView extends SplitPane {
   private Label labelScore;
   @FXML
   private Label labelStreak;
+  @FXML
+  private Label labelHighestStreak;
+  @FXML
+  private Label labelTimeElapsed;
   @FXML
   private BoardCanvas boardCanvas;
   @FXML
@@ -66,17 +73,17 @@ public class GameView extends SplitPane {
   }
 
 
-  public void render(GameState s, int initialLevel, int currentLevel) {
-
-    labelInitialLevel.setText("Initial Level: " + initialLevel);
-    labelCurrentLevel.setText("Current Level: " + currentLevel);
+  public void render(GameState s, GameClock clock) {
+    labelInitialLevel.setText("Initial Level: " + clock.startLevel);
+    labelCurrentLevel.setText("Current Level: " + clock.level());
     labelScore.setText("Score: " + s.getScore());
     labelStreak.setText("Streak: " + s.getStreak());
+    labelHighestStreak.setText("Highest Streak: " + s.getHighestStreak());
+    labelTimeElapsed.setText("Time Elapsed: " + formatElapsedNanos(clock.elapsedNanos()));
     if (!dirty) {
       return;
     }
     if (boardCanvas != null) {
-      System.out.println(currentLevel);
       boardCanvas.render(s);
     }
     if (nextCanvas != null) {

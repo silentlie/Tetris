@@ -42,7 +42,14 @@
         fx:id="labelStreak" text="Streak: 0"
         style="-fx-text-fill: #e6e6e6;"
       />
-
+      <Label
+        fx:id="labelHighestStreak" text="Highest Streak: 0"
+        style="-fx-text-fill: #e6e6e6;"
+      />
+      <Label
+        fx:id="labelTimeElapsed" text="Time Elapsed: 0"
+        style="-fx-text-fill: #e6e6e6;"
+      />
     </VBox>
     <NextCanvas fx:id="nextCanvas" VBox.vgrow="ALWAYS"/>
   </SplitPane>

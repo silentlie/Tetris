@@ -8,11 +8,13 @@ public class Game {
 
   private final GameState state;
   private final GameView view;
+  private final GameClock clock;
   private long gravityAccNanos = 0L;
 
-  public Game(GameState state, GameView view) {
+  public Game(GameState state, GameView view, GameClock clock) {
     this.state = Objects.requireNonNull(state, "state is null");
     this.view = Objects.requireNonNull(view, "view is null");
+    this.clock = Objects.requireNonNull(clock, "clock is null");
   }
 
   public boolean apply(GameIntent intent) {
@@ -30,17 +32,17 @@ public class Game {
     return state.isGameOver();
   }
 
-  public void tick(long dtNanos, long fallInternalNanos, int initialLevel, int currentLevel) {
-    if (isGameOver()) {
-      return;
-    }
-    gravityAccNanos += dtNanos;
-    while (gravityAccNanos >= fallInternalNanos && !state.isGameOver()) {
-      gravityAccNanos -= fallInternalNanos;
-      if (state.apply(GameIntent.SOFT_DROP)) {
-        view.markDirty();
+  public void tick(long dtNanos) {
+    if (!isGameOver()) {
+      clock.tick(dtNanos);
+      gravityAccNanos += dtNanos;
+      while (gravityAccNanos >= clock.fallIntervalNanos() && !state.isGameOver()) {
+        gravityAccNanos -= clock.fallIntervalNanos();
+        if (state.apply(GameIntent.SOFT_DROP)) {
+          view.markDirty();
+        }
       }
     }
-    view.render(state, initialLevel, currentLevel);
+    view.render(state, clock);
   }
 }

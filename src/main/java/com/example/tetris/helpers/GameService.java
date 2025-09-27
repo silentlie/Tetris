@@ -1,7 +1,6 @@
 package com.example.tetris.helpers;
 
 import com.example.tetris.models.Game;
-import com.example.tetris.models.LevelCurve;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,14 +10,11 @@ public final class GameService extends AnimationTimer {
 
   private final List<Game> games = new ArrayList<>();
   private final Runnable onAllFinished;
-  private final LevelCurve curve;
 
   private long last = 0L;
-  private long elapsedNanos = 0L;
   private boolean isRunning = false;
 
-  public GameService(LevelCurve curve, Runnable onAllFinished) {
-    this.curve = Objects.requireNonNull(curve, "curve is null");
+  public GameService(Runnable onAllFinished) {
     this.onAllFinished = Objects.requireNonNull(onAllFinished, "onAllFinished is null");
   }
 
@@ -38,14 +34,10 @@ public final class GameService extends AnimationTimer {
     }
     long dt = now - last;
     last = now;
-
-    elapsedNanos += dt;
-    long fallInternalNanos = curve.fallIntervalNanos(elapsedNanos);
-    double currLevel = curve.levelAtNanos(elapsedNanos);
     boolean allOver = !games.isEmpty();
     for (Game g : games) {
+      g.tick(dt);
       if (!g.isGameOver()) {
-        g.tick(dt, fallInternalNanos, curve.startLevel(), (int) currLevel);
         allOver = false;
       }
     }

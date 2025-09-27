@@ -12,6 +12,7 @@ public class GameState {
   private Tetromino tetromino;
   private int score = 0;
   private int streak = 0;
+  private int highestStreak = 0;
   private boolean gameOver = false;
 
   public GameState(Board board, PieceQueue queue) {
@@ -70,6 +71,7 @@ public class GameState {
       streak = 0;
     } else {
       streak += cleared;
+      highestStreak = Math.max(highestStreak, streak);
       score += calculateScoring(cleared, streak);
     }
     tetromino = spawnFromQueue();
@@ -100,6 +102,10 @@ public class GameState {
 
   public int getStreak() {
     return streak;
+  }
+
+  public int getHighestStreak() {
+    return highestStreak;
   }
 
   public boolean isGameOver() {
