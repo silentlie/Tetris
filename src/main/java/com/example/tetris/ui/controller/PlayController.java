@@ -25,6 +25,23 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyEvent;
 
+/**
+ * JavaFX controller for the “Play” route. Constructs and drives one or two {@link Game} instances,
+ * wires keyboard input, and manages pause/leave flow.
+ *
+ * <p>Lifecycle:</p>
+ * <ul>
+ *   <li>{@link #setContext(AppContext)} builds games from configuration, attaches key handlers,
+ *       and starts the {@link GameService} loop.</li>
+ *   <li>{@link #pauseGame()} temporarily stops the loop and shows a modal dialog to leave or
+ *   resume.</li>
+ *   <li>{@link #endGame()} stops the loop, shows “Game Over”, and navigates back to the menu.</li>
+ * </ul>
+ *
+ * <p>Threading: all methods are expected to run on the JavaFX application thread.</p>
+ *
+ * @since 1.0
+ */
 public class PlayController implements FxController {
 
   @FXML
@@ -35,6 +52,20 @@ public class PlayController implements FxController {
   private Game game1;
   private Game game2;
 
+  /**
+   * Initializes this controller with the application context and starts gameplay.
+   *
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>Loads {@link Configuration} from the context.</li>
+   *   <li>Creates a {@link GameService} that ends the session when all games are finished.</li>
+   *   <li>Creates Player 1, and Player 2 if {@code extendMode} is enabled, then starts the loop.
+   *   </li>
+   *   <li>Installs a scene-level key handler ({@link #onKeyPressed(KeyEvent)}).</li>
+   * </ul>
+   *
+   * @param ctx application context (must not be {@code null})
+   */
   @Override
   public void setContext(AppContext ctx) {
     this.ctx = ctx;
@@ -42,9 +73,11 @@ public class PlayController implements FxController {
     Configuration config = ctx.getConfigService().getCache();
     service = new GameService(this::endGame);
     long seed = System.nanoTime();
+
     // TODO: AI control if config.player1() == PlayerType.AI or config.player2() == PlayerType.AI
     // TODO: connect to server at port 3000 if config.player1() == PlayerType.EXTERNAL or
     //  config.player2() == PlayerType.EXTERNAL
+
     game1 = createGame(seed, config);
     service.addGame(game1);
 
@@ -54,6 +87,8 @@ public class PlayController implements FxController {
       service.addGame(game2);
       root.setDividerPositions(0.5);
     }
+
+    // Install key handler on the active scene
     root.sceneProperty().addListener((obs, oldScene, newScene) -> {
       if (oldScene != null) {
         oldScene.setOnKeyPressed(null);
@@ -62,9 +97,18 @@ public class PlayController implements FxController {
         newScene.setOnKeyPressed(this::onKeyPressed);
       }
     });
+
     service.start();
   }
 
+  /**
+   * Factory that constructs a {@link Game} (state + view + clock) and adds its view to the UI.
+   *
+   * @param seed   RNG seed used by the piece supplier (deterministic behavior per seed)
+   * @param config game configuration (board size, start level, etc.)
+   *
+   * @return a fully wired {@link Game} instance
+   */
   private Game createGame(long seed, Configuration config) {
     Supplier<TetrominoType> supplier = PieceSupplierStrategy.UNIFORM.create(seed);
     PieceQueue queue = new PieceQueue(NEXT_QUEUE_SIZE, supplier);
@@ -76,6 +120,10 @@ public class PlayController implements FxController {
     return new Game(state, view, clock);
   }
 
+  /**
+   * Ends the session: stops the service, shows a “Game Over” dialog, navigates home, and evicts
+   * this route from the navigation cache.
+   */
   public void endGame() {
     if (service != null && service.isRunning()) {
       service.stop();
@@ -92,6 +140,13 @@ public class PlayController implements FxController {
     });
   }
 
+  /**
+   * Pauses gameplay and prompts the user to leave or resume.
+   *
+   * <p>If the service is not running, the call is ignored. Otherwise, the loop is stopped and a
+   * modal dialog is shown. Choosing “Leave” calls {@link #endGame()}, choosing “Resume” restarts
+   * the loop.</p>
+   */
   public void pauseGame() {
     if (service == null || !service.isRunning()) {
       return;
@@ -114,15 +169,32 @@ public class PlayController implements FxController {
     }
   }
 
+  /**
+   * Scene-level key handler that maps key presses to {@link GameIntent}s for player 1 (and player 2
+   * when present). Also supports pause via {@code P} or {@code ESCAPE}.
+   *
+   * <p>Controls:</p>
+   * <ul>
+   *   <li>Pause: {@code P}, {@code ESCAPE}</li>
+   *   <li>Player 1: {@code LEFT}/{@code RIGHT}/{@code UP}/{@code DOWN}</li>
+   *   <li>Player 2 (extend mode): {@code ,} (left), {@code .} (right), {@code L} (rotate CW),
+   *       {@code SPACE} (soft drop). If player 2 is not active, these keys control player 1.</li>
+   * </ul>
+   *
+   * @param keyEvent incoming key event; always consumed
+   */
   private void onKeyPressed(KeyEvent keyEvent) {
     keyEvent.consume();
     switch (keyEvent.getCode()) {
       case P, ESCAPE -> pauseGame();
+
       // Player 1
       case LEFT -> game1.apply(GameIntent.MOVE_LEFT);
       case RIGHT -> game1.apply(GameIntent.MOVE_RIGHT);
       case UP -> game1.apply(GameIntent.ROTATE_CW);
       case DOWN -> game1.apply(GameIntent.SOFT_DROP);
+
+      // Player 2 (or fallback to P1 if second game not present)
       case COMMA -> {
         if (game2 != null) {
           game2.apply(GameIntent.MOVE_LEFT);
@@ -130,7 +202,6 @@ public class PlayController implements FxController {
           game1.apply(GameIntent.MOVE_LEFT);
         }
       }
-      // Player 2
       case PERIOD -> {
         if (game2 != null) {
           game2.apply(GameIntent.MOVE_RIGHT);

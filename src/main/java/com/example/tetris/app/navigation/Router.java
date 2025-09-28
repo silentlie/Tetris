@@ -94,6 +94,15 @@ public class Router {
     }
   }
 
+  /**
+   * Removes any cached view/controller associated with the given route from the
+   * {@link ViewLoader}.
+   *
+   * <p>Use this to force a fresh load the next time {@link #show(Route, AppContext)} is called for
+   * the same route (for example, after configuration changes or to release memory).</p>
+   *
+   * @param route the route to evict from cache
+   */
   public void evict(Route route) {
     loader.evict(route);
   }
@@ -107,6 +116,8 @@ public class Router {
    *
    * <p>If {@code duration} is {@code null}, the splash defaults to 15 seconds.</p>
    *
+   * <p><strong>Threading:</strong> Must be called on the JavaFX application thread.</p>
+   *
    * @param resourceAnchor a class whose classloader and package are used to resolve
    *                       {@code splash.png} (typically {@code Main.class})
    * @param duration       how long the splash remains visible; defaults to 15s if {@code null}
@@ -116,8 +127,10 @@ public class Router {
    *                              {@code resourceAnchor}
    */
   public void showSplash(Class<?> resourceAnchor, Duration duration, Runnable after) {
-    String url = Objects.requireNonNull(resourceAnchor.getResource("images/splash.png"),
-        "Missing splash.png").toExternalForm();
+    String url = Objects.requireNonNull(
+        resourceAnchor.getResource("images/splash.png"),
+        "Missing splash.png"
+    ).toExternalForm();
 
     ImageView splashImage = new ImageView(new Image(url));
     splashImage.setPreserveRatio(true);

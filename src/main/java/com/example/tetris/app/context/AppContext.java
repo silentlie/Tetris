@@ -6,11 +6,11 @@ import com.example.tetris.service.ConfigurationService;
 import javafx.stage.Stage;
 
 /**
- * Shared application context passed to all controller.
+ * Shared application context passed to all controllers.
  *
- * <p>The {@code AppContext} provides access to global service and state
- * for the running application. At minimum, it wraps a {@link Router} so controller can trigger
- * navigation without directly depending on stage or loader details. It also exposes the
+ * <p>The {@code AppContext} provides access to global services and state for the running
+ * application. At minimum, it wraps a {@link Router} so controllers can trigger navigation without
+ * coupling to the primary {@link Stage} or view loader details. It also exposes the
  * {@link ConfigurationService} for accessing and persisting application settings.</p>
  *
  * <p><strong>Typical usage inside a controller:</strong></p>
@@ -30,8 +30,8 @@ import javafx.stage.Stage;
  * }
  * }</pre>
  *
- * <p>This class can be extended in the future to hold additional shared state,
- * such as high scores, user session data, or other service.</p>
+ * <p>This class can be extended in the future to hold additional shared state, such as high
+ * scores, user session data, or other services.</p>
  */
 public class AppContext {
 
@@ -41,8 +41,10 @@ public class AppContext {
   /**
    * Creates a new application context bound to the given router and configuration service.
    *
-   * @param router               the router responsible for navigation between views
-   * @param configurationService service for loading and saving persistent configuration
+   * @param router               the router responsible for navigation between views (must not be
+   *                             {@code null})
+   * @param configurationService service for loading and saving persistent configuration (must not
+   *                             be {@code null})
    */
   public AppContext(Router router, ConfigurationService configurationService) {
     this.router = router;
@@ -50,11 +52,11 @@ public class AppContext {
   }
 
   /**
-   * Returns the primary {@link javafx.stage.Stage} managed by the underlying {@link Router}.
+   * Returns the primary {@link Stage} managed by the underlying {@link Router}.
    *
-   * <p>Use this for dialog ownership/modality (e.g., {@code alert.initOwner(getStage())}),
-   * window title/icon updates, or querying the current {@code Scene}. Mutating the returned stage
-   * affects the whole application.</p>
+   * <p>Use this for dialog ownership/modality (for example, {@code alert.initOwner(getStage())}),
+   * window title/icon updates, or querying the current scene. Mutating the returned stage affects
+   * the whole application.</p>
    *
    * @return the primary stage (never {@code null})
    */
@@ -65,8 +67,8 @@ public class AppContext {
   /**
    * Navigates to the given route using the underlying {@link Router}.
    *
-   * <p>Safe to call from any thread; the router will dispatch to the JavaFX application
-   * thread as needed.</p>
+   * <p>Safe to call from any thread; the router will dispatch to the JavaFX application thread as
+   * needed.</p>
    *
    * @param route the target route to display
    */
@@ -74,6 +76,15 @@ public class AppContext {
     router.show(route, this);
   }
 
+  /**
+   * Evicts any cached view/controller for the given route from the router’s loader.
+   *
+   * <p>Useful to force a fresh load on next navigation (for example, after configuration changes
+   * or
+   * to release memory).</p>
+   *
+   * @param route the route to evict
+   */
   public void evict(Route route) {
     router.evict(route);
   }
