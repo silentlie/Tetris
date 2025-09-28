@@ -1,5 +1,7 @@
 package com.example.tetris.ui.controller;
 
+import static com.example.tetris.core.config.Configuration.NEXT_QUEUE_SIZE;
+
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
 import com.example.tetris.app.navigation.Route;
@@ -65,7 +67,7 @@ public class PlayController implements FxController {
 
   private Game createGame(long seed, Configuration config) {
     Supplier<TetrominoType> supplier = PieceSupplierStrategy.UNIFORM.create(seed);
-    PieceQueue queue = new PieceQueue(3, supplier);
+    PieceQueue queue = new PieceQueue(NEXT_QUEUE_SIZE, supplier);
     Board board = new Board(config.width(), config.height());
     GameState state = new GameState(board, queue);
     GameView view = new GameView();

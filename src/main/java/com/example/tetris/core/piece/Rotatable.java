@@ -1,14 +1,14 @@
 package com.example.tetris.core.piece;
 
 /**
- * Represents an immutable contract for entities that can have a {@link Rotation} state.
+ * Immutable contract for entities that expose a {@link Rotation} state.
  *
- * <p>Implementations of this interface must be <b>immutable</b>:
- * all rotation-related operations must return a <b>new instance</b> rather than mutating the
- * current one.</p>
+ * <p>Implementations must be <b>immutable</b>: all rotation operations return a
+ * <b>new instance</b> rather than mutating the current one.</p>
  *
- * <p>This interface uses a self-referential generic type {@code <T>} to enable
- * <i>fluent method chaining</i> in subclasses or implementing records.</p>
+ * <p>This interface uses a self-referential generic parameter {@code <T>} (the
+ * “curiously recurring template pattern”) so implementors can return their own type and support
+ * fluent method chaining.</p>
  *
  * @param <T> the concrete implementing type, enabling fluent API returns
  */
@@ -17,32 +17,31 @@ public interface Rotatable<T extends Rotatable<T>> {
   /**
    * Returns the current {@link Rotation} state of this instance.
    *
-   * @return the current rotation state, never {@code null}
+   * @return the current rotation state (never {@code null})
    */
   Rotation rotation();
 
   /**
    * Creates a <b>new instance</b> with the specified {@link Rotation}.
    *
-   * <p>This method acts as an <b>immutability hook</b>, ensuring that the
-   * existing instance remains unchanged while returning a new one.</p>
+   * <p>Acts as the immutability hook: leaves the current instance unchanged and returns a copy
+   * with {@code newRotation}.</p>
    *
-   * @param newRotation the new {@link Rotation} to apply, must not be {@code null}
+   * @param newRotation the rotation to apply (must not be {@code null})
    *
-   * @return a new instance with the updated rotation, never {@code null}
+   * @return a new instance with the updated rotation (never {@code null})
    */
   T withRotation(Rotation newRotation);
 
   /**
    * Returns a new instance rotated 90 degrees <b>clockwise</b>.
    *
-   * <p>This is equivalent to calling:
-   * <pre>
-   *   withRotation(rotation().rotateClockwise());
-   * </pre>
-   * </p>
+   * <p>This is equivalent to calling:</p>
+   * <pre>{@code
+   * withRotation(rotation().rotateClockwise());
+   * }</pre>
    *
-   * @return a new instance rotated clockwise, never {@code null}
+   * @return a new instance rotated clockwise (never {@code null})
    *
    * @see Rotation#rotateClockwise()
    */
@@ -53,13 +52,12 @@ public interface Rotatable<T extends Rotatable<T>> {
   /**
    * Returns a new instance rotated 90 degrees <b>counter-clockwise</b>.
    *
-   * <p>This is equivalent to calling:
-   * <pre>
-   *   withRotation(rotation().rotateCounterClockwise());
-   * </pre>
-   * </p>
+   * <p>This is equivalent to calling:</p>
+   * <pre>{@code
+   * withRotation(rotation().rotateCounterClockwise());
+   * }</pre>
    *
-   * @return a new instance rotated counter-clockwise, never {@code null}
+   * @return a new instance rotated counter-clockwise (never {@code null})
    *
    * @see Rotation#rotateCounterClockwise()
    */
@@ -67,3 +65,4 @@ public interface Rotatable<T extends Rotatable<T>> {
     return withRotation(rotation().rotateCounterClockwise());
   }
 }
+

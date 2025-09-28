@@ -64,8 +64,7 @@ public final class JsonUtil {
    * Hidden constructor — singleton.
    */
   private JsonUtil() {
-    this.mapper = new ObjectMapper()
-        .enable(SerializationFeature.INDENT_OUTPUT);
+    this.mapper = new ObjectMapper().enable(SerializationFeature.INDENT_OUTPUT);
     // Add modules here if your project needs them, e.g. JavaTimeModule.
     // mapper.registerModule(new JavaTimeModule());
   }
@@ -75,6 +74,18 @@ public final class JsonUtil {
    */
   public static JsonUtil getInstance() {
     return INSTANCE;
+  }
+
+  /**
+   * Creates a temporary sibling file for safe write-then-rename cycles.
+   */
+  private static Path tempSibling(Path target) throws IOException {
+    Path parent = target.getParent();
+    if (parent == null) {
+      parent = Path.of(".");
+    }
+    String prefix = target.getFileName().toString() + ".tmp-";
+    return Files.createTempFile(parent, prefix, ".json");
   }
 
   /**
@@ -226,17 +237,5 @@ public final class JsonUtil {
     try (BufferedReader r = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
       return mapper.readValue(r, typeRef);
     }
-  }
-
-  /**
-   * Creates a temporary sibling file for safe write-then-rename cycles.
-   */
-  private static Path tempSibling(Path target) throws IOException {
-    Path parent = target.getParent();
-    if (parent == null) {
-      parent = Path.of(".");
-    }
-    String prefix = target.getFileName().toString() + ".tmp-";
-    return Files.createTempFile(parent, prefix, ".json");
   }
 }

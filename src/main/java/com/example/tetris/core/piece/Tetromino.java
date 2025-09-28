@@ -2,70 +2,37 @@ package com.example.tetris.core.piece;
 
 import com.example.tetris.core.board.Cell;
 import java.util.List;
-import java.util.Map;
 
 /**
- * Represents a single Tetris tetromino, composed of four {@link Cell} blocks arranged into one of
- * the seven standard {@link TetrominoType} shapes.
+ * Single Tetris tetromino composed of four {@link Cell} blocks arranged as one of the seven
+ * standard {@link TetrominoType} shapes.
  *
- * <p>Each tetromino has:
+ * <p>Coordinates use screen-style axes: X increases to the right; Y increases downward.</p>
+ *
+ * <p>Each tetromino has:</p>
  * <ul>
- *   <li>a {@link TetrominoType} defining its shape and color</li>
- *   <li>a {@link Cell} {@link #position()} representing its origin (pivot) in the grid</li>
- *   <li>a {@link Rotation} state defining its current orientation</li>
+ *   <li>a {@link TetrominoType} defining its shape (and typically its color),</li>
+ *   <li>a {@link Cell} {@link #position()} denoting its origin/pivot in the grid,</li>
+ *   <li>a {@link Rotation} describing its current orientation.</li>
  * </ul>
  *
- * <p>This record implements {@link Movable} and {@link Rotatable}, meaning
- * tetromino are <b>immutable</b>: any movement or rotation returns a
- * <b>new {@code Tetromino}</b> instance instead of mutating the existing one.</p>
+ * <p>This record implements {@link Movable} and {@link Rotatable}. Instances are
+ * <b>immutable</b>: movement and rotation methods return a <b>new</b> {@code Tetromino}.</p>
  *
- * @param type     the {@link TetrominoType} defining the tetromino's shape and color
- * @param position the origin cell (pivot) of the tetromino in the grid
- * @param rotation the current {@link Rotation} of the tetromino
+ * @param type     the shape/type of this tetromino (must not be {@code null})
+ * @param position the origin (pivot) of the tetromino within the grid (must not be {@code null})
+ * @param rotation the current rotation state (must not be {@code null})
  */
 public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
     implements Movable<Tetromino>, Rotatable<Tetromino> {
 
   /**
-   * Shape definitions for each {@link TetrominoType} in the default {@link Rotation#UP}
-   * orientation.
-   *
-   * <p>Each tetromino shape is defined as a list of {@link Cell} offsets
-   * relative to its pivot at {@code (0, 0)}. Rotations are applied dynamically when retrieving
-   * absolute positions.</p>
-   */
-  private static final Map<TetrominoType, List<Cell>> SHAPES = Map.of(
-      TetrominoType.I, List.of(new Cell(-2, 0), new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0)),
-      TetrominoType.O, List.of(new Cell(0, 0), new Cell(1, 0), new Cell(0, 1), new Cell(1, 1)),
-      TetrominoType.T, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(0, 1)),
-      TetrominoType.S, List.of(new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1), new Cell(0, 1)),
-      TetrominoType.Z, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(0, 1), new Cell(1, 1)),
-      TetrominoType.J, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1)),
-      TetrominoType.L, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(1, 1))
-  );
-
-  /**
-   * Creates a random {@code Tetromino} at the specified spawn position, using the default
-   * {@link Rotation#UP}.
-   *
-   * <p>The tetromino type is randomly selected using
-   * {@link TetrominoType#randomType()}.</p>
-   *
-   * @param spawnPosition the initial grid position of the tetromino's origin
-   *
-   * @return a new {@link Tetromino} with a random type and upward orientation
-   */
-  public static Tetromino randomTetromino(Cell spawnPosition) {
-    return new Tetromino(TetrominoType.randomType(), spawnPosition, Rotation.UP);
-  }
-
-  /**
    * Returns a new {@code Tetromino} with the specified position, keeping the same
    * {@link TetrominoType} and {@link Rotation}.
    *
-   * @param newPosition the new grid position
+   * @param newPosition the new grid position (must not be {@code null})
    *
-   * @return a new {@link Tetromino} instance with the updated position
+   * @return a new {@link Tetromino} with the updated position
    */
   @Override
   public Tetromino withPosition(Cell newPosition) {
@@ -76,9 +43,9 @@ public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
    * Returns a new {@code Tetromino} with the specified rotation, keeping the same
    * {@link TetrominoType} and {@link Cell} position.
    *
-   * @param newRotation the new {@link Rotation} to apply
+   * @param newRotation the rotation to apply (must not be {@code null})
    *
-   * @return a new {@link Tetromino} instance with the updated rotation
+   * @return a new {@link Tetromino} with the updated rotation
    */
   @Override
   public Tetromino withRotation(Rotation newRotation) {
@@ -86,25 +53,40 @@ public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
   }
 
   /**
-   * Returns the list of absolute {@link Cell} positions occupied by this tetromino on the game
-   * board, based on its {@link TetrominoType}, {@link Rotation}, and {@link #position()}.
+   * Computes the absolute board coordinates of all four blocks of this tetromino.
    *
-   * <p>This method first retrieves the shape offsets from {@link #SHAPES},
-   * applies the current rotation via {@link Rotation#apply(Cell)}, and then translates them to the
-   * tetromino's origin position.</p>
+   * <p>The relative shape for {@link #type()} and {@link #rotation()} is translated by
+   * {@link #position()} to produce absolute {@link Cell} coordinates.</p>
    *
-   * <p>Example usage:</p>
-   * <pre>
-   *   Tetromino t = Tetromino.randomTetromino(new Cell(5, 0));
-   *   List&lt;Cell&gt; cells = t.getAbsoluteShape();
-   * </pre>
+   * <p>Example:</p>
+   * <pre>{@code
+   * Tetromino t = new Tetromino(TetrominoType.T, new Cell(4, 0), Rotation.RIGHT);
+   * List<Cell> cells = t.getAbsoluteShape(); // absolute block positions
+   * }</pre>
    *
-   * @return a list of absolute {@link Cell} positions, never {@code null}
+   * @return an immutable list of four absolute {@link Cell} coordinates (never {@code null})
+   *
+   * @implNote This method allocates a new list on each call.
    */
   public List<Cell> getAbsoluteShape() {
-    return SHAPES.get(type).stream()
-        .map(rotation::apply)
-        .map(position::add)
-        .toList();
+    return type.relativeShape(rotation).stream().map(position::add).toList();
+  }
+
+  /**
+   * Computes the axis-aligned bounding box of this tetromino in absolute grid coordinates.
+   *
+   * <p>The relative {@link Bound} for {@link #type()} and {@link #rotation()} is translated by
+   * {@link #position()} to produce an absolute bounding rectangle.</p>
+   *
+   * <p>Example:</p>
+   * <pre>{@code
+   * Tetromino t = new Tetromino(TetrominoType.I, new Cell(5, -1), Rotation.UP);
+   * Bound box = t.getAbsoluteBound(); // inclusive min/max X/Y covering the 4 blocks
+   * }</pre>
+   *
+   * @return the absolute {@link Bound} of this tetromino (never {@code null})
+   */
+  public Bound getAbsoluteBound() {
+    return type.relativeBound(rotation).translate(position.x(), position.y());
   }
 }

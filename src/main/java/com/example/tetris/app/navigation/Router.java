@@ -116,8 +116,7 @@ public class Router {
    *                              {@code resourceAnchor}
    */
   public void showSplash(Class<?> resourceAnchor, Duration duration, Runnable after) {
-    String url = Objects.requireNonNull(
-        resourceAnchor.getResource("images/splash.png"),
+    String url = Objects.requireNonNull(resourceAnchor.getResource("images/splash.png"),
         "Missing splash.png").toExternalForm();
 
     ImageView splashImage = new ImageView(new Image(url));

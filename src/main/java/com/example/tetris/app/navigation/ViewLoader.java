@@ -49,7 +49,7 @@ public final class ViewLoader {
    * Loads the views for the given route, initializing its controller with the supplied
    * {@link AppContext}.
    *
-   * <p>If the views has already been loaded previously, the cached instance is
+   * <p>If the views have already been loaded previously, the cached instance is
    * returned instead of parsing the FXML again.</p>
    *
    * @param route   the route to load
@@ -67,8 +67,7 @@ public final class ViewLoader {
     }
 
     try {
-      URL url = Objects.requireNonNull(
-          resourceAnchor.getResource(route.fxml()),
+      URL url = Objects.requireNonNull(resourceAnchor.getResource(route.fxml()),
           "FXML not found on classpath: " + route.fxml());
       FXMLLoader loader = new FXMLLoader(url);
       Parent root = loader.load();

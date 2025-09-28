@@ -1,87 +1,208 @@
 package com.example.tetris.core.piece;
 
-import java.util.concurrent.ThreadLocalRandom;
+import com.example.tetris.core.board.Cell;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javafx.scene.paint.Color;
 
 /**
- * Represents the seven standard tetromino types used in Tetris: {@code I}, {@code O}, {@code T},
- * {@code S}, {@code Z}, {@code J}, and {@code L}.
+ * Seven standard Tetris tetromino types: {@code I}, {@code O}, {@code T}, {@code S}, {@code Z},
+ * {@code J}, and {@code L}.
  *
- * <p>Each tetromino type is associated with a distinct {@link Color}
- * that is typically used for rendering the tetromino on the board.</p>
+ * <p>Each enum constant stores a display {@link Color} and a canonical shape expressed as four
+ * {@link Cell} offsets relative to an origin {@code (0, 0)}. Coordinates follow the conventional
+ * screen/grid orientation: X increases to the right; Y increases downward.</p>
  *
- * <p>Utility methods are provided for retrieving the color and selecting
- * a random tetromino type.</p>
+ * <p>Utility methods allow you to query the display color, derive the rotated shape as relative
+ * cells, and obtain an inclusive axis-aligned {@link Bound} for any {@link Rotation}. Commonly,
+ * callers translate the relative shape by a tetromino’s board position to get absolute cells.</p>
+ *
+ * <p>Derived (rotation-specific) data is cached in a thread-safe {@link ConcurrentHashMap}.
+ * The enum is thread-safe; its returned collections are unmodifiable.</p>
  */
 public enum TetrominoType {
 
   /**
-   * Straight line tetromino ("I" shape).
+   * Straight line tetromino (“I”).
    */
-  I(Color.CYAN),
+  I(Color.CYAN, List.of(new Cell(-2, 0), new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0))),
 
   /**
-   * Square tetromino ("O" shape).
+   * Square tetromino (“O”).
    */
-  O(Color.YELLOW),
+  O(Color.YELLOW, List.of(new Cell(0, 0), new Cell(1, 0), new Cell(0, 1), new Cell(1, 1))),
 
   /**
-   * T-shaped tetromino ("T" shape).
+   * T-shaped tetromino (“T”).
    */
-  T(Color.MAGENTA),
+  T(Color.MAGENTA, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(0, 1))),
 
   /**
-   * Skew tetromino leaning right ("S" shape).
+   * Skew tetromino leaning right (“S”).
    */
-  S(Color.GREEN),
+  S(Color.GREEN, List.of(new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1), new Cell(0, 1))),
 
   /**
-   * Skew tetromino leaning left ("Z" shape).
+   * Skew tetromino leaning left (“Z”).
    */
-  Z(Color.RED),
+  Z(Color.RED, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(0, 1), new Cell(1, 1))),
 
   /**
-   * Left-facing L tetromino ("J" shape).
+   * Left-facing L tetromino (“J”).
    */
-  J(Color.BLUE),
+  J(Color.BLUE, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(-1, 1))),
 
   /**
-   * Right-facing L tetromino ("L" shape).
+   * Right-facing L tetromino (“L”).
    */
-  L(Color.ORANGE);
+  L(Color.ORANGE, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(1, 1)));
 
+  private static final Map<Key, Derived> CACHE = new ConcurrentHashMap<>();
   private final Color color;
+  private final List<Cell> shape;
 
-  TetrominoType(Color color) {
+  TetrominoType(Color color, List<Cell> shape) {
     this.color = color;
+    this.shape = shape;
   }
 
   /**
-   * Selects and returns a random {@code TetrominoType}.
+   * Computes the rotation-specific derived data for a given type and rotation.
    *
-   * <p>This uses {@link ThreadLocalRandom} to ensure thread-safe randomness.</p>
+   * <p>The canonical relative cells are transformed by {@code r}, then the inclusive
+   * {@link Bound} is computed across the rotated cells.</p>
    *
-   * <p>Example usage:</p>
-   * <pre>
-   *   TetrominoType random = TetrominoType.randomType();
-   *   System.out.println(random); // e.g. "T" or "Z"
-   * </pre>
+   * @param t the tetromino type
+   * @param r the rotation to apply
    *
-   * @return a randomly chosen {@code TetrominoType}, never {@code null}
+   * @return a new {@link Derived} holding the rotated cells and their bound
    */
-  public static TetrominoType randomType() {
-    TetrominoType[] values = TetrominoType.values();
-    return values[ThreadLocalRandom.current().nextInt(values.length)];
+  private static Derived computeRelative(TetrominoType t, Rotation r) {
+    List<Cell> rel = t.shape.stream().map(r::apply).toList();
+    int minX = Integer.MAX_VALUE;
+    int minY = Integer.MAX_VALUE;
+    int maxX = Integer.MIN_VALUE;
+    int maxY = Integer.MIN_VALUE;
+    for (Cell c : rel) {
+      int x = c.x();
+      int y = c.y();
+      if (x < minX) {
+        minX = x;
+      }
+      if (y < minY) {
+        minY = y;
+      }
+      if (x > maxX) {
+        maxX = x;
+      }
+      if (y > maxY) {
+        maxY = y;
+      }
+    }
+    return new Derived(List.copyOf(rel), new Bound(minX, minY, maxX, maxY));
   }
 
   /**
    * Returns the display {@link Color} associated with this tetromino type.
    *
-   * <p>This color is typically used for rendering the tetromino on the board.</p>
+   * <p>Typically used by the renderer to color blocks for this type.</p>
    *
-   * @return the color assigned to this tetromino type, never {@code null}
+   * @return the color for this tetromino type (never {@code null})
    */
   public Color getColor() {
     return color;
+  }
+
+  /**
+   * Returns cached rotation-specific data for this type.
+   *
+   * <p>Uses a thread-safe cache keyed by (type, rotation). The returned {@link Derived} contains
+   * both the rotated relative cells and their inclusive {@link Bound}.</p>
+   *
+   * @param r the desired rotation (must not be {@code null})
+   *
+   * @return the cached-or-computed {@link Derived} for this type and rotation
+   */
+  public Derived relativeDerived(Rotation r) {
+    return CACHE.computeIfAbsent(new Key(this, r), k -> computeRelative(k.type, k.rotation));
+  }
+
+  /**
+   * Returns the rotated relative shape for this type.
+   *
+   * <p>The list contains four {@link Cell} offsets relative to an origin; translate by a tetromino
+   * position to obtain absolute coordinates on the board.</p>
+   *
+   * @param r the desired rotation (must not be {@code null})
+   *
+   * @return an unmodifiable list of four relative cells (never {@code null})
+   */
+  public List<Cell> relativeShape(Rotation r) {
+    return relativeDerived(r).relative;
+  }
+
+  /**
+   * Returns the inclusive axis-aligned bound of the rotated relative shape.
+   *
+   * <p>The bound is expressed in the same relative coordinate system as
+   * {@link #relativeShape(Rotation)}.</p>
+   *
+   * @param r the desired rotation (must not be {@code null})
+   *
+   * @return the inclusive bound of the rotated shape (never {@code null})
+   */
+  public Bound relativeBound(Rotation r) {
+    return relativeDerived(r).bound;
+  }
+
+  /**
+   * Cache key combining tetromino type and rotation.
+   */
+  private record Key(TetrominoType type, Rotation rotation) {
+
+  }
+
+  /**
+   * Rotation-specific derived data for a tetromino type.
+   *
+   * <p>Contains the rotated relative {@link Cell} list and its inclusive {@link Bound} in the same
+   * coordinate space.</p>
+   *
+   * @param relative the rotated relative cells (size 4)
+   * @param bound    the inclusive bound spanning {@code relative}
+   */
+  public record Derived(List<Cell> relative, Bound bound) {
+
+    /**
+     * Returns a dense 0/1 matrix covering the rotated shape’s inclusive bound.
+     *
+     * <p>The matrix is indexed row-major as {@code bits[ny][nx]} where {@code ny} corresponds to
+     * Y (rows) and {@code nx} to X (columns). The matrix has height {@code bound.height()} and
+     * width {@code bound.width()}. A cell is set to {@code 1} iff the corresponding coordinate
+     * within the bound contains a block; otherwise it is {@code 0}.</p>
+     *
+     * <p>Indexing example for mapping a relative cell {@code (x, y)} into the matrix:</p>
+     * <pre>{@code
+     * int nx = x - bound.minX();
+     * int ny = y - bound.minY();
+     * bits[ny][nx] = 1;
+     * }</pre>
+     *
+     * @return a new 0/1 matrix representing the rotated shape within its bound (never {@code null})
+     */
+    public int[][] toShapeMatrix() {
+      List<Cell> cells = relative;
+      if (cells == null || cells.isEmpty()) {
+        return new int[0][0];
+      }
+      int[][] bits = new int[bound.height()][bound.width()];
+      for (Cell c : cells) {
+        int nx = c.x() - bound.minX();
+        int ny = c.y() - bound.minY();
+        bits[ny][nx] = 1;
+      }
+      return bits;
+    }
   }
 }

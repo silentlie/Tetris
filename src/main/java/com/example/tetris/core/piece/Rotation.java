@@ -4,19 +4,17 @@ import com.example.tetris.core.board.Cell;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * Represents the four possible rotation states for tetromino or other rotatable entities within the
- * Tetris game grid.
+ * Four rotation states for tetrominoes or other rotatable entities on the Tetris grid.
  *
- * <p>The rotation states are ordered clockwise as follows:
+ * <p>States are ordered clockwise:
  * {@link #UP} → {@link #RIGHT} → {@link #DOWN} → {@link #LEFT} → {@link #UP}.</p>
  *
- * <p>This enum also provides utility methods for rotating clockwise,
- * counter-clockwise, randomly selecting a rotation, and applying a rotation transformation to a
- * given {@link Cell}.</p>
+ * <p>Utility methods are provided to rotate clockwise, rotate counter-clockwise, choose a random
+ * rotation, and apply the rotation to a relative {@link Cell} offset.</p>
  */
 public enum Rotation {
   /**
-   * Default orientation with no rotation applied.
+   * Default orientation with no rotation.
    */
   UP,
 
@@ -31,17 +29,16 @@ public enum Rotation {
   DOWN,
 
   /**
-   * Rotated 270° clockwise (or 90° counter-clockwise) from {@link #UP}.
+   * Rotated 270° clockwise (90° counter-clockwise) from {@link #UP}.
    */
   LEFT;
 
   /**
-   * Returns a random {@code Rotation} value.
+   * Returns a random {@code Rotation}.
    *
-   * <p>This method uses {@link ThreadLocalRandom} to ensure
-   * thread-safe randomization.</p>
+   * <p>Uses {@link ThreadLocalRandom} for thread-safe selection.</p>
    *
-   * @return a randomly selected {@code Rotation}, never {@code null}
+   * @return a randomly selected rotation (never {@code null})
    */
   public static Rotation randomRotation() {
     Rotation[] values = Rotation.values();
@@ -49,9 +46,9 @@ public enum Rotation {
   }
 
   /**
-   * Returns the next {@code Rotation} in clockwise order.
+   * Returns the next rotation in clockwise order.
    *
-   * <p>Example transitions:</p>
+   * <p>Examples:</p>
    * <ul>
    *   <li>{@link #UP} → {@link #RIGHT}</li>
    *   <li>{@link #RIGHT} → {@link #DOWN}</li>
@@ -59,16 +56,16 @@ public enum Rotation {
    *   <li>{@link #LEFT} → {@link #UP}</li>
    * </ul>
    *
-   * @return the rotation one step clockwise from this one, never {@code null}
+   * @return the rotation one step clockwise from this (never {@code null})
    */
   public Rotation rotateClockwise() {
-    return values()[(this.ordinal() + 1) % 4];
+    return values()[(ordinal() + 1) % 4];
   }
 
   /**
-   * Returns the next {@code Rotation} in counter-clockwise order.
+   * Returns the next rotation in counter-clockwise order.
    *
-   * <p>Example transitions:</p>
+   * <p>Examples:</p>
    * <ul>
    *   <li>{@link #UP} → {@link #LEFT}</li>
    *   <li>{@link #LEFT} → {@link #DOWN}</li>
@@ -76,28 +73,27 @@ public enum Rotation {
    *   <li>{@link #RIGHT} → {@link #UP}</li>
    * </ul>
    *
-   * @return the rotation one step counter-clockwise from this one, never {@code null}
+   * @return the rotation one step counter-clockwise from this (never {@code null})
    */
   public Rotation rotateCounterClockwise() {
-    return values()[(this.ordinal() + 3) % 4];
+    return values()[(ordinal() + 3) % 4];
   }
 
   /**
-   * Applies this rotation to a given {@link Cell} relative offset.
+   * Applies this rotation to a relative {@link Cell} offset.
    *
-   * <p>The transformation assumes that the input {@code Cell} is expressed
-   * in coordinates relative to an origin point (e.g. the tetromino's pivot). The returned
-   * {@code Cell} represents the rotated coordinates.</p>
+   * <p>The input {@code Cell} is interpreted as coordinates relative to an origin
+   * (for example, a tetromino pivot). The returned cell contains the rotated coordinates.</p>
    *
-   * <p>For example:</p>
-   * <pre>
-   *   Cell original = new Cell(1, 2);
-   *   Cell rotated = Rotation.RIGHT.apply(original);
-   * </pre>
+   * <p>Example:</p>
+   * <pre>{@code
+   * Cell original = new Cell(1, 2);
+   * Cell rotated = Rotation.RIGHT.apply(original); // -> (2, -1)
+   * }</pre>
    *
-   * @param c the {@link Cell} to transform, must not be {@code null}
+   * @param c the relative offset to transform (must not be {@code null})
    *
-   * @return a new {@link Cell} with rotated coordinates, never {@code null}
+   * @return a new {@link Cell} with rotated coordinates (never {@code null})
    */
   public Cell apply(Cell c) {
     return switch (this) {

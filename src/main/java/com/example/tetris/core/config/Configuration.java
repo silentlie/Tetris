@@ -30,16 +30,8 @@ import java.util.Objects;
  * @param player1    primary player type (non-null)
  * @param player2    secondary player type (non-null)
  */
-public record Configuration(
-    int width,
-    int height,
-    int level,
-    boolean music,
-    boolean sound,
-    boolean extendMode,
-    PlayerType player1,
-    PlayerType player2
-) {
+public record Configuration(int width, int height, int level, boolean music, boolean sound,
+                            boolean extendMode, PlayerType player1, PlayerType player2) {
 
   public static final int NEXT_QUEUE_SIZE = 3;
 
@@ -121,8 +113,7 @@ public record Configuration(
    * Values are validated by the canonical constructor.
    */
   public Configuration() {
-    this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_LEVEL,
-        DEFAULT_MUSIC, DEFAULT_SOUND, DEFAULT_EXTEND_MODE,
-        DEFAULT_PLAYER1, DEFAULT_PLAYER2);
+    this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_LEVEL, DEFAULT_MUSIC, DEFAULT_SOUND,
+        DEFAULT_EXTEND_MODE, DEFAULT_PLAYER1, DEFAULT_PLAYER2);
   }
 }

@@ -60,6 +60,19 @@ public final class ConfigurationController implements FxController {
   private ChoiceBox<PlayerType> player2Choice;
 
   /**
+   * Rounds a {@code double} to the nearest {@code int}.
+   *
+   * <p>Used to convert slider values to the domain's integer fields while avoiding truncation.</p>
+   *
+   * @param v value to round
+   *
+   * @return nearest integer
+   */
+  private static int intRound(double v) {
+    return (int) Math.round(v);
+  }
+
+  /**
    * Called by the JavaFX loader after the FXML has been constructed.
    *
    * <p>Sets slider ranges from {@link Configuration} invariants, populates player choices, and
@@ -152,19 +165,6 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Rounds a {@code double} to the nearest {@code int}.
-   *
-   * <p>Used to convert slider values to the domain's integer fields while avoiding truncation.</p>
-   *
-   * @param v value to round
-   *
-   * @return nearest integer
-   */
-  private static int intRound(double v) {
-    return (int) Math.round(v);
-  }
-
-  /**
    * Builds a validated {@link Configuration} from current UI control state.
    *
    * <p>Uses {@link #intRound(double)} for sliders and defaults missing choices to
@@ -175,21 +175,13 @@ public final class ConfigurationController implements FxController {
    * @throws IllegalArgumentException if any value violates {@link Configuration} ranges
    */
   private Configuration formToConfig() {
-    PlayerType p1 = (player1Choice.getValue() == null)
-        ? PlayerType.HUMAN
-        : player1Choice.getValue();
-    PlayerType p2 = (player2Choice.getValue() == null)
-        ? PlayerType.HUMAN
-        : player2Choice.getValue();
-    return new Configuration(
-        intRound(widthSlider.getValue()),
-        intRound(heightSlider.getValue()),
-        intRound(levelSlider.getValue()),
-        musicCheck.isSelected(),
-        soundCheck.isSelected(),
-        extendedCheck.isSelected(),
-        p1, p2
-    );
+    PlayerType p1 =
+        (player1Choice.getValue() == null) ? PlayerType.HUMAN : player1Choice.getValue();
+    PlayerType p2 =
+        (player2Choice.getValue() == null) ? PlayerType.HUMAN : player2Choice.getValue();
+    return new Configuration(intRound(widthSlider.getValue()), intRound(heightSlider.getValue()),
+        intRound(levelSlider.getValue()), musicCheck.isSelected(), soundCheck.isSelected(),
+        extendedCheck.isSelected(), p1, p2);
   }
 
   /**

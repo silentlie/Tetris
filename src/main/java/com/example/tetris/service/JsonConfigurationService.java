@@ -75,8 +75,8 @@ public final class JsonConfigurationService extends ConfigurationService {
       return json.read(configPath, Configuration.class);
     } catch (IOException e) {
       // Unreadable/corrupt → back it up first, then reset to defaults
-      LOG.log(Level.WARNING,
-          "Failed to read config; backing up and using defaults: " + configPath, e);
+      LOG.log(Level.WARNING, "Failed to read config; backing up and using defaults: " + configPath,
+          e);
       backupCorruptConfig();
       return createAndSaveDefault();
     }

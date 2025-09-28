@@ -9,8 +9,34 @@ import com.example.tetris.core.piece.Tetromino;
 import com.example.tetris.core.piece.TetrominoType;
 import java.util.List;
 
+/**
+ * Canvas that renders the “next pieces” preview list.
+ *
+ * <p>Displays up to five upcoming {@link TetrominoType} entries in vertically stacked boxes.
+ * Each preview is centered inside a 4×4 logical cell box and drawn in the piece’s display color,
+ * with a thin grid stroke for clarity.</p>
+ *
+ * <p>Rendering occurs only when the canvas is marked dirty; after a successful render the dirty
+ * flag is cleared. Size changes or external updates should call {@link #markDirty()}.</p>
+ *
+ * <p>Threading: interact with this node on the JavaFX application thread.</p>
+ *
+ * @since 1.0
+ */
 public class NextCanvas extends ResizableCanvas {
 
+  /**
+   * Renders the preview list if this canvas is dirty.
+   *
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>Fills the background.</li>
+   *   <li>If {@code queue} is null or empty, clears the dirty flag and returns.</li>
+   *   <li>Otherwise, shows up to five upcoming pieces, each in its own vertical slot.</li>
+   * </ul>
+   *
+   * @param queue upcoming pieces (head-first); may be {@code null} or empty
+   */
   public void render(List<TetrominoType> queue) {
     if (!dirty) {
       return;
@@ -37,6 +63,19 @@ public class NextCanvas extends ResizableCanvas {
     dirty = false;
   }
 
+  /**
+   * Draws a single piece preview centered within a rectangle.
+   *
+   * <p>The preview is laid out into a 4×4 logical cell area. The method computes an integer
+   * cell size that fits inside the padded rectangle, centers the rotated shape within 4×4 by using
+   * its bounding box, and then fills/strokes each occupied cell.</p>
+   *
+   * @param type the tetromino type to draw
+   * @param x    the left of the target rectangle (canvas coordinates)
+   * @param y    the top of the target rectangle (canvas coordinates)
+   * @param w    the width of the target rectangle
+   * @param h    the height of the target rectangle
+   */
   private void drawPreview(TetrominoType type, double x, double y, double w, double h) {
     double pad = Math.floor(Math.min(w, h) * 0.08);
     double boxW = Math.max(0, w - 2 * pad);
