@@ -72,17 +72,13 @@ public class Board {
     for (Cell cell : t.getAbsoluteShape()) {
       int x = cell.x();
       int y = cell.y();
-      // OOB horizontally
-      if (x < 0 || x >= width) {
+      // OOB horizontally or below floor
+      if (x < 0 || x >= width || y >= height) {
         return false;
       }
       // allow above top
       if (y < 0) {
         continue;
-      }
-      // below floor
-      if (y >= height) {
-        return false;
       }
       // collision
       if (board[y][x] != null) {
@@ -168,10 +164,7 @@ public class Board {
   public TetrominoType getCell(Cell c) {
     int x = c.x();
     int y = c.y();
-    if (x < 0 || x >= width || y < 0 || y >= height) {
-      return null;
-    }
-    return board[y][x];
+    return getCell(x, y);
   }
 
   /**
