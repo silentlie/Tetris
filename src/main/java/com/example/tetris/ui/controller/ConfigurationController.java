@@ -179,9 +179,16 @@ public final class ConfigurationController implements FxController {
         (player1Choice.getValue() == null) ? PlayerType.HUMAN : player1Choice.getValue();
     PlayerType p2 =
         (player2Choice.getValue() == null) ? PlayerType.HUMAN : player2Choice.getValue();
-    return new Configuration(intRound(widthSlider.getValue()), intRound(heightSlider.getValue()),
-        intRound(levelSlider.getValue()), musicCheck.isSelected(), soundCheck.isSelected(),
-        extendedCheck.isSelected(), p1, p2);
+    return new Configuration(
+        intRound(widthSlider.getValue()),
+        intRound(heightSlider.getValue()),
+        intRound(levelSlider.getValue()),
+        musicCheck.isSelected(),
+        soundCheck.isSelected(),
+        extendedCheck.isSelected(),
+        p1,
+        p2
+    );
   }
 
   /**
