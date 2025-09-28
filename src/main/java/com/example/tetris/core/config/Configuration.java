@@ -30,9 +30,16 @@ import java.util.Objects;
  * @param player1    primary player type (non-null)
  * @param player2    secondary player type (non-null)
  */
-public record Configuration(int width, int height, int level, boolean music, boolean sound,
-                            boolean extendMode, PlayerType player1, PlayerType player2) {
-
+public record Configuration(
+    int width,
+    int height,
+    int level,
+    boolean music,
+    boolean sound,
+    boolean extendMode,
+    PlayerType player1,
+    PlayerType player2
+) {
   public static final int NEXT_QUEUE_SIZE = 3;
 
   /**
