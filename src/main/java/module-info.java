@@ -15,6 +15,8 @@ module com.example.tetris {
   exports com.example.tetris.app.navigation;
   exports com.example.tetris.app.runtime;
 
+  exports com.example.tetris.ai;
+
   exports com.example.tetris.core.board;
   exports com.example.tetris.core.config;
   exports com.example.tetris.core.piece;

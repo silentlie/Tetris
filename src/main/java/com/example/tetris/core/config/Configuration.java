@@ -21,8 +21,8 @@ import java.util.Objects;
  * <p><strong>Defaults:</strong> See {@code DEFAULT_*} constants. The no-arg constructor
  * builds a fully validated configuration using those defaults.</p>
  *
- * @param width      board width in cells (see {@link #MIN_WIDTH}/{@link #MAX_WIDTH})
- * @param height     board height in cells (see {@link #MIN_HEIGHT}/{@link #MAX_HEIGHT})
+ * @param width      board width in board (see {@link #MIN_WIDTH}/{@link #MAX_WIDTH})
+ * @param height     board height in board (see {@link #MIN_HEIGHT}/{@link #MAX_HEIGHT})
  * @param level      starting difficulty level (see {@link #MIN_LEVEL}/{@link #MAX_LEVEL})
  * @param music      background music enabled
  * @param sound      sound effects enabled
@@ -40,14 +40,15 @@ public record Configuration(
     PlayerType player1,
     PlayerType player2
 ) {
+
   public static final int NEXT_QUEUE_SIZE = 3;
 
   /**
-   * Default board width (cells).
+   * Default board width (board).
    */
   public static final int DEFAULT_WIDTH = 10;
   /**
-   * Default board height (cells).
+   * Default board height (board).
    */
   public static final int DEFAULT_HEIGHT = 20;
   /**
@@ -76,12 +77,12 @@ public record Configuration(
   public static final PlayerType DEFAULT_PLAYER2 = PlayerType.HUMAN;
 
   /**
-   * Minimum and maximum allowed board width (cells).
+   * Minimum and maximum allowed board width (board).
    */
   public static final int MIN_WIDTH = 5;
   public static final int MAX_WIDTH = 15;
   /**
-   * Minimum and maximum allowed board height (cells).
+   * Minimum and maximum allowed board height (board).
    */
   public static final int MIN_HEIGHT = 15;
   public static final int MAX_HEIGHT = 30;

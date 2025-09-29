@@ -10,14 +10,14 @@ import java.util.Arrays;
  * <p>Coordinates follow screen-style axes: X increases to the right, Y increases downward.</p>
  *
  * <p>Cells above the visible area (negative Y) are allowed for collision checks so newly spawned
- * tetrominoes can enter from off-screen. Such cells are treated as empty in
+ * tetrominoes can enter from off-screen. Such board are treated as empty in
  * {@link #fits(Tetromino)} and cause a lock-out flag in {@link #lock(Tetromino)} if any placed
  * block lies above the top.</p>
  *
  * <p>Two arrays store state:</p>
  * <ul>
  *   <li>{@code board[y][x]} holds the occupying {@link TetrominoType} or {@code null}.</li>
- *   <li>{@code filled[y]} caches the number of filled cells on row {@code y} for fast line clears.
+ *   <li>{@code filled[y]} caches the number of filled board on row {@code y} for fast line clears.
  *   </li>
  * </ul>
  *
@@ -41,7 +41,7 @@ public class Board {
   /**
    * Creates an empty board with the given dimensions.
    *
-   * <p>All cells are initialized to {@code null} (empty) and all fill counts to 0.</p>
+   * <p>All board are initialized to {@code null} (empty) and all fill counts to 0.</p>
    *
    * @param width  number of columns (must be {@code > 0})
    * @param height number of rows (must be {@code > 0})
@@ -54,14 +54,14 @@ public class Board {
   }
 
   /**
-   * Checks whether the given tetromino can occupy its absolute cells on this board.
+   * Checks whether the given tetromino can occupy its absolute board on this board.
    *
    * <p>Rules:</p>
    * <ul>
    *   <li>X must be within {@code [0, width)}.</li>
    *   <li>Y below the floor ({@code y >= height}) is invalid.</li>
    *   <li>Y above the top ({@code y < 0}) is permitted and treated as empty.</li>
-   *   <li>Occupied cells on the board cause failure.</li>
+   *   <li>Occupied board on the board cause failure.</li>
    * </ul>
    *
    * @param t the tetromino to test (must not be {@code null})
@@ -89,14 +89,14 @@ public class Board {
   }
 
   /**
-   * Locks the given tetromino into the board, updating occupied cells and row fill counts.
+   * Locks the given tetromino into the board, updating occupied board and row fill counts.
    *
    * <p>Cells with {@code y < 0} (above the top) are ignored in the grid update but set a
    * lock-out flag.</p>
    *
    * @param t the tetromino to place (must not be {@code null})
    *
-   * @return {@code true} if any of the tetromino’s cells were above the top (lock-out); otherwise
+   * @return {@code true} if any of the tetromino’s board were above the top (lock-out); otherwise
    *     {@code false}
    */
   public boolean lock(Tetromino t) {

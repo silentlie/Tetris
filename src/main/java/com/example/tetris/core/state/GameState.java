@@ -258,26 +258,25 @@ public class GameState {
   }
 
   /**
-   * Produces a compact, render-ready snapshot of the board and previews.
+   * Produces a minimal, immutable snapshot of the current game suitable for AI evaluation,
+   * serialization, and deterministic tests.
    *
-   * <p>Encodes the settled board as a {@code height × width} 0/1 matrix, the active tetromino’s
-   * shape (relative, as a 0/1 matrix for its current rotation), and the next piece’s shape (using
-   * {@link Rotation#UP}). This is intended for lightweight UIs/AI that don’t require full object
-   * graphs.</p>
+   * <p>The board raster is emitted as a 0/1 matrix ({@code 0} = empty, {@code 1} = occupied),
+   * discarding color/type information. The active {@link Tetromino} is passed through, and the
+   * "next" field contains the head of the preview queue.</p>
    *
-   * @return a {@link PureGame} DTO capturing board cells and current/next shapes
+   * @return a {@link PureGame} snapshot of this state
+   *
+   * @implNote Rows are emitted in screen order (top to bottom). If you later encode piece IDs
+   *     or colors, adapt the cell mapping here.
    */
-  public PureGame toCells() {
+  public PureGame toPureGame() {
     int[][] cells = new int[getHeight()][getWidth()];
     for (int y = 0; y < getHeight(); y++) {
       for (int x = 0; x < getWidth(); x++) {
         cells[y][x] = (getCell(x, y) == null) ? 0 : 1;
       }
     }
-    int[][] currentShape = tetromino.type().relativeDerived(tetromino.rotation()).toShapeMatrix();
-    List<TetrominoType> peek = getQueue();
-    TetrominoType nextType = peek.getFirst();
-    int[][] nextShape = nextType.relativeDerived(Rotation.UP).toShapeMatrix();
-    return new PureGame(getWidth(), getHeight(), cells, currentShape, nextShape);
+    return new PureGame(getWidth(), getHeight(), cells, tetromino, getQueue().getFirst());
   }
 }

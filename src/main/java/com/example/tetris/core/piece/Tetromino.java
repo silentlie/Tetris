@@ -61,7 +61,7 @@ public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
    * <p>Example:</p>
    * <pre>{@code
    * Tetromino t = new Tetromino(TetrominoType.T, new Cell(4, 0), Rotation.RIGHT);
-   * List<Cell> cells = t.getAbsoluteShape(); // absolute block positions
+   * List<Cell> board = t.getAbsoluteShape(); // absolute block positions
    * }</pre>
    *
    * @return an immutable list of four absolute {@link Cell} coordinates (never {@code null})

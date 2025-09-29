@@ -42,7 +42,7 @@ public class GameView extends SplitPane {
   public static final Color BACKGROUND = Color.web("#111111");
 
   /**
-   * Fill color for empty board cells.
+   * Fill color for empty board board.
    */
   public static final Color EMPTY = Color.web("#1f1f1f");
 

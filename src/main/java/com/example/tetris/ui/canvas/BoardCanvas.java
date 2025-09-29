@@ -23,9 +23,9 @@ import com.example.tetris.ui.view.GameView;
  * <p>Visual layers (back-to-front):</p>
  * <ol>
  *   <li>Background fill ({@link GameView#BACKGROUND}).</li>
- *   <li>Settled board cells using each {@link TetrominoType#getColor()} or {@link GameView#EMPTY}.
+ *   <li>Settled board board using each {@link TetrominoType#getColor()} or {@link GameView#EMPTY}.
  *   </li>
- *   <li>Active tetromino cells with its type color.</li>
+ *   <li>Active tetromino board with its type color.</li>
  *   <li>Grid hairlines in {@link GameView#GRID} with 1 device-pixel width (scale-adjusted).</li>
  * </ol>
  *
@@ -47,7 +47,7 @@ public class BoardCanvas extends ResizableCanvas {
    * <ol>
    *   <li>Compute the maximum integer cell size that fits the board within the canvas.</li>
    *   <li>Center the board, set a transform so 1 unit equals 1 cell, and draw background.</li>
-   *   <li>Paint settled cells from {@link GameState#getCell(int, int)}.</li>
+   *   <li>Paint settled board from {@link GameState#getCell(int, int)}.</li>
    *   <li>Paint the active {@link Tetromino} from {@link Tetromino#getAbsoluteShape()}.</li>
    *   <li>Overlay grid lines with scale-adjusted line width (≈ 1 device pixel).</li>
    * </ol>
@@ -79,7 +79,7 @@ public class BoardCanvas extends ResizableCanvas {
     gc.translate(ox, oy);
     gc.scale(cell, cell); // 1 unit == 1 cell
 
-    // Board cells
+    // Board board
     for (int y = 0; y < rows; y++) {
       for (int x = 0; x < cols; x++) {
         TetrominoType type = s.getCell(x, y);
