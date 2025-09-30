@@ -1,10 +1,8 @@
 package com.example.tetris.core.rule;
 
-import com.example.tetris.ai.AiService;
-import com.example.tetris.core.piece.Tetromino;
+import com.example.tetris.ai.Ai;
 import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.GameState;
-import com.example.tetris.core.state.OpMove;
 import com.example.tetris.ui.view.GameView;
 import java.util.Objects;
 
@@ -37,11 +35,7 @@ public class Game {
    */
   private final GameClock clock;
 
-  /**
-   * Optional AI driver. When set via {@link #ai(AiService)}, {@link #tick(long)} will query for an
-   * {@link OpMove} and incrementally steer the current tetromino toward that plan.
-   */
-  private AiService aiService;
+  private Ai ai;
 
   /**
    * Accumulator for gravity timing in nanoseconds. When this exceeds
@@ -64,19 +58,8 @@ public class Game {
     this.clock = Objects.requireNonNull(clock, "clock is null");
   }
 
-  /**
-   * Enables AI control for this game.
-   *
-   * <p>Once set, each {@link #tick(long)} will retrieve an {@link OpMove} from the AI and issue
-   * at most one input toward that plan (one clockwise rotation or one horizontal step). This keeps
-   * motion smooth and allows human inputs to interleave.</p>
-   *
-   * @param aiService the AI service to consult for planning (must not be {@code null})
-   *
-   * @throws NullPointerException if {@code aiService} is {@code null}
-   */
-  public void ai(AiService aiService) {
-    this.aiService = Objects.requireNonNull(aiService, "aiService is null");
+  public void ai(Ai ai) {
+    this.ai = Objects.requireNonNull(ai, "ai is null");
   }
 
   /**
@@ -102,48 +85,6 @@ public class Game {
   }
 
   /**
-   * Steers the current tetromino one step toward the desired AI plan.
-   *
-   * <p>Order of operations:</p>
-   * <ol>
-   *   <li>Normalize target rotation to [0..3] and compare with the current rotation. If different,
-   *       issue a single clockwise rotation ({@link GameIntent#ROTATE_CW}).</li>
-   *   <li>Otherwise, compare current X with {@code opX} and move one cell toward it
-   *       ({@link GameIntent#MOVE_LEFT} / {@link GameIntent#MOVE_RIGHT}).</li>
-   * </ol>
-   *
-   * <p>Exactly one input is attempted per call. This method does not drop the piece; gravity and
-   * drops are handled elsewhere.</p>
-   *
-   * @param opMove the target column ({@code opX}) and rotation index ({@code opRotate})
-   */
-  private void apply(OpMove opMove) {
-    Tetromino t = state.getTetromino();
-    if (t == null) {
-      return;
-    }
-
-    int want = ((opMove.opRotate() % 4) + 4) % 4;
-    int have = t.rotation().ordinal();
-
-    if (want != have) {
-      apply(GameIntent.ROTATE_CW);
-      return;
-    }
-
-    int curX = t.position().x();
-    int targetX = opMove.opX();
-
-    if (curX < targetX) {
-      apply(GameIntent.MOVE_RIGHT);
-      return;
-    }
-    if (curX > targetX) {
-      apply(GameIntent.MOVE_LEFT);
-    }
-  }
-
-  /**
    * Returns whether the game can no longer accept inputs (lock-out or post-spawn collision).
    *
    * @return {@code true} if the game has ended; otherwise {@code false}
@@ -162,8 +103,6 @@ public class Game {
    *   <li>Accumulate {@code dtNanos} into an internal counter. While the accumulator is
    *       ≥ {@link GameClock#fallIntervalNanos()}, subtract one interval and attempt a
    *       {@link GameIntent#SOFT_DROP}. If the state changes, mark the view dirty.</li>
-   *   <li>If an {@link AiService} is present, request an {@link OpMove} and apply at most one input
-   *       toward the plan (rotate or horizontal move). AI steering does not trigger drops.</li>
    *   <li>Render the current state via {@link GameView}, regardless of game-over status.</li>
    * </ul>
    *
@@ -181,10 +120,10 @@ public class Game {
           view.markDirty();
         }
       }
-      if (aiService != null) {
-        OpMove plan = aiService.tick(state);
-        if (plan != null) {
-          apply(plan);
+      if (ai != null) {
+        GameIntent intent = ai.tick(state.toPureGame());
+        if (intent != null) {
+          apply(intent);
         }
       }
     }

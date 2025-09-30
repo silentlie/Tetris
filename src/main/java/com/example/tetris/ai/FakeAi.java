@@ -5,67 +5,72 @@ import com.example.tetris.core.state.PureGame;
 import java.util.Objects;
 import java.util.SplittableRandom;
 import java.util.concurrent.CompletableFuture;
+import java.util.random.RandomGenerator;
 
 /**
- * Trivial AI that picks a random target column and rotation.
+ * A trivial AI that chooses a random horizontal target and a random rotation count.
  *
- * <p>Intended for wiring, load, and demo purposes only. It does not inspect the board
- * beyond its width and makes no attempt to avoid collisions or choose good placements.</p>
+ * <p><strong>Purpose:</strong> Useful for wiring tests, UI demos, and validating the
+ * {@link Ai} template lifecycle without relying on a real evaluator.</p>
  *
- * <p>Thread-safety: this class is thread-safe for typical use. {@link SplittableRandom}
- * is immutable; all state is effectively final.</p>
+ * <p><strong>Determinism:</strong> Use {@link #FakeAi(long)} to make outcomes reproducible
+ * across runs; the no-arg constructor uses a non-deterministic seed.</p>
  */
-public class FakeAi implements Ai {
-
-  private final SplittableRandom rng;
+public class FakeAi extends Ai {
 
   /**
-   * Creates a non-deterministic AI seeded from a system entropy source.
+   * Source of randomness for picking target column and rotation count.
+   */
+  private final RandomGenerator rng;
+
+  /**
+   * Creates a non-deterministic fake AI.
    */
   public FakeAi() {
     this.rng = new SplittableRandom();
   }
 
   /**
-   * Creates a deterministic AI, useful for tests.
+   * Creates a deterministic fake AI with a fixed seed.
    *
-   * @param seed the seed for repeatable randomness
+   * @param seed the seed for the {@link SplittableRandom}
    */
   public FakeAi(long seed) {
     this.rng = new SplittableRandom(seed);
   }
 
   /**
-   * Returns a completed future with a random {@link OpMove}.
+   * Immediately completes with a random {@link OpMove}.
    *
-   * <p>Contract notes:
+   * <p>Contract details:
    * <ul>
-   *   <li>Column is in the range [0, width - 1] (clamped to at least 1 column).</li>
-   *   <li>Rotation is in the range [0, 3].</li>
-   *   <li>The future is already completed; no background work is scheduled.</li>
+   *   <li>{@code opX} is chosen uniformly from {@code [0, snapshot.width())}.</li>
+   *   <li>{@code opRotate} is chosen uniformly from {@code [0, 4)} representing CW rotations.</li>
+   *   <li>Returns a pre-completed {@link CompletableFuture} (no background work).</li>
    * </ul>
-   * This keeps tests simple and the fake snappy, while still matching the async API.</p>
+   * </p>
    *
-   * @param snapshot immutable board snapshot (must not be {@code null})
+   * @param snapshot immutable game snapshot providing board width
    *
-   * @return a <em>completed</em> future with a random move
+   * @return a completed future containing a random plan
    *
    * @throws NullPointerException if {@code snapshot} is {@code null}
    */
   @Override
-  public CompletableFuture<OpMove> decideAsync(PureGame snapshot) {
-    Objects.requireNonNull(snapshot, "snapshot");
-    int w = Math.max(1, snapshot.width());
-    int targetX = rng.nextInt(w);   // 0..w-1
-    int rot = rng.nextInt(4);       // 0..3
-    return CompletableFuture.completedFuture(new OpMove(targetX, rot));
+  protected CompletableFuture<OpMove> submit(PureGame snapshot) {
+    Objects.requireNonNull(snapshot, "snapshot is null");
+    int x = rng.nextInt(snapshot.width());
+    int r = rng.nextInt(4);
+    return CompletableFuture.completedFuture(new OpMove(x, r));
   }
 
   /**
-   * No-op for the fake; real implementations should release resources here.
+   * No-op shutdown; {@link FakeAi} owns no external resources.
+   *
+   * <p>Method is idempotent.</p>
    */
   @Override
   public void shutdown() {
-    // nothing to release
+    // no resources to release
   }
 }
