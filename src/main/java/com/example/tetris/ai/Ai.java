@@ -3,6 +3,7 @@ package com.example.tetris.ai;
 import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.OpMove;
 import com.example.tetris.core.state.PureGame;
+import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -67,7 +68,7 @@ public abstract class Ai {
     if (snapshot == null) {
       return null;
     }
-    if (!snapshot.equals(cachePureGame)) {
+    if (shouldStartNewPlan(snapshot, cachePureGame, cachedOpMove)) {
       cachePureGame = snapshot;
       cachedOpMove = null;
       if (inFlight != null && !inFlight.isDone()) {
@@ -95,6 +96,32 @@ public abstract class Ai {
       });
     }
     return getCurrentIntent(cachedOpMove, cachePureGame);
+  }
+
+  /**
+   * Decide whether to discard any existing plan and start a new one for the given snapshot.
+   *
+   * <p><strong>Default:</strong> replan when
+   * {@code !Objects.equals(newSnapshot, lastSnapshot)}.</p>
+   *
+   * <p><strong>Common overrides:</strong>
+   * <ul>
+   *   <li>Only replan when a new piece spawns (e.g., compare active piece IDs/types).</li>
+   *   <li>Throttle replans to once every N frames or milliseconds.</li>
+   *   <li>Force replan if the existing plan is incompatible with the new board (e.g., obstruction).
+   *   </li>
+   * </ul>
+   * Keep this decision fast and side effect free; it runs every frame.</p>
+   *
+   * @param newSnapshot  the current snapshot (non-null)
+   * @param lastSnapshot the snapshot used for {@code cachedOpMove} (maybe null)
+   * @param existingPlan the last completed plan for {@code lastSnapshot} (maybe null)
+   *
+   * @return {@code true} to cancel any in-flight computation and submit a new one
+   */
+  protected boolean shouldStartNewPlan(PureGame newSnapshot, PureGame lastSnapshot,
+      OpMove existingPlan) {
+    return !Objects.equals(newSnapshot, lastSnapshot);
   }
 
   /**
@@ -150,30 +177,30 @@ public abstract class Ai {
    * </ol>
    * </p>
    *
-   * @param plan     the latest completed plan (maybe {@code null})
+   * @param opMove   the latest completed plan (maybe {@code null})
    * @param snapshot the current snapshot (maybe {@code null})
    *
    * @return the next intent or {@code null} if no action is needed
    */
-  protected GameIntent getCurrentIntent(OpMove plan, PureGame snapshot) {
-    if (plan == null || snapshot == null) {
+  protected GameIntent getCurrentIntent(OpMove opMove, PureGame snapshot) {
+    if (opMove == null || snapshot == null) {
       return null;
     }
     if (snapshot.tetromino() == null) {
       return null;
     }
-    if (needsRotation(plan, snapshot)) {
+    if (needsRotation(opMove, snapshot)) {
       return GameIntent.ROTATE_CW;
     }
     int currentX = getCurrentX(snapshot);
-    int targetX = plan.opX();
+    int targetX = opMove.opX();
     if (currentX < targetX) {
       return GameIntent.MOVE_RIGHT;
     }
     if (currentX > targetX) {
       return GameIntent.MOVE_LEFT;
     }
-    return whenAligned(plan, snapshot);
+    return whenAligned(opMove, snapshot);
   }
 
   /**
@@ -181,13 +208,13 @@ public abstract class Ai {
    *
    * <p>Default: returns {@code plan.opRotate() != 0} (i.e., any remaining rotation count).</p>
    *
-   * @param plan     the planned move
+   * @param opMove   the planned move
    * @param snapshot the current snapshot
    *
    * @return {@code true} if a rotation intent should be emitted this tick
    */
-  protected boolean needsRotation(OpMove plan, PureGame snapshot) {
-    return plan.opRotate() != 0;
+  protected boolean needsRotation(OpMove opMove, PureGame snapshot) {
+    return opMove.opRotate() != 0;
   }
 
   /**
@@ -211,12 +238,12 @@ public abstract class Ai {
    * <p>Default: returns {@code null} (no action). Subclasses may return
    * {@link GameIntent#HARD_DROP}, {@link GameIntent#SOFT_DROP} (soft drop), or another action.</p>
    *
-   * @param plan     the planned move
+   * @param opMove   the planned move
    * @param snapshot the current snapshot
    *
    * @return the intent to emit when aligned, or {@code null} to do nothing
    */
-  protected GameIntent whenAligned(OpMove plan, PureGame snapshot) {
+  protected GameIntent whenAligned(OpMove opMove, PureGame snapshot) {
     return null;
   }
 

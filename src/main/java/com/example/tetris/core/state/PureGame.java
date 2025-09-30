@@ -4,7 +4,6 @@ import com.example.tetris.core.board.Cell;
 import com.example.tetris.core.piece.Rotation;
 import com.example.tetris.core.piece.Tetromino;
 import com.example.tetris.core.piece.TetrominoType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.Objects;
@@ -50,9 +49,7 @@ public record PureGame(
     int width,
     int height,
     int[][] cells,
-    @JsonIgnore
     Tetromino tetromino,
-    @JsonIgnore
     TetrominoType next
 ) {
 
