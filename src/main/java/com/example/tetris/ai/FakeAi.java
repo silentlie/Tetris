@@ -10,11 +10,18 @@ import java.util.random.RandomGenerator;
 /**
  * A trivial AI that chooses a random horizontal target and a random rotation count.
  *
- * <p><strong>Purpose:</strong> Useful for wiring tests, UI demos, and validating the
- * {@link Ai} template lifecycle without relying on a real evaluator.</p>
+ * <p><strong>Purpose:</strong> Handy for wiring tests, UI demos, and validating the
+ * {@link Ai} planning lifecycle without depending on a real evaluator.</p>
  *
- * <p><strong>Determinism:</strong> Use {@link #FakeAi(long)} to make outcomes reproducible
- * across runs; the no-arg constructor uses a non-deterministic seed.</p>
+ * <p><strong>Controller expectations:</strong> The default controller in {@link Ai} interprets
+ * {@link OpMove#opX()} as the target X aligned to the tetromino pivot (unless overridden) and
+ * {@link OpMove#opRotate()} as the remaining clockwise rotation count (mod 4).</p>
+ *
+ * <p><strong>Determinism:</strong> Use {@link #FakeAi(long)} to make outcomes reproducible across
+ * runs. The no-arg constructor uses a non-deterministic seed.</p>
+ *
+ * <p><strong>Thread-safety:</strong> Instances are not thread-safe. Use one {@code FakeAi}
+ * per game/driver thread, which matches {@link Ai}'s intended usage.</p>
  */
 public class FakeAi extends Ai {
 
@@ -25,6 +32,8 @@ public class FakeAi extends Ai {
 
   /**
    * Creates a non-deterministic fake AI.
+   *
+   * <p>Seeds an internal {@link SplittableRandom} with a non-deterministic seed.</p>
    */
   public FakeAi() {
     this.rng = new SplittableRandom();
@@ -33,7 +42,7 @@ public class FakeAi extends Ai {
   /**
    * Creates a deterministic fake AI with a fixed seed.
    *
-   * @param seed the seed for the {@link SplittableRandom}
+   * @param seed the seed for the internal {@link SplittableRandom}
    */
   public FakeAi(long seed) {
     this.rng = new SplittableRandom(seed);
@@ -42,15 +51,15 @@ public class FakeAi extends Ai {
   /**
    * Immediately completes with a random {@link OpMove}.
    *
-   * <p>Contract details:
+   * <p><strong>Contract:</strong></p>
    * <ul>
    *   <li>{@code opX} is chosen uniformly from {@code [0, snapshot.width())}.</li>
-   *   <li>{@code opRotate} is chosen uniformly from {@code [0, 4)} representing CW rotations.</li>
+   *   <li>{@code opRotate} is chosen uniformly from {@code [0, 4)} representing CW rotations.
+   *       The controller may interpret this as “rotations remaining.”</li>
    *   <li>Returns a pre-completed {@link CompletableFuture} (no background work).</li>
    * </ul>
-   * </p>
    *
-   * @param snapshot immutable game snapshot providing board width
+   * @param snapshot immutable game snapshot providing board width (must not be {@code null})
    *
    * @return a completed future containing a random plan
    *
@@ -67,7 +76,7 @@ public class FakeAi extends Ai {
   /**
    * No-op shutdown; {@link FakeAi} owns no external resources.
    *
-   * <p>Method is idempotent.</p>
+   * <p>Idempotent.</p>
    */
   @Override
   public void shutdown() {

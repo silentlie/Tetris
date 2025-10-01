@@ -29,24 +29,33 @@ import java.util.logging.Level;
  * Socket-based AI that delegates planning to an external process via a simple line-delimited JSON
  * protocol.
  *
- * <p><strong>Protocol:</strong> For each {@link PureGame} snapshot, this AI:
+ * <h2>Protocol</h2>
+ * For each {@link PureGame} snapshot, this AI:
  * <ol>
  *   <li>Opens a TCP connection to {@code host:port}.</li>
- *   <li>Sends one compact JSON line of the snapshot followed by a newline.</li>
- *   <li>Reads lines until a non-blank JSON line is received and decodes it as {@link OpMove}.</li>
+ *   <li>Sends one <em>single-line</em> compact JSON encoding of the snapshot, terminated by
+ *   {@code '\n'}.</li>
+ *   <li>Reads lines until the first non-blank JSON line is received and decodes it as
+ *   {@link OpMove}.</li>
  * </ol>
- * The connection is short-lived per request (no pooling) to keep the implementation
- * robust and stateless.</p>
+ * The connection is short-lived per request (no pooling) to keep the implementation robust and
+ * stateless.
  *
- * <p><strong>Resilience:</strong> Network errors and timeouts are retried with a small
- * backoff until interrupted or a valid response is received. The enclosing {@link Ai}
- * cancels in-flight work when a new snapshot arrives.</p>
+ * <h2>Resilience</h2>
+ * Network errors and timeouts are retried with a small backoff until the task is interrupted or a
+ * valid
+ * response is received. The enclosing {@link Ai} cancels in-flight work when a new snapshot
+ * arrives.
  *
- * <p><strong>Threading:</strong> Uses a single-threaded executor to perform blocking I/O.
- * Call {@link #shutdown()} to release the executor when finished.</p>
+ * <h2>Threading</h2>
+ * Uses a single-threaded executor to perform blocking I/O. Call {@link #shutdown()} to release the
+ * executor when finished.
  *
  * @implNote Connections are one-shot by design. If you later add connection pooling, ensure
- *     cancel/interrupt responsiveness and strict snapshot-to-request pairing.
+ *     strict snapshot-to-request pairing and prompt interrupt handling.
+ * @see Ai#submit(PureGame)
+ * @see Ai#shouldStartNewPlan(PureGame, PureGame, OpMove)
+ * @see Ai#getCurrentIntent(OpMove, PureGame)
  */
 public class EternalAi extends Ai {
 
@@ -128,6 +137,7 @@ public class EternalAi extends Ai {
     if (Thread.currentThread().isInterrupted()) {
       throw new CancellationException("submit interrupted/cancelled");
     }
+    // cooperative checks hinge on the caller invoking cancel(true)
   }
 
   /**
@@ -144,6 +154,21 @@ public class EternalAi extends Ai {
     }
   }
 
+  /**
+   * Replan heuristic specializing the base policy.
+   *
+   * <p>Replans when:</p>
+   * <ul>
+   *   <li>There was no previous snapshot,</li>
+   *   <li>the cell raster changed (deep compare),</li>
+   *   <li>the active tetromino’s {@code type} changed, or</li>
+   *   <li>the active tetromino’s {@code rotation} changed.</li>
+   * </ul>
+   *
+   * @implNote This assumes both {@code newSnapshot.tetromino()} and
+   *     {@code lastSnapshot.tetromino()} are non-null. If your pipeline allows frames with no
+   *     active piece, consider relaxing or guarding this to avoid NPEs.
+   */
   @Override
   protected boolean shouldStartNewPlan(PureGame newSnapshot, PureGame lastSnapshot,
       OpMove existingPlan) {
@@ -163,14 +188,13 @@ public class EternalAi extends Ai {
    * Submits a network task that sends the snapshot to the external AI and awaits an
    * {@link OpMove}.
    *
-   * <p><strong>Behavior:</strong>
+   * <p><strong>Behavior:</strong></p>
    * <ul>
    *   <li>Serializes the snapshot to a compact JSON line.</li>
    *   <li>Attempts request/response exchanges repeatedly until a valid line is received, an I/O
-   *       error occurs and is retried with backoff, or the task is interrupted/cancelled.</li>
-   *   <li>Propagates JSON mapping errors as a {@link CompletionException}.</li>
+   *       error occurs (then retried with backoff), or the task is interrupted/cancelled.</li>
+   *   <li>Propagates JSON mapping errors via {@link CompletionException}.</li>
    * </ul>
-   * </p>
    *
    * @param snapshot the immutable game state to send (non-null)
    *
@@ -189,8 +213,8 @@ public class EternalAi extends Ai {
           try {
             return COMPACT_JSON.fromJson(requestOnce(json), OpMove.class);
           } catch (SocketTimeoutException e) {
-            // Uncommon at this level; treat as transient and retry.
-            LOG.log(Level.FINE, "EternalAi: unexpected socket timeout at top-level, retrying", e);
+            // Treat as transient; allow loop to retry.
+            LOG.log(Level.FINE, "EternalAi: socket timeout at top-level, retrying", e);
           } catch (JsonProcessingException e) {
             // Serialization/parsing error: surface as completion failure.
             throw new CompletionException(e);
@@ -210,13 +234,13 @@ public class EternalAi extends Ai {
   /**
    * Performs a single request/response exchange against the external AI.
    *
-   * <p>Steps:
+   * <p>Steps:</p>
    * <ol>
    *   <li>Open a fresh socket and configure timeouts.</li>
    *   <li>Send the provided JSON line with trailing newline.</li>
    *   <li>Read the first non-blank response line and return it (raw).</li>
    * </ol>
-   * The caller is responsible for decoding the returned JSON string into {@link OpMove}.</p>
+   * The caller is responsible for decoding the returned JSON string into {@link OpMove}.
    *
    * @param json a single-line JSON payload representing {@link PureGame}
    *
@@ -235,17 +259,9 @@ public class EternalAi extends Ai {
       s.setSoTimeout(READ_TIMEOUT_MS);
       try (
           BufferedWriter w = new BufferedWriter(
-              new OutputStreamWriter(
-                  s.getOutputStream(),
-                  StandardCharsets.UTF_8
-              )
-          );
+              new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8));
           BufferedReader r = new BufferedReader(
-              new InputStreamReader(
-                  s.getInputStream(),
-                  StandardCharsets.UTF_8
-              )
-          )
+              new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8))
       ) {
         send(w, json);
         return read(r);
@@ -272,8 +288,8 @@ public class EternalAi extends Ai {
   /**
    * Reads lines until the first non-blank is received, then returns it.
    *
-   * <p>Blank lines are logged at {@link Level#FINE} and ignored. The socket read timeout
-   * governs how long {@link BufferedReader#readLine()} may block; on timeout a
+   * <p>Blank lines are logged at {@link Level#FINE} and ignored. The socket read timeout controls
+   * how long {@link BufferedReader#readLine()} may block; on timeout a
    * {@link SocketTimeoutException} is thrown to the caller (which may choose to retry).</p>
    *
    * @param r the reader bound to the socket's input stream
@@ -302,12 +318,15 @@ public class EternalAi extends Ai {
   /**
    * Provides the current X coordinate used for horizontal alignment when following a plan.
    *
-   * <p>This implementation uses the left-most absolute bound ({@code minX}) of the
-   * active tetromino, which corresponds to board-space alignment at the piece's left edge.</p>
+   * <p>This implementation uses the left-most absolute bound ({@code minX}) of the active
+   * tetromino, which corresponds to board-space alignment at the piece's left edge.</p>
    *
-   * @param snapshot the current immutable game snapshot
+   * @param snapshot the current immutable game snapshot (must include a non-null active tetromino)
    *
    * @return the left-edge X coordinate in board space
+   *
+   * @implNote If your controller interprets {@link OpMove#opX()} as pivot X, override this to
+   *     return {@code snapshot.tetromino().position().x()} for consistent alignment.
    */
   @Override
   protected int getCurrentX(PureGame snapshot) {

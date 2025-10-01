@@ -12,29 +12,39 @@ import java.util.Objects;
  * Immutable, minimal snapshot of a Tetris board suitable for AI evaluation, serialization, and
  * deterministic testing.
  *
- * <p>This {@code record} captures:
+ * <h2>Coordinate system</h2>
+ * Screen-style axes: X increases to the right; Y increases downward. All coordinates referenced by
+ * this type are absolute grid positions in that system.
+ *
+ * <h2>Contents</h2>
+ * The snapshot captures:
  * <ul>
- *   <li>{@code width}/{@code height}: board dimensions in cells</li>
- *   <li>{@code cells}: a 2D raster of occupied cells where {@code 0} = empty, non-zero = filled
- *   </li>
- *   <li>{@code tetromino}: the currently active falling piece (maybe {@code null})</li>
- *   <li>{@code next}: the next piece in the queue (maybe {@code null})</li>
+ *   <li>{@code width}/{@code height}: board dimensions in cells,</li>
+ *   <li>{@code cells}: a 2D raster where {@code 0}=empty and non-zero=filled,</li>
+ *   <li>{@code tetromino}: the currently active falling piece (maybe {@code null}),</li>
+ *   <li>{@code next}: the next piece type in the queue (maybe {@code null}).</li>
  * </ul>
  *
- * <p>While the record itself is immutable, the {@code cells} array is a nested array
- * and thus mutable by reference; methods that need to mutate board state (line clear,
- * placement) return <em>new</em> arrays created via {@link #deepCopy(int[][])} to preserve
- * snapshot semantics.
+ * <h2>Immutability</h2>
+ * The record is immutable; however, {@code cells} is a nested array and thus mutable by reference.
+ * Methods that “mutate” the board (e.g., line clear, placement) return <em>new</em> matrices
+ * created via {@link #deepCopy(int[][])} to preserve snapshot semantics.
  *
  * <h2>Serialization</h2>
- * The auxiliary “shape” views of the current and next piece are emitted for JSON under
- * {@code currentShape} and {@code nextShape} via {@link #currentShape()} and
- * {@link #nextShape()}. These are computed matrices (not part of equality).
+ * Derived “shape” views of the current and next piece are exposed for JSON as
+ * {@code "currentShape"} and {@code "nextShape"} via {@link #currentShape()} and
+ * {@link #nextShape()}. These matrices are computed on demand and are not part of equality.
  *
- * <h2>Equality</h2>
- * Equality compares dimensions, a deep element-wise comparison of {@code cells},
- * and structural equality of {@code tetromino} and {@code next}. See
- * {@link #equals(Object)} for details.
+ * <h2>Equality &amp; hashing</h2>
+ * Equality compares dimensions, a deep element-wise comparison of {@code cells}, and the piece
+ * fields; see {@link #equals(Object)}. {@link #hashCode()} is consistent with equality.
+ *
+ * <h2>Invariants (expected by callers)</h2>
+ * <ul>
+ *   <li>{@code width > 0}, {@code height > 0},</li>
+ *   <li>{@code cells.length == height} and {@code cells[y].length == width} for all rows,</li>
+ *   <li>values in {@code cells} use {@code 0} for empty (non-zero may encode IDs/colors).</li>
+ * </ul>
  *
  * <h2>Typical use</h2>
  * <pre>{@code
@@ -75,24 +85,24 @@ public record PureGame(
 
   /**
    * Returns a new board with all full rows removed and the remaining rows compacted downward
-   * (classic Tetris "line clear").
+   * (classic Tetris “line clear”).
    *
-   * <p>Algorithm:
+   * <p><strong>Algorithm:</strong></p>
    * <ol>
    *   <li>Scan {@code original} top-to-bottom, detect full rows (no zeros).</li>
-   *   <li>Copy only non-full rows into a new buffer from the bottom up.</li>
-   *   <li>Fill any remaining top rows with empty rows (all zeros).</li>
+   *   <li>Copy non-full rows into a new buffer from the bottom up.</li>
+   *   <li>Fill remaining top rows with empty rows (all zeros).</li>
    * </ol>
    *
-   * <p>Time complexity is {@code O(rows * cols)}; space complexity is {@code O(rows * cols)} for
-   * the copy.</p>
+   * <p>Time complexity: {@code O(rows × cols)}. Space complexity: {@code O(rows × cols)} for
+   * the new matrix.</p>
    *
    * @param original source board matrix (not modified)
    *
    * @return a new matrix with full lines cleared and gapless compaction applied
    *
-   * @throws NullPointerException if {@code original} or its rows are {@code null}
-   * @implNote This method assumes a rectangular matrix (constant row length).
+   * @throws NullPointerException if {@code original} or any row is {@code null}
+   * @implNote Assumes a rectangular matrix (constant row length).
    */
   public int[][] clearLines(int[][] original) {
     int[][] copy = new int[original.length][];
@@ -121,11 +131,11 @@ public record PureGame(
 
   /**
    * Shape matrix of the currently active tetromino in its current rotation, expressed as a dense
-   * 0/1 matrix with origin at the piece's pivot.
+   * 0/1 matrix with origin at the piece’s pivot.
    *
    * <p>Exposed for JSON as {@code "currentShape"}.</p>
    *
-   * @return a new 2D matrix describing the current piece shape, or {@code 0x0} if
+   * @return a new 2D matrix describing the current piece shape, or {@code 0×0} if
    *     {@code tetromino == null}
    */
   @JsonProperty("currentShape")
@@ -142,7 +152,7 @@ public record PureGame(
    *
    * <p>Exposed for JSON as {@code "nextShape"}.</p>
    *
-   * @return a new 2D matrix describing the next piece shape, or {@code 0x0} if {@code next == null}
+   * @return a new 2D matrix describing the next piece shape, or {@code 0×0} if {@code next == null}
    */
   @JsonProperty("nextShape")
   public int[][] nextShape() {
@@ -153,12 +163,12 @@ public record PureGame(
   }
 
   /**
-   * Simulates a hard drop of the given {@code tetromino} and returns a new board with the piece
-   * locked and any resulting line clears applied.
+   * Simulates a hard drop of {@code tetromino} and returns a new board with the piece locked and
+   * any resulting line clears applied.
    *
-   * <p>Algorithm: repeatedly attempt to move the piece one row down while the next position
-   * {@link #fits(Tetromino)}; when the next move no longer fits, lock at the last valid position
-   * and {@link #placePiece(Tetromino) place} it (then clear full lines).</p>
+   * <p><strong>Process:</strong> repeatedly attempt to move the piece one row down while
+   * the next position {@link #fits(Tetromino)}. When the next move no longer fits, lock at the last
+   * valid position and {@link #placePiece(Tetromino) place} it (which also clears lines).</p>
    *
    * <p>If {@code tetromino} is {@code null} or does not fit at its current position (e.g., spawn
    * overlap), this method returns a deep copy of {@link #cells} (no-op).</p>
@@ -168,8 +178,9 @@ public record PureGame(
    * @return a new matrix with the piece written and full lines cleared; or an unchanged deep copy
    *     of {@link #cells} if the piece is {@code null} or cannot be placed
    *
-   * @implNote Runs in O(drop distance × cells per piece) time. The board uses value {@code 1}
-   *     for filled cells; adapt {@link #placePiece(Tetromino)} if you encode colors/IDs.
+   * @implNote Runs in {@code O(drop distance × 4)} since each tetromino has four cells. The
+   *     board uses value {@code 1} for filled cells; adapt {@link #placePiece(Tetromino)} if you
+   *     encode colors/IDs.
    */
   public int[][] hardDrop(Tetromino tetromino) {
     if (tetromino == null || !fits(tetromino)) {
@@ -185,13 +196,15 @@ public record PureGame(
    * Tests whether a tetromino fits entirely within the board bounds and does not collide with any
    * occupied cell in {@link #cells}.
    *
-   * @param tetromino piece to test
+   * <p><strong>Bounds rule:</strong> any negative X/Y or any X/Y beyond {@code [0,width)} /
+   * {@code [0,height)} fails. Unlike some board-level fit checks, positions above the top (negative
+   * Y) are <em>not</em> allowed here.</p>
+   *
+   * @param tetromino piece to test (must not be {@code null})
    *
    * @return {@code true} iff every absolute cell of the piece is within bounds and on an empty cell
    *
    * @throws NullPointerException if {@code tetromino} is {@code null}
-   * @implNote Uses the piece's absolute cell coordinates; negative Y or X or exceeding
-   *     width/height fails.
    */
   public boolean fits(Tetromino tetromino) {
     for (Cell cell : tetromino.getAbsoluteShape()) {
@@ -205,13 +218,13 @@ public record PureGame(
   }
 
   /**
-   * Returns a new matrix with the given tetromino's absolute cells written as occupied, followed by
+   * Returns a new matrix with the tetromino’s absolute cells written as occupied, then applies
    * line-clear compaction.
    *
-   * <p>Cells corresponding to the piece are set to {@code 1}. If you encode colors or IDs
-   * in the board, adapt this method accordingly.</p>
+   * <p>Cells corresponding to the piece are set to {@code 1}. If your encoding stores colors
+   * or IDs, adapt this method accordingly.</p>
    *
-   * @param tetromino the piece to lock in place
+   * @param tetromino the piece to lock in place (must fit; see {@link #fits(Tetromino)})
    *
    * @return a new matrix with the piece written and lines cleared
    *
@@ -229,11 +242,11 @@ public record PureGame(
   /**
    * Structural equality for snapshots.
    *
-   * <p>Two {@code PureGame} instances are equal iff:
+   * <p>Two {@code PureGame} instances are equal iff:</p>
    * <ul>
-   *   <li>{@code width} and {@code height} are equal</li>
-   *   <li>{@code cells} is deeply equal via {@link Arrays#deepEquals(Object[], Object[])}</li>
-   *   <li>{@code tetromino} and {@code next} are equal via {@link Objects#equals(Object, Object)}
+   *   <li>{@code width} and {@code height} are equal,</li>
+   *   <li>{@code cells} is deeply equal via {@link Arrays#deepEquals(Object[], Object[])},</li>
+   *   <li>{@code tetromino} and {@code next} are equal via {@link Objects#equals(Object, Object)}.
    *   </li>
    * </ul>
    */
@@ -253,7 +266,7 @@ public record PureGame(
   }
 
   /**
-   * Hash code consistent with {@link #equals(Object)}, combining dimensions, a deep hash of
+   * Hash code consistent with {@link #equals(Object)}: combines dimensions, a deep hash of
    * {@code cells}, and the piece fields.
    */
   @Override
@@ -262,6 +275,10 @@ public record PureGame(
     return Objects.hash(width, height, hashCells, tetromino, next);
   }
 
+  /**
+   * String form including dimensions, the {@code cells} raster, and derived shape matrices for the
+   * current and next pieces.
+   */
   @Override
   public String toString() {
     return "PureGame{"

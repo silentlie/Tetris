@@ -11,23 +11,64 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Base class for Tetris AIs that compute a planned move ({@link OpMove}) for a given immutable game
+ * Base class for Tetris AIs that compute a planned move ({@link OpMove}) for an immutable game
  * snapshot ({@link PureGame}) and emit a {@link GameIntent} each tick to steer the active tetromino
  * toward that plan.
  *
- * <p><strong>Template:</strong> Subclasses implement {@link #submit(PureGame)} to compute
- * an {@code OpMove} asynchronously. The default {@link #getCurrentIntent(OpMove, PureGame)}
- * implements a simple "follow-the-plan" controller and provides several overridable hooks:
- * {@link #needsRotation(OpMove, PureGame)}, {@link #getCurrentX(PureGame)}, and
- * {@link #whenAligned(OpMove, PureGame)}.</p>
+ * <h2>Planning model</h2>
+ * <ul>
+ *   <li>Each distinct {@link PureGame} snapshot may trigger an asynchronous planning task
+ *       via {@link #submit(PureGame)}.</li>
+ *   <li>Only one plan computation is considered “current” (the most recently submitted future).
+ *       Older futures are ignored on completion.</li>
+ *   <li>The last completed plan is cached and used by {@link #getCurrentIntent(OpMove, PureGame)}
+ *       to emit one {@link GameIntent} per tick until a replan happens.</li>
+ * </ul>
  *
- * <p><strong>Concurrency:</strong> This class manages a single in-flight computation.
- * When a new {@code PureGame} differs from the cached snapshot, the previous computation is
- * cancelled (best-effort) and a new one is submitted. Field access is guarded by {@code volatile}
- * visibility; no external synchronization is required.</p>
+ * <h2>Default controller</h2>
+ * The default {@link #getCurrentIntent(OpMove, PureGame)} implements a simple follow-the-plan
+ * controller:
+ * <ol>
+ *   <li>Rotate until {@link #needsRotation(OpMove, PureGame)} is false (defaults to
+ *       {@code plan.opRotate() == 0}).</li>
+ *   <li>Move horizontally toward {@code plan.opX()} using {@link #getCurrentX(PureGame)} as the
+ *       reference X (defaults to the piece pivot X).</li>
+ *   <li>When aligned, delegate to {@link #whenAligned(OpMove, PureGame)} (default: {@code null}).
+ *   </li>
+ * </ol>
+ * Subclasses can override these hooks to implement smarter controllers (e.g., wall kicks,
+ * DAS/ARR simulation, soft-drop timing, etc.).
  *
- * <p><strong>Lifecycle:</strong> Call {@link #shutdown()} when the AI is no longer needed
- * so subclasses can release executors or native resources.</p>
+ * <h2>Replan policy</h2>
+ * The default {@link #shouldStartNewPlan(PureGame, PureGame, OpMove)} returns {@code true}
+ * whenever {@code !Objects.equals(newSnapshot, lastSnapshot)}. Override to replan only on piece
+ * spawn, on interval, or when the existing plan becomes invalid.
+ *
+ * <h2>Concurrency &amp; cancellation</h2>
+ * <ul>
+ *   <li>At most one planning computation is considered active. When a new plan is started,
+ *       any in-flight computation is canceled ( the best effort) via
+ *       {@link CompletableFuture#cancel(boolean)}.</li>
+ *   <li>Field access uses {@code volatile} for visibility; external synchronization is not
+ *   required.</li>
+ *   <li>{@link #submit(PureGame)} should be responsive to interruption if long-running.</li>
+ *   <li>Completion exceptions are unwrapped by {@link #onError(Throwable)}; cancellations are
+ *   treated as expected churn.</li>
+ * </ul>
+ *
+ * <h2>Contracts &amp; expectations</h2>
+ * <ul>
+ *   <li>{@code PureGame} is immutable; implementations of {@link #submit(PureGame)} must not mutate
+ *   it.</li>
+ *   <li>{@link OpMove#opX()} is interpreted by the default controller as a target X (pivot-aligned
+ *       by default; override {@link #getCurrentX(PureGame)} if you align differently).</li>
+ *   <li>{@link OpMove#opRotate()} is the remaining clockwise rotation count required to reach the
+ *   plan.</li>
+ * </ul>
+ *
+ * <h2>Lifecycle</h2>
+ * Call {@link #shutdown()} when the AI is no longer needed so implementations can release
+ * executors or native resources. This method should be idempotent.
  */
 public abstract class Ai {
 
@@ -37,32 +78,39 @@ public abstract class Ai {
   protected static final Logger LOG = Logger.getLogger(Ai.class.getName());
 
   /**
-   * Last snapshot we planned for. Used to detect when a new plan is required.
+   * Last snapshot we planned for. Used to decide whether a new plan is required.
    */
   private volatile PureGame cachePureGame = null;
 
   /**
-   * The last completed plan for {@link #cachePureGame}. May be {@code null} if not ready.
+   * The last completed plan for {@link #cachePureGame}. May be {@code null} while planning or if
+   * planning failed.
    */
   private volatile OpMove cachedOpMove = null;
 
   /**
-   * The current async plan computation, if any.
+   * The current async plan computation, if any (the only one considered “current”).
    */
   private volatile CompletableFuture<OpMove> inFlight;
 
   /**
    * Advances the AI by one tick against the provided immutable {@link PureGame} snapshot.
    *
-   * <p>If the snapshot differs from the last one, a new asynchronous computation is submitted
-   * via {@link #submit(PureGame)}, the previous one is cancelled (best-effort), and the cached plan
-   * is cleared. If the snapshot is unchanged and a plan has completed, the method emits a
-   * {@link GameIntent} that moves/rotates the current piece toward that plan.</p>
+   * <p>Behavior:</p>
+   * <ul>
+   *   <li>If {@code snapshot} differs from the last planned snapshot per
+   *       {@link #shouldStartNewPlan(PureGame, PureGame, OpMove)}, cancel any in-flight
+   *       computation, clear the cached plan, and submit a new computation via
+   *       {@link #submit(PureGame)}.</li>
+   *   <li>If a plan has completed, emit a {@link GameIntent} that moves/rotates the current piece
+   *       toward that plan by delegating to {@link #getCurrentIntent(OpMove, PureGame)}.</li>
+   *   <li>If no plan is available yet (or there is no active piece), returns {@code null}.</li>
+   * </ul>
    *
-   * @param snapshot the current immutable game state; {@code null} returns {@code null}
+   * @param snapshot the current immutable game state; {@code null} yields {@code null}
    *
-   * @return the next intent to apply this frame, or {@code null} if no action is needed or a plan
-   *     is not yet available
+   * @return the next intent for this frame, or {@code null} if no action is required or no plan is
+   *     ready
    */
   public final GameIntent tick(PureGame snapshot) {
     if (snapshot == null) {
@@ -70,14 +118,16 @@ public abstract class Ai {
     }
     PureGame lastPureGame = cachePureGame;
     cachePureGame = snapshot;
+
     if (shouldStartNewPlan(cachePureGame, lastPureGame, cachedOpMove)) {
-      cachePureGame = snapshot;
+      // Clear/abort previous work
       cachedOpMove = null;
       if (inFlight != null && !inFlight.isDone()) {
         inFlight.cancel(true);
       }
       inFlight = null;
 
+      // Submit new work
       final CompletableFuture<OpMove> future = submit(snapshot);
       if (future == null) {
         onError(new NullPointerException("Ai.submit() returned null"));
@@ -86,7 +136,7 @@ public abstract class Ai {
 
       inFlight = future;
       future.whenComplete((opMove, throwable) -> {
-        // Ignore completion if a newer computation has since been started.
+        // Ignore if superseded by a newer submission.
         if (inFlight != future) {
           return;
         }
@@ -97,27 +147,26 @@ public abstract class Ai {
         cachedOpMove = opMove;
       });
     }
+
     return getCurrentIntent(cachedOpMove, cachePureGame);
   }
 
   /**
    * Decide whether to discard any existing plan and start a new one for the given snapshot.
    *
-   * <p><strong>Default:</strong> replan when
-   * {@code !Objects.equals(newSnapshot, lastSnapshot)}.</p>
+   * <p>Default: replan when {@code !Objects.equals(newSnapshot, lastSnapshot)}.</p>
    *
-   * <p><strong>Common overrides:</strong>
+   * <p>Common overrides include:</p>
    * <ul>
-   *   <li>Only replan when a new piece spawns (e.g., compare active piece IDs/types).</li>
-   *   <li>Throttle replans to once every N frames or milliseconds.</li>
-   *   <li>Force replan if the existing plan is incompatible with the new board (e.g., obstruction).
-   *   </li>
+   *   <li>Replan only on new piece spawn (compare active piece identity/type).</li>
+   *   <li>Throttle replans (time- or frame-based).</li>
+   *   <li>Force replan when the current plan conflicts with the new board geometry.</li>
    * </ul>
-   * Keep this decision fast and side effect free; it runs every frame.</p>
+   * Keep this decision fast and side effect free; it runs every frame.
    *
    * @param newSnapshot  the current snapshot (non-null)
-   * @param lastSnapshot the snapshot used for {@code cachedOpMove} (maybe null)
-   * @param existingPlan the last completed plan for {@code lastSnapshot} (maybe null)
+   * @param lastSnapshot the snapshot associated with {@code existingPlan} (maybe null)
+   * @param existingPlan the last completed plan (maybe null)
    *
    * @return {@code true} to cancel any in-flight computation and submit a new one
    */
@@ -129,10 +178,15 @@ public abstract class Ai {
   /**
    * Error hook for failed computations.
    *
-   * <p>Default behavior unwraps {@link CompletionException}, ignores cancellations,
-   * re-asserts interrupt status for {@link InterruptedException}, and logs an error.</p>
+   * <p>Default behavior:</p>
+   * <ul>
+   *   <li>Unwraps {@link CompletionException} to its cause when present.</li>
+   *   <li>Silently ignores {@link CancellationException} (expected under churn).</li>
+   *   <li>Preserves interrupt status for {@link InterruptedException} and returns.</li>
+   *   <li>Logs at {@link Level#SEVERE} for all other failures.</li>
+   * </ul>
    *
-   * @param throwable the failure thrown by the async computation
+   * @param throwable the failure thrown by the async computation (never null)
    */
   protected void onError(Throwable throwable) {
     if (throwable instanceof CompletionException ce && ce.getCause() != null) {
@@ -150,34 +204,33 @@ public abstract class Ai {
   /**
    * Submits an asynchronous computation to derive an {@link OpMove} plan for the given snapshot.
    *
-   * <p><strong>Contract:</strong>
+   * <p><strong>Contract:</strong></p>
    * <ul>
    *   <li>Must not mutate {@code snapshot}.</li>
-   *   <li>Should be responsive to interruption if long-running.</li>
-   *   <li>Must return a non-{@code null} {@link CompletableFuture} (may complete exceptionally).
-   *   </li>
+   *   <li>Should be responsive to interruption (cooperate with {@code cancel(true)}).</li>
+   *   <li>Must return a non-{@code null} {@link CompletableFuture} that may complete normally
+   *       or exceptionally.</li>
    * </ul>
-   * </p>
    *
    * @param snapshot the immutable game state to plan against
    *
-   * @return a future that completes with the planned move or completes exceptionally
+   * @return a future that completes with the planned move (maybe {@code null} if no move
+   *     available), or completes exceptionally
    */
   protected abstract CompletableFuture<OpMove> submit(PureGame snapshot);
 
   /**
    * Computes the immediate {@link GameIntent} to move the active piece toward the given plan.
    *
-   * <p>This default implementation is a simple controller:
+   * <p>Default controller:</p>
    * <ol>
-   *   <li>If {@link #needsRotation(OpMove, PureGame)} is {@code true}, returns {@link
-   *   GameIntent#ROTATE_CW}.</li>
+   *   <li>If {@link #needsRotation(OpMove, PureGame)} is {@code true}, returns
+   *       {@link GameIntent#ROTATE_CW}.</li>
    *   <li>Otherwise compares {@link #getCurrentX(PureGame)} with {@code plan.opX()} and
-   *       returns {@link GameIntent#MOVE_LEFT} or {@link GameIntent#MOVE_RIGHT} as needed.</li>
-   *   <li>If aligned horizontally, delegates to {@link #whenAligned(OpMove, PureGame)} (default
-   *   {@code null}).</li>
+   *       returns {@link GameIntent#MOVE_LEFT} / {@link GameIntent#MOVE_RIGHT} as needed.</li>
+   *   <li>If aligned horizontally, delegates to {@link #whenAligned(OpMove, PureGame)}
+   *       (default: {@code null}).</li>
    * </ol>
-   * </p>
    *
    * @param opMove   the latest completed plan (maybe {@code null})
    * @param snapshot the current snapshot (maybe {@code null})
@@ -208,10 +261,10 @@ public abstract class Ai {
   /**
    * Hook to decide whether the piece still needs rotation before horizontal alignment.
    *
-   * <p>Default: returns {@code plan.opRotate() != 0} (i.e., any remaining rotation count).</p>
+   * <p>Default: {@code plan.opRotate() != 0}.</p>
    *
-   * @param opMove   the planned move
-   * @param snapshot the current snapshot
+   * @param opMove   the planned move (non-null in default flow)
+   * @param snapshot the current snapshot (non-null in default flow)
    *
    * @return {@code true} if a rotation intent should be emitted this tick
    */
@@ -220,15 +273,15 @@ public abstract class Ai {
   }
 
   /**
-   * Hook to provide the current piece's reference X position used for horizontal alignment.
+   * Hook to provide the current piece's reference X used for horizontal alignment.
    *
-   * <p>Default: uses the tetromino's pivot X, i.e. {@code snapshot.tetromino().position().x()}.
-   * Subclasses may override to use, for example, the left bound ({@code minX}) in board
-   * coordinates.</p>
+   * <p>Default: the tetromino's pivot X,
+   * {@code snapshot.tetromino().position().x()}.</p> Override to align to another reference (e.g.,
+   * left bound/minX).
    *
    * @param snapshot the current snapshot
    *
-   * @return the current X used by the controller to compare against {@code plan.opX()}
+   * @return the current X used to compare against {@code plan.opX()}
    */
   protected int getCurrentX(PureGame snapshot) {
     return snapshot.tetromino().position().x();
@@ -237,8 +290,8 @@ public abstract class Ai {
   /**
    * Hook invoked when rotation is satisfied and the piece is horizontally aligned with the target.
    *
-   * <p>Default: returns {@code null} (no action). Subclasses may return
-   * {@link GameIntent#HARD_DROP}, {@link GameIntent#SOFT_DROP} (soft drop), or another action.</p>
+   * <p>Default: {@code null} (no action). Common overrides include:
+   * {@link GameIntent#HARD_DROP}, {@link GameIntent#SOFT_DROP}, or a micro-move for finesse.</p>
    *
    * @param opMove   the planned move
    * @param snapshot the current snapshot
