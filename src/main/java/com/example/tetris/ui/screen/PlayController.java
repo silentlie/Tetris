@@ -1,4 +1,4 @@
-package com.example.tetris.ui.controller;
+package com.example.tetris.ui.screen;
 
 import static com.example.tetris.core.config.Configuration.NEXT_QUEUE_SIZE;
 
@@ -14,11 +14,13 @@ import com.example.tetris.core.config.Configuration;
 import com.example.tetris.core.piece.TetrominoType;
 import com.example.tetris.core.random.PieceSupplierStrategy;
 import com.example.tetris.core.rule.Game;
+import com.example.tetris.core.rule.Game.Listener;
 import com.example.tetris.core.rule.GameClock;
 import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.GameState;
 import com.example.tetris.core.state.PieceQueue;
 import com.example.tetris.core.state.PlayerType;
+import com.example.tetris.service.audio.SoundCue;
 import com.example.tetris.ui.view.GameView;
 import java.util.function.Supplier;
 import javafx.application.Platform;
@@ -30,19 +32,24 @@ import javafx.scene.control.SplitPane;
 import javafx.scene.input.KeyEvent;
 
 /**
- * JavaFX controller for the “Play” route. Constructs and drives one or two {@link Game} instances,
- * wires keyboard input, and manages pause/leave flow.
+ * JavaFX controller for the “Play” route.
  *
- * <p>Lifecycle:</p>
+ * <p>Constructs and drives one or two {@link Game} instances, wires scene-level keyboard input,
+ * and manages pause/leave flow.</p>
+ *
+ * <h2>Lifecycle</h2>
  * <ul>
- *   <li>{@link #setContext(AppContext)} builds games from configuration, attaches key handlers,
- *       and starts the {@link GameService} loop.</li>
- *   <li>{@link #pauseGame()} temporarily stops the loop and shows a modal dialog to leave or
- *   resume.</li>
- *   <li>{@link #endGame()} stops the loop, shows “Game Over”, and navigates back to the menu.</li>
+ *   <li>{@link #setContext(AppContext)} builds games from the current {@link Configuration},
+ *       installs scene key handlers, and starts the {@link GameService} game loop.</li>
+ *   <li>{@link #pauseGame()} stops the loop and prompts to leave or resume.</li>
+ *   <li>{@link #endGame()} stops the loop, shows “Game Over”, navigates home, and evicts this
+ *   route.</li>
  * </ul>
  *
- * <p>Threading: all methods are expected to run on the JavaFX application thread.</p>
+ * <h2>Threading</h2>
+ *
+ * <p>All methods are expected to run on the JavaFX application thread. UI work performed from other
+ * threads is marshalled via {@link Platform#runLater(Runnable)}.</p>
  *
  * @since 1.0
  */
@@ -57,18 +64,22 @@ public class PlayController implements FxController {
   private Game game2;
 
   /**
-   * Initializes this controller with the application context and starts gameplay.
+   * Initialize this controller with the application context and start gameplay.
    *
    * <p>Behavior:</p>
    * <ul>
-   *   <li>Loads {@link Configuration} from the context.</li>
-   *   <li>Creates a {@link GameService} that ends the session when all games are finished.</li>
-   *   <li>Creates Player 1, and Player 2 if {@code extendMode} is enabled, then starts the loop.
+   *   <li>Reads {@link Configuration} from {@link AppContext#getConfigService()}.</li>
+   *   <li>Creates a {@link GameService} that ends the session when all games have finished.</li>
+   *   <li>Creates Player 1; if {@code extendMode} is enabled, creates Player 2 and splits the UI.
    *   </li>
-   *   <li>Installs a scene-level key handler ({@link #onKeyPressed(KeyEvent)}).</li>
+   *   <li>Installs a scene-level key handler (see {@link #onKeyPressed(KeyEvent)} for bindings).
+   *   </li>
+   *   <li>Starts the game loop.</li>
    * </ul>
    *
    * @param ctx application context (must not be {@code null})
+   *
+   * @throws NullPointerException if {@code ctx} is {@code null}
    */
   @Override
   public void setContext(AppContext ctx) {
@@ -88,9 +99,11 @@ public class PlayController implements FxController {
       root.setDividerPositions(0.5);
     }
 
+    // --- Player 1 ---
     game1 = createGame(seed, config.width(), config.height(), config.level(), config.player1());
     service.addGame(game1);
 
+    // Install key handler on the active scene
     root.sceneProperty().addListener((obs, oldScene, newScene) -> {
       if (oldScene != null) {
         oldScene.setOnKeyPressed(null);
@@ -103,6 +116,16 @@ public class PlayController implements FxController {
     service.start();
   }
 
+  /**
+   * Construct a {@link Game} (state + view + clock), attach the view to the UI, and return it.
+   *
+   * <p>Uses a deterministic piece supplier seeded by {@code seed}. The preview queue length is
+   * {@link Configuration#NEXT_QUEUE_SIZE}.</p>
+   *
+   * @param seed RNG seed for the piece supplier
+   *
+   * @return a fully wired {@link Game} instance
+   */
   private Game createGame(long seed, int width, int height, int startLevel, PlayerType playerType) {
     Supplier<TetrominoType> supplier = PieceSupplierStrategy.UNIFORM.create(seed);
     PieceQueue queue = new PieceQueue(NEXT_QUEUE_SIZE, supplier);
@@ -111,8 +134,18 @@ public class PlayController implements FxController {
     GameView view = new GameView();
     root.getItems().add(view);
     GameClock clock = new GameClock(startLevel);
+    return game(state, view, clock, playerType);
+  }
+
+  /**
+   * Wire a {@link Game} with sound cues and return it.
+   *
+   * <p>Bridges {@link Game.Listener} callbacks to {@link SoundCue}s via the {@link AppContext}’s
+   * audio service. No other side effects.</p>
+   */
+  private Game game(GameState state, GameView view, GameClock clock, PlayerType type) {
     Game game = new Game(state, view, clock);
-    switch (playerType) {
+    switch (type) {
       case AI -> {
         Ai ai = new FakeAi();
         game.ai(ai);
@@ -124,12 +157,36 @@ public class PlayController implements FxController {
       default -> {
       }
     }
+    game.setListener(new Listener() {
+      @Override
+      public void onLevelUp(int newLevel) {
+        ctx.getAudio().play(SoundCue.LEVEL_UP);
+      }
+
+      @Override
+      public void onClearLines(int cleared, int score, int streak, int highestStreak) {
+        ctx.getAudio().play(SoundCue.ERASE_LINE);
+      }
+
+      @Override
+      public void onGameOver() {
+        ctx.getAudio().play(SoundCue.GAME_FINISH);
+      }
+
+      @Override
+      public void onIntentAccepted(GameIntent intent) {
+        ctx.getAudio().play(SoundCue.MOVE_TURN);
+      }
+    });
     return game;
   }
 
   /**
-   * Ends the session: stops the service, shows a “Game Over” dialog, navigates home, and evicts
+   * End the session: stop the service, show a “Game Over” dialog, navigate to the menu, and evict
    * this route from the navigation cache.
+   *
+   * <p>All UI actions run on the FX thread. Safe to call multiple times; stopping an already
+   * stopped service is a no-op.</p>
    */
   public void endGame() {
     if (service != null && service.isRunning()) {
@@ -148,11 +205,11 @@ public class PlayController implements FxController {
   }
 
   /**
-   * Pauses gameplay and prompts the user to leave or resume.
+   * Pause gameplay and prompt the user to leave or resume.
    *
-   * <p>If the service is not running, the call is ignored. Otherwise, the loop is stopped and a
-   * modal dialog is shown. Choosing “Leave” calls {@link #endGame()}, choosing “Resume” restarts
-   * the loop.</p>
+   * <p>If the {@link GameService} is not running, this call is ignored. Otherwise, the loop is
+   * stopped and a modal dialog is shown. Choosing “Leave” calls {@link #endGame()}; choosing
+   * “Resume” restarts the loop.</p>
    */
   public void pauseGame() {
     if (service == null || !service.isRunning()) {
@@ -177,15 +234,16 @@ public class PlayController implements FxController {
   }
 
   /**
-   * Scene-level key handler that maps key presses to {@link GameIntent}s for player 1 (and player 2
-   * when present). Also supports pause via {@code P} or {@code ESCAPE}.
+   * Scene-level key handler mapping key presses to {@link GameIntent}s for player 1 and, when
+   * present, player 2. Also supports toggles and pause.
    *
-   * <p>Controls:</p>
+   * <p><strong>Bindings:</strong></p>
    * <ul>
    *   <li>Pause: {@code P}, {@code ESCAPE}</li>
-   *   <li>Player 1: {@code LEFT}/{@code RIGHT}/{@code UP}/{@code DOWN}</li>
+   *   <li>Player 1: {@code LEFT}/{@code RIGHT}/{@code UP} (rotate CW)/{@code DOWN} (soft drop)</li>
    *   <li>Player 2 (extend mode): {@code ,} (left), {@code .} (right), {@code L} (rotate CW),
-   *       {@code SPACE} (soft drop). If player 2 is not active, these keys control player 1.</li>
+   *       {@code SPACE} (soft drop). When Player 2 is absent, these keys control Player 1.</li>
+   *   <li>Audio: {@code M} toggle BGM, {@code S} toggle SFX</li>
    * </ul>
    *
    * @param keyEvent incoming key event; always consumed
@@ -230,6 +288,11 @@ public class PlayController implements FxController {
           game1.apply(GameIntent.SOFT_DROP);
         }
       }
+
+      // Toggles
+      case M -> ctx.switchBgm();
+      case S -> ctx.switchSound();
+
       default -> { /* ignore */ }
     }
   }

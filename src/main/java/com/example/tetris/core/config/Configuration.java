@@ -141,4 +141,26 @@ public record Configuration(
     this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_LEVEL, DEFAULT_MUSIC, DEFAULT_SOUND,
         DEFAULT_EXTEND_MODE, DEFAULT_PLAYER1, DEFAULT_PLAYER2);
   }
+
+  /**
+   * Returns a copy of this configuration with {@link #music} set to the given value.
+   *
+   * @param music whether background music should be enabled
+   *
+   * @return a new {@code Configuration} instance with {@code music} updated
+   */
+  public Configuration withMusic(boolean music) {
+    return new Configuration(width, height, level, music, sound, extendMode, player1, player2);
+  }
+
+  /**
+   * Returns a copy of this configuration with {@link #sound} set to the given value.
+   *
+   * @param sound whether sound effects should be enabled
+   *
+   * @return a new {@code Configuration} instance with {@code sound} updated
+   */
+  public Configuration withSound(boolean sound) {
+    return new Configuration(width, height, level, music, sound, extendMode, player1, player2);
+  }
 }

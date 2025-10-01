@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.VBox?>
 <VBox xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
-  fx:controller="com.example.tetris.ui.controller.MenuController"
+  fx:controller="com.example.tetris.ui.screen.MenuController"
   alignment="CENTER"
 >
   <Region VBox.vgrow="ALWAYS"/>

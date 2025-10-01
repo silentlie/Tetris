@@ -33,14 +33,19 @@ public class GameState {
   private int highestStreak = 0;
   private boolean gameOver = false;
 
+  private Listener listener = new Listener() {
+  };
+
   /**
-   * Creates a new game state, spawns the first tetromino from the queue, and checks for lock-out.
+   * Create a new game state, spawn the first tetromino from the queue, and check for lock-out.
    *
-   * <p>If the freshly spawned tetromino does not fit on the board, the game immediately
-   * enters a game-over state.</p>
+   * <p>If the freshly spawned tetromino does not fit on the board, the game immediately enters
+   * a game-over state.</p>
    *
    * @param board the playfield (must not be {@code null})
    * @param queue the upcoming-piece queue (must not be {@code null})
+   *
+   * @throws NullPointerException if any argument is {@code null}
    */
   public GameState(Board board, PieceQueue queue) {
     this.board = Objects.requireNonNull(board, "board is null");
@@ -52,21 +57,36 @@ public class GameState {
   }
 
   /**
-   * Applies a high-level input intent to the game state.
+   * Set a listener for game events (optional).
+   *
+   * <p>Passing {@code null} installs a no-op listener.</p>
+   *
+   * @param listener callback sink or {@code null} for none
+   */
+  public void setListener(Listener listener) {
+    this.listener = (listener == null) ? new Listener() {
+    } : listener;
+  }
+
+  /**
+   * Apply a high-level input intent to the game state.
    *
    * <p>Semantics:</p>
    * <ul>
    *   <li>{@link GameIntent#ROTATE_CW}, {@link GameIntent#ROTATE_CCW},
    *       {@link GameIntent#MOVE_LEFT}, {@link GameIntent#MOVE_RIGHT} attempt the action once
    *       and succeed only if the resulting position fits.</li>
-   *   <li>{@link GameIntent#SOFT_DROP} tries to move down once; if blocked, the piece locks.</li>
+   *   <li>{@link GameIntent#SOFT_DROP} attempts to move down once; if blocked, the piece locks.
+   *   </li>
    *   <li>{@link GameIntent#HARD_DROP} repeatedly moves down until blocked, then locks.</li>
    * </ul>
    *
-   * @param intent the input intent to process
+   * @param intent the input to process (must not be {@code null})
    *
-   * @return {@code true} if the intent was processed (even if it resulted in a lock); {@code false}
-   *     if the game is already over and the intent is ignored
+   * @return {@code true} if processed (including when it triggers a lock); {@code false} if the
+   *     game is already over and the intent is ignored
+   *
+   * @throws NullPointerException if {@code intent} is {@code null}
    */
   public boolean apply(GameIntent intent) {
     if (gameOver) {
@@ -98,9 +118,11 @@ public class GameState {
   /**
    * Attempts to apply a movement/rotation to the active tetromino if it fits.
    *
-   * @param op operation producing a candidate tetromino
+   * @param op operation producing a candidate tetromino (must not be {@code null})
    *
-   * @return {@code true} if applied (tetromino updated); {@code false} if blocked
+   * @return {@code true} if applied (active tetromino updated); {@code false} if blocked
+   *
+   * @throws NullPointerException if {@code op} is {@code null}
    */
   private boolean tryApply(UnaryOperator<Tetromino> op) {
     Tetromino candidate = op.apply(tetromino);
@@ -112,11 +134,14 @@ public class GameState {
   }
 
   /**
-   * Locks the active tetromino onto the board, clears any full lines, updates score/streak, and
-   * spawns the next tetromino. If the new piece does not fit, sets game over.
+   * Lock the active tetromino into the board, clear any full lines, update score/streak, and spawn
+   * the next tetromino. If the new piece does not fit, mark game over.
    *
-   * <p>Lock-out occurs if any locked cell lies above the top ({@code y < 0}). In that case,
+   * <p><strong>Lock-out:</strong> if any locked cell lies above the top ({@code y < 0}),
    * the game ends immediately.</p>
+   *
+   * <p>Listeners are notified via {@link Listener#onClearLines(int, int, int, int)} after scoring,
+   * and via {@link Listener#onGameOver()} if the spawn fails.</p>
    */
   private void lock() {
     boolean lockOut = board.lock(tetromino);
@@ -131,21 +156,23 @@ public class GameState {
       streak += cleared;
       highestStreak = Math.max(highestStreak, streak);
       score += calculateScoring(cleared, streak);
+      listener.onClearLines(cleared, score, streak, highestStreak);
     }
     tetromino = spawnFromQueue();
     if (!board.fits(tetromino)) {
       gameOver = true;
+      listener.onGameOver();
     }
   }
 
   /**
-   * Simple scoring rule: award {@code streak * 100} per cleared line in this lock event.
+   * Scoring rule: award {@code streak × 100} for each line cleared in this lock event.
    *
-   * <p>For example, if {@code cleared == 2} and current {@code streak == 3}, score gain is
-   * {@code 2 × (3 × 100)} = {@code 600}.</p>
+   * <p>Example: if {@code cleared == 2} and the current {@code streak == 3},
+   * score gain = {@code 2 × (3 × 100)} = {@code 600}.</p>
    *
    * @param cleared number of lines cleared in this lock (≥ 0)
-   * @param streak  current cumulative streak after this clear (≥ 0)
+   * @param streak  cumulative streak after this clear (≥ 0)
    *
    * @return points to add for this lock
    */
@@ -158,7 +185,7 @@ public class GameState {
   }
 
   /**
-   * Spawns the next tetromino from the queue at the standard spawn position and orientation.
+   * Spawn the next tetromino from the queue at the standard spawn position and orientation.
    *
    * <p>Spawn position is horizontally centered at {@code (board.width / 2 - 1, -2)} with
    * {@link Rotation#UP}.</p>
@@ -171,12 +198,10 @@ public class GameState {
     return new Tetromino(type, position, Rotation.UP);
   }
 
-  // ===== Read-only access for rendering/HUD =====
+  // ===== Read-only accessors for rendering/HUD =====
 
   /**
-   * Current score.
-   *
-   * @return score (≥ 0)
+   * Current score (≥ 0).
    */
   public int getScore() {
     return score;
@@ -278,5 +303,31 @@ public class GameState {
       }
     }
     return new PureGame(getWidth(), getHeight(), cells, tetromino, getQueue().getFirst());
+  }
+
+  /**
+   * Optional event callbacks for UI/telemetry.
+   *
+   * <p>All methods are invoked synchronously from the caller of {@link #apply(GameIntent)} and
+   * {@link #lock()}.</p>
+   */
+  public interface Listener {
+
+    /**
+     * Called once when the game reaches a terminal state.
+     */
+    default void onGameOver() {
+    }
+
+    /**
+     * Called after lines are cleared and scoring is updated.
+     *
+     * @param cleared       number of lines cleared in this lock
+     * @param score         total score after the clear
+     * @param streak        current ongoing streak after the clear
+     * @param highestStreak maximum streak observed so far
+     */
+    default void onClearLines(int cleared, int score, int streak, int highestStreak) {
+    }
   }
 }

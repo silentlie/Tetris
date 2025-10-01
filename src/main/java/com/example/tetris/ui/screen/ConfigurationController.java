@@ -1,11 +1,11 @@
-package com.example.tetris.ui.controller;
+package com.example.tetris.ui.screen;
 
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
 import com.example.tetris.app.navigation.Route;
 import com.example.tetris.core.config.Configuration;
 import com.example.tetris.core.state.PlayerType;
-import com.example.tetris.service.ConfigurationService;
+import com.example.tetris.service.config.ConfigurationService;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -18,23 +18,31 @@ import javafx.scene.control.Slider;
 /**
  * JavaFX controller for the Configuration screen.
  *
- * <p>This controller bridges the configuration form (sliders, checkboxes, choices)
- * and the {@link ConfigurationService} provided by the app {@link AppContext}. It:
+ * <p>Bridges the configuration form (sliders, checkboxes, choices) and the
+ * {@link ConfigurationService} available via the app {@link AppContext}. Responsibilities:</p>
  * <ul>
- *   <li>Initializes UI controls (value ranges, options, and inter-control bindings).</li>
- *   <li>Loads the current baseline configuration from the service cache.</li>
- *   <li>Builds a validated {@link Configuration} from the form and saves it.</li>
- *   <li>Warns on navigation if there are unsaved changes.</li>
+ *   <li>Initialize control ranges/options and inter-control bindings.</li>
+ *   <li>Load the baseline {@link Configuration} from the service cache into the form.</li>
+ *   <li>Build a validated {@link Configuration} from the form and persist it.</li>
+ *   <li>Warn when navigating away with unsaved changes.</li>
  * </ul>
  *
- * <p><strong>Lifecycle:</strong>
- * JavaFX calls {@link #initialize()} after FXML is loaded. The application then injects the
- * {@link AppContext} via {@link #setContext(AppContext)}, which triggers population of the form
- * from the persisted configuration.</p>
+ * <h2>Lifecycle</h2>
  *
- * <p><strong>Notes:</strong>
- * Sliders produce {@code double} values; we round to integers with {@link #intRound(double)}
- * to match the domain ({@code width/height/level} are ints) and avoid "phantom diffs".</p>
+ * <p>JavaFX invokes {@link #initialize()} after FXML loading. The application then calls
+ * {@link #setContext(AppContext)}, which populates the form from the persisted configuration.</p>
+ *
+ * <h2>Threading</h2>
+ *
+ * <p>All methods are expected to run on the JavaFX application thread.</p>
+ *
+ * <h2>Notes</h2>
+ *
+ * <p>Sliders produce {@code double} values; values are rounded to {@code int} via
+ * {@link #intRound(double)} to match the domain ({@code width/height/level}) and avoid
+ * “phantom diffs”.</p>
+ *
+ * @since 1.0
  */
 public final class ConfigurationController implements FxController {
 
@@ -60,9 +68,9 @@ public final class ConfigurationController implements FxController {
   private ChoiceBox<PlayerType> player2Choice;
 
   /**
-   * Rounds a {@code double} to the nearest {@code int}.
+   * Round a {@code double} to the nearest {@code int}.
    *
-   * <p>Used to convert slider values to the domain's integer fields while avoiding truncation.</p>
+   * <p>Used to convert slider values to integer configuration fields.</p>
    *
    * @param v value to round
    *
@@ -75,11 +83,10 @@ public final class ConfigurationController implements FxController {
   /**
    * Called by the JavaFX loader after the FXML has been constructed.
    *
-   * <p>Sets slider ranges from {@link Configuration} invariants, populates player choices, and
-   * binds Player&nbsp;2 availability to the "Extend Mode" toggle.</p>
+   * <p>Sets slider ranges from {@link Configuration} invariants, populates player-type choices,
+   * and binds Player&nbsp;2 availability to the “Extend Mode” toggle.</p>
    *
-   * <p>Control state (specific values) is applied later in
-   * {@link #setFormFromConfig(Configuration)} once the {@link AppContext} is available.</p>
+   * <p>Control values are applied later by {@link #setContext(AppContext)}.</p>
    */
   @FXML
   private void initialize() {
@@ -98,10 +105,11 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Supplies the application context after FXML loading and wires the form to the current
-   * baseline.
+   * Supply the application context and populate the form from the persisted baseline.
    *
-   * @param ctx the shared application context (non-null)
+   * @param ctx shared application context (must not be {@code null})
+   *
+   * @throws NullPointerException if {@code ctx} is {@code null}
    */
   @Override
   public void setContext(AppContext ctx) {
@@ -110,17 +118,26 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Collects current form values, constructs a {@link Configuration}, and persists it via the
-   * configuration service. The service is responsible for updating its cache.
+   * Collect current form values, construct a validated {@link Configuration}, and persist it via
+   * the configuration service.
+   *
+   * <p>Also applies the audio toggles immediately to the runtime {@code AudioService} so the
+   * change is audible without a restart.</p>
+   *
+   * @throws IllegalArgumentException if any value violates {@link Configuration} ranges
    */
   @FXML
   private void onSave() {
     Configuration updated = formToConfig();
+    ctx.getAudio().setBgm(updated.music());
+    ctx.getAudio().setSound(updated.sound());
     ctx.getConfigService().save(updated);
   }
 
   /**
-   * Resets the form to factory defaults using {@link Configuration#Configuration()}.
+   * Reset the form to factory defaults ({@link Configuration#Configuration()}).
+   *
+   * <p>Does not persist automatically; the user must click Save.</p>
    */
   @FXML
   private void onReset() {
@@ -128,8 +145,11 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Navigates back to the menu. If the form differs from the baseline in the configuration service
-   * cache, asks the user to confirm discarding unsaved changes.
+   * Navigate back to the menu. If the form differs from the baseline in the configuration cache,
+   * prompt to discard changes.
+   *
+   * <p>On “Discard”, the form is reset to the baseline and the route changes to
+   * {@link Route#MENU}. On “Cancel”, the user remains on the page.</p>
    */
   @FXML
   private void onBack() {
@@ -154,9 +174,9 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Returns the authoritative baseline configuration from the service cache.
+   * Return the authoritative baseline configuration from the service cache.
    *
-   * <p>Assumes {@link #setContext(AppContext)} has been invoked.</p>
+   * <p>Assumes {@link #setContext(AppContext)} has been called.</p>
    *
    * @return non-null baseline configuration
    */
@@ -165,12 +185,12 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Builds a validated {@link Configuration} from current UI control state.
+   * Build a validated {@link Configuration} from current UI control state.
    *
-   * <p>Uses {@link #intRound(double)} for sliders and defaults missing choices to
-   * {@link PlayerType#HUMAN} to prevent nulls.</p>
+   * <p>Slider values are rounded with {@link #intRound(double)}. Missing player choices default to
+   * {@link PlayerType#HUMAN} to avoid {@code null} values.</p>
    *
-   * @return non-null configuration reflecting the form
+   * @return configuration reflecting the form
    *
    * @throws IllegalArgumentException if any value violates {@link Configuration} ranges
    */
@@ -192,12 +212,14 @@ public final class ConfigurationController implements FxController {
   }
 
   /**
-   * Pushes a {@link Configuration} into the form controls.
+   * Push a {@link Configuration} into the form controls.
    *
-   * <p>Does not modify the {@code disable} state of {@code player2Choice} directly; that property
-   * is bound to {@code extendedCheck} in {@link #initialize()}.</p>
+   * <p>Does not modify the {@code disable} state of {@code player2Choice}; that property is
+   * bound to {@code extendedCheck} in {@link #initialize()}.</p>
    *
-   * @param cfg configuration to display (non-null)
+   * @param cfg configuration to display (must not be {@code null})
+   *
+   * @throws NullPointerException if {@code cfg} is {@code null}
    */
   private void setFormFromConfig(Configuration cfg) {
     widthSlider.setValue(cfg.width());
