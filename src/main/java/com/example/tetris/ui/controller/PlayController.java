@@ -78,7 +78,7 @@ public class PlayController implements FxController {
     service = new GameService(this::endGame);
     long seed = System.nanoTime();
 
-    // TODO: Ai control if config.player1() == PlayerType.Ai or config.player2() == PlayerType.Ai
+    // TODO: AI control if config.player1() == PlayerType.AI or config.player2() == PlayerType.AI
     // TODO: connect to server at port 3000 if config.player1() == PlayerType.EXTERNAL or
     //  config.player2() == PlayerType.EXTERNAL
 
