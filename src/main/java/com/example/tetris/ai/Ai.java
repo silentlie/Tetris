@@ -47,7 +47,7 @@ import java.util.logging.Logger;
  * <h2>Concurrency &amp; cancellation</h2>
  * <ul>
  *   <li>At most one planning computation is considered active. When a new plan is started,
- *       any in-flight computation is canceled ( the best effort) via
+ *       any in-flight computation is canceled (the best effort) via
  *       {@link CompletableFuture#cancel(boolean)}.</li>
  *   <li>Field access uses {@code volatile} for visibility; external synchronization is not
  *   required.</li>
