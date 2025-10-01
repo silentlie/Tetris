@@ -134,8 +134,18 @@ public class PlayController implements FxController {
     GameView view = new GameView();
     root.getItems().add(view);
     GameClock clock = new GameClock(startLevel);
+    return game(state, view, clock, playerType);
+  }
+
+  /**
+   * Wire a {@link Game} with sound cues and return it.
+   *
+   * <p>Bridges {@link Game.Listener} callbacks to {@link SoundCue}s via the {@link AppContext}’s
+   * audio service. No other side effects.</p>
+   */
+  private Game game(GameState state, GameView view, GameClock clock, PlayerType type) {
     Game game = new Game(state, view, clock);
-    switch (playerType) {
+    switch (type) {
       case AI -> {
         Ai ai = new FakeAi();
         game.ai(ai);
@@ -147,17 +157,6 @@ public class PlayController implements FxController {
       default -> {
       }
     }
-    return game(state, view, clock);
-  }
-
-  /**
-   * Wire a {@link Game} with sound cues and return it.
-   *
-   * <p>Bridges {@link Game.Listener} callbacks to {@link SoundCue}s via the {@link AppContext}’s
-   * audio service. No other side effects.</p>
-   */
-  private Game game(GameState state, GameView view, GameClock clock) {
-    Game game = new Game(state, view, clock);
     game.setListener(new Listener() {
       @Override
       public void onLevelUp(int newLevel) {
