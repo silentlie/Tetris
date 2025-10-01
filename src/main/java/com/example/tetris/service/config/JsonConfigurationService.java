@@ -1,4 +1,4 @@
-package com.example.tetris.service;
+package com.example.tetris.service.config;
 
 import com.example.tetris.core.config.Configuration;
 import com.example.tetris.util.JsonUtil;

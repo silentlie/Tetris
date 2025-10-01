@@ -31,18 +31,12 @@ import javafx.scene.Parent;
  */
 public final class ViewLoader {
 
-  private final Class<?> resourceAnchor;
-
   private final Map<Route, Parent> roots = new EnumMap<>(Route.class);
 
   /**
    * Creates a new loader.
-   *
-   * @param resourceAnchor a class whose classloader and package are used to resolve FXML resources
-   *                       (typically {@code Main.class})
    */
-  public ViewLoader(Class<?> resourceAnchor) {
-    this.resourceAnchor = resourceAnchor;
+  public ViewLoader() {
   }
 
   /**
@@ -67,7 +61,7 @@ public final class ViewLoader {
     }
 
     try {
-      URL url = Objects.requireNonNull(resourceAnchor.getResource(route.fxml()),
+      URL url = Objects.requireNonNull(route.controllerType().getResource(route.fxml()),
           "FXML not found on classpath: " + route.fxml());
       FXMLLoader loader = new FXMLLoader(url);
       Parent root = loader.load();

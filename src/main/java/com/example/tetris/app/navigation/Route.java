@@ -1,10 +1,10 @@
 package com.example.tetris.app.navigation;
 
 import com.example.tetris.app.context.FxController;
-import com.example.tetris.ui.controller.ConfigurationController;
-import com.example.tetris.ui.controller.HighScoreController;
-import com.example.tetris.ui.controller.MenuController;
-import com.example.tetris.ui.controller.PlayController;
+import com.example.tetris.ui.screen.ConfigurationController;
+import com.example.tetris.ui.screen.HighScoreController;
+import com.example.tetris.ui.screen.MenuController;
+import com.example.tetris.ui.screen.PlayController;
 
 /**
  * Enumeration of all navigable views (routes) in the Tetris application.
@@ -27,22 +27,22 @@ public enum Route {
   /**
    * Main menu screen.
    */
-  MENU("screens/menu.fxml", MenuController.class),
+  MENU("menu.fxml", MenuController.class),
 
   /**
    * High score listing screen.
    */
-  HIGH_SCORE("screens/high-score.fxml", HighScoreController.class),
+  HIGH_SCORE("high-score.fxml", HighScoreController.class),
 
   /**
    * Configuration/settings screen.
    */
-  CONFIGURATION("screens/configuration.fxml", ConfigurationController.class),
+  CONFIGURATION("configuration.fxml", ConfigurationController.class),
 
   /**
    * Gameplay screen.
    */
-  PLAY("screens/play.fxml", PlayController.class);
+  PLAY("play.fxml", PlayController.class);
 
   private final String fxml;
   private final Class<? extends FxController> controllerType;

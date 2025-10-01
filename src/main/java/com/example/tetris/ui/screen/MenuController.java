@@ -1,4 +1,4 @@
-package com.example.tetris.ui.controller;
+package com.example.tetris.ui.screen;
 
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;

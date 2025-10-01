@@ -76,10 +76,11 @@ public class GameView extends SplitPane {
    * @throws RuntimeException if the FXML fails to load
    */
   public GameView() {
-    FXMLLoader fxml = new FXMLLoader(Main.class.getResource("views/game-view.fxml"));
-    fxml.setRoot(this);
-    fxml.setController(this);
+
     try {
+      FXMLLoader fxml = new FXMLLoader(this.getClass().getResource("game-view.fxml"));
+      fxml.setRoot(this);
+      fxml.setController(this);
       fxml.load();
     } catch (IOException e) {
       throw new RuntimeException("Failed to load GameView.fxml", e);

@@ -11,7 +11,7 @@
 <?import javafx.scene.layout.RowConstraints?>
 <GridPane xmlns="http://javafx.com/javafx"
   xmlns:fx="http://javafx.com/fxml"
-  fx:controller="com.example.tetris.ui.controller.ConfigurationController"
+  fx:controller="com.example.tetris.ui.screen.ConfigurationController"
   prefWidth="720" prefHeight="460"
 >
 

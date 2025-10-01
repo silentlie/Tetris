@@ -5,7 +5,7 @@ module com.example.tetris {
   requires java.logging;
   requires javafx.media;
 
-  opens com.example.tetris.ui.controller to javafx.fxml;
+  opens com.example.tetris.ui.screen to javafx.fxml;
   opens com.example.tetris.ui.view to javafx.fxml;
   opens com.example.tetris.ui.canvas to javafx.fxml;
   opens com.example.tetris.core.config to com.fasterxml.jackson.databind;
@@ -23,8 +23,9 @@ module com.example.tetris {
   exports com.example.tetris.core.rule;
   exports com.example.tetris.core.state;
 
-  exports com.example.tetris.service;
-  exports com.example.tetris.ui.controller;
+  exports com.example.tetris.ui.screen;
   exports com.example.tetris.ui.view;
+  exports com.example.tetris.service.audio;
+  exports com.example.tetris.service.config;
 }
 

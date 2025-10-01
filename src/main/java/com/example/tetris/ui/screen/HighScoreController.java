@@ -1,4 +1,4 @@
-package com.example.tetris.ui.controller;
+package com.example.tetris.ui.screen;
 
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
@@ -65,14 +65,13 @@ public class HighScoreController implements FxController {
     ctx.show(Route.MENU);
   }
 
-
-  private record Score(String name, int score) {
-
-  }
-
   @Override
   public void setContext(AppContext ctx) {
     this.ctx = ctx;
+  }
+
+  private record Score(String name, int score) {
+
   }
 }
 

@@ -4,22 +4,52 @@ import com.example.tetris.core.state.PlayerType;
 import java.util.Objects;
 
 /**
- * Immutable game configuration.
+ * Immutable, validated game configuration.
  *
- * <p>This {@code record} captures board geometry, starting level, audio flags,
- * optional extended mode, and player types for two participants. Instances are validated on
- * construction; out-of-range values trigger an {@link IllegalArgumentException}.</p>
+ * <p>This {@code record} captures board geometry, starting level, audio flags, an optional
+ * extended-mode toggle, and the player types for up to two participants. All instances are
+ * validated on construction; out-of-range values cause an {@link IllegalArgumentException}.</p>
  *
- * <p><strong>Invariants & ranges:</strong>
+ * <h2>Invariants &amp; ranges</h2>
  * <ul>
- *   <li>{@code width} in [{@link #MIN_WIDTH}, {@link #MAX_WIDTH}]</li>
- *   <li>{@code height} in [{@link #MIN_HEIGHT}, {@link #MAX_HEIGHT}]</li>
- *   <li>{@code level} in [{@link #MIN_LEVEL}, {@link #MAX_LEVEL}]</li>
- *   <li>{@code player1} and {@code player2} are non-null</li>
+ *   <li>{@code width} ∈ [{@link #MIN_WIDTH}, {@link #MAX_WIDTH}]</li>
+ *   <li>{@code height} ∈ [{@link #MIN_HEIGHT}, {@link #MAX_HEIGHT}]</li>
+ *   <li>{@code level} ∈ [{@link #MIN_LEVEL}, {@link #MAX_LEVEL}]</li>
+ *   <li>{@code player1} and {@code player2} are non-{@code null}</li>
  * </ul>
  *
- * <p><strong>Defaults:</strong> See {@code DEFAULT_*} constants. The no-arg constructor
- * builds a fully validated configuration using those defaults.</p>
+ * <h2>Defaults</h2>
+ *
+ * <p>See the {@code DEFAULT_*} constants. The no-arg constructor builds a fully validated
+ * configuration using those defaults.</p>
+ *
+ * <h2>Next queue size</h2>
+ *
+ * <p>{@link #NEXT_QUEUE_SIZE} is the canonical “look-ahead” count used by the UI and rules when
+ * presenting upcoming tetrominoes. This constant is defined here to keep UI and core logic
+ * synchronized.</p>
+ *
+ * <h2>Usage</h2>
+ * <pre>{@code
+ * // Build from defaults, then tweak:
+ * Configuration cfg = new Configuration()
+ *     .withMusic(false)
+ *     .withSound(true);
+ *
+ * // Or construct explicitly (throws if any value is out of range):
+ * Configuration hard = new Configuration(
+ *     10, 20, 5,
+ *     true,  // music
+ *     true,  // sound
+ *     false, // extendMode
+ *     PlayerType.HUMAN,
+ *     PlayerType.AI
+ * );
+ * }</pre>
+ *
+ * <h2>Thread-safety</h2>
+ *
+ * <p>Instances are immutable and therefore thread-safe. Share freely between threads.</p>
  *
  * @param width      board width in cells (see {@link #MIN_WIDTH}/{@link #MAX_WIDTH})
  * @param height     board height in cells (see {@link #MIN_HEIGHT}/{@link #MAX_HEIGHT})
@@ -29,6 +59,11 @@ import java.util.Objects;
  * @param extendMode extended gameplay rule/board variant enabled
  * @param player1    primary player type (non-null)
  * @param player2    secondary player type (non-null)
+ *
+ * @apiNote This type is a Java {@code record}; equality, hashing, and toString are derived from
+ *     the components. Validation occurs in the canonical constructor.
+ * @see PlayerType
+ * @since 1.0
  */
 public record Configuration(
     int width,
@@ -40,6 +75,12 @@ public record Configuration(
     PlayerType player1,
     PlayerType player2
 ) {
+
+  /**
+   * Number of upcoming pieces shown in the "next" queue.
+   *
+   * <p>UI and core logic should treat this as the single source of truth.</p>
+   */
   public static final int NEXT_QUEUE_SIZE = 3;
 
   /**
@@ -101,15 +142,18 @@ public record Configuration(
   public Configuration {
     if (width < MIN_WIDTH || width > MAX_WIDTH) {
       throw new IllegalArgumentException(
-          "width out of range: " + width + " (allowed " + MIN_WIDTH + ".." + MAX_WIDTH + ")");
+          "width out of range: " + width + " (allowed " + MIN_WIDTH + ".." + MAX_WIDTH + ")"
+      );
     }
     if (height < MIN_HEIGHT || height > MAX_HEIGHT) {
       throw new IllegalArgumentException(
-          "height out of range: " + height + " (allowed " + MIN_HEIGHT + ".." + MAX_HEIGHT + ")");
+          "height out of range: " + height + " (allowed " + MIN_HEIGHT + ".." + MAX_HEIGHT + ")"
+      );
     }
     if (level < MIN_LEVEL || level > MAX_LEVEL) {
       throw new IllegalArgumentException(
-          "level out of range: " + level + " (allowed " + MIN_LEVEL + ".." + MAX_LEVEL + ")");
+          "level out of range: " + level + " (allowed " + MIN_LEVEL + ".." + MAX_LEVEL + ")"
+      );
     }
     Objects.requireNonNull(player1, "player1");
     Objects.requireNonNull(player2, "player2");
@@ -122,5 +166,27 @@ public record Configuration(
   public Configuration() {
     this(DEFAULT_WIDTH, DEFAULT_HEIGHT, DEFAULT_LEVEL, DEFAULT_MUSIC, DEFAULT_SOUND,
         DEFAULT_EXTEND_MODE, DEFAULT_PLAYER1, DEFAULT_PLAYER2);
+  }
+
+  /**
+   * Returns a copy of this configuration with {@link #music} set to the given value.
+   *
+   * @param music whether background music should be enabled
+   *
+   * @return a new {@code Configuration} instance with {@code music} updated
+   */
+  public Configuration withMusic(boolean music) {
+    return new Configuration(width, height, level, music, sound, extendMode, player1, player2);
+  }
+
+  /**
+   * Returns a copy of this configuration with {@link #sound} set to the given value.
+   *
+   * @param sound whether sound effects should be enabled
+   *
+   * @return a new {@code Configuration} instance with {@code sound} updated
+   */
+  public Configuration withSound(boolean sound) {
+    return new Configuration(width, height, level, music, sound, extendMode, player1, player2);
   }
 }
