@@ -108,7 +108,8 @@ public record PureGame(
     int[][] copy = new int[original.length][];
     int write = original.length - 1;
 
-    for (int[] row : original) {
+    for (int y = original.length - 1; y >= 0; y--) {
+      int[] row = original[y];
       boolean full = true;
       for (int cell : row) {
         if (cell == 0) {
