@@ -2,6 +2,9 @@ package com.example.tetris.ui.controller;
 
 import static com.example.tetris.core.config.Configuration.NEXT_QUEUE_SIZE;
 
+import com.example.tetris.ai.Ai;
+import com.example.tetris.ai.EternalAi;
+import com.example.tetris.ai.FakeAi;
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
 import com.example.tetris.app.navigation.Route;
@@ -15,6 +18,7 @@ import com.example.tetris.core.rule.GameClock;
 import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.GameState;
 import com.example.tetris.core.state.PieceQueue;
+import com.example.tetris.core.state.PlayerType;
 import com.example.tetris.ui.view.GameView;
 import java.util.function.Supplier;
 import javafx.application.Platform;
@@ -78,17 +82,15 @@ public class PlayController implements FxController {
     // TODO: connect to server at port 3000 if config.player1() == PlayerType.EXTERNAL or
     //  config.player2() == PlayerType.EXTERNAL
 
-    game1 = createGame(seed, config);
-    service.addGame(game1);
-
-    // --- Player 2 (extend mode) ---
     if (config.extendMode()) {
-      game2 = createGame(seed, config);
+      game2 = createGame(seed, config.width(), config.height(), config.level(), config.player2());
       service.addGame(game2);
       root.setDividerPositions(0.5);
     }
 
-    // Install key handler on the active scene
+    game1 = createGame(seed, config.width(), config.height(), config.level(), config.player1());
+    service.addGame(game1);
+
     root.sceneProperty().addListener((obs, oldScene, newScene) -> {
       if (oldScene != null) {
         oldScene.setOnKeyPressed(null);
@@ -101,23 +103,28 @@ public class PlayController implements FxController {
     service.start();
   }
 
-  /**
-   * Factory that constructs a {@link Game} (state + view + clock) and adds its view to the UI.
-   *
-   * @param seed   RNG seed used by the piece supplier (deterministic behavior per seed)
-   * @param config game configuration (board size, start level, etc.)
-   *
-   * @return a fully wired {@link Game} instance
-   */
-  private Game createGame(long seed, Configuration config) {
+  private Game createGame(long seed, int width, int height, int startLevel, PlayerType playerType) {
     Supplier<TetrominoType> supplier = PieceSupplierStrategy.UNIFORM.create(seed);
     PieceQueue queue = new PieceQueue(NEXT_QUEUE_SIZE, supplier);
-    Board board = new Board(config.width(), config.height());
+    Board board = new Board(width, height);
     GameState state = new GameState(board, queue);
     GameView view = new GameView();
     root.getItems().add(view);
-    GameClock clock = new GameClock(config.level());
-    return new Game(state, view, clock);
+    GameClock clock = new GameClock(startLevel);
+    Game game = new Game(state, view, clock);
+    switch (playerType) {
+      case AI -> {
+        Ai ai = new FakeAi();
+        game.ai(ai);
+      }
+      case EXTERNAL -> {
+        Ai ai = new EternalAi();
+        game.ai(ai);
+      }
+      default -> {
+      }
+    }
+    return game;
   }
 
   /**

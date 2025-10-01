@@ -7,19 +7,21 @@ import java.util.concurrent.ConcurrentHashMap;
 import javafx.scene.paint.Color;
 
 /**
- * Seven standard Tetris tetromino types: {@code I}, {@code O}, {@code T}, {@code S}, {@code Z},
+ * The seven standard Tetris tetromino types: {@code I}, {@code O}, {@code T}, {@code S}, {@code Z},
  * {@code J}, and {@code L}.
  *
  * <p>Each enum constant stores a display {@link Color} and a canonical shape expressed as four
- * {@link Cell} offsets relative to an origin {@code (0, 0)}. Coordinates follow the conventional
+ * {@link Cell} offsets relative to an origin at {@code (0, 0)}. Coordinates follow the typical
  * screen/grid orientation: X increases to the right; Y increases downward.</p>
  *
- * <p>Utility methods allow you to query the display color, derive the rotated shape as relative
- * cells, and obtain an inclusive axis-aligned {@link Bound} for any {@link Rotation}. Commonly,
- * callers translate the relative shape by a tetromino’s board position to get absolute cells.</p>
+ * <p>Utility methods let you query the display color, derive the rotated shape as relative
+ * coordinates, and obtain an inclusive axis-aligned {@link Bound} for any {@link Rotation}. Callers
+ * typically translate the relative shape by a tetromino’s board position to get absolute
+ * coordinates.</p>
  *
- * <p>Derived (rotation-specific) data is cached in a thread-safe {@link ConcurrentHashMap}.
- * The enum is thread-safe; its returned collections are unmodifiable.</p>
+ * <h2>Thread-safety</h2>
+ * Derived (rotation-specific) data is cached in a thread-safe {@link ConcurrentHashMap}. The enum
+ * is thread-safe; returned collections are unmodifiable.
  */
 public enum TetrominoType {
 
@@ -68,15 +70,15 @@ public enum TetrominoType {
   }
 
   /**
-   * Computes the rotation-specific derived data for a given type and rotation.
+   * Computes rotation-specific derived data for a given type and rotation.
    *
-   * <p>The canonical relative cells are transformed by {@code r}, then the inclusive
-   * {@link Bound} is computed across the rotated cells.</p>
+   * <p>The canonical relative coordinates are transformed by {@code r}, then the inclusive
+   * {@link Bound} is computed across the rotated coordinates.</p>
    *
    * @param t the tetromino type
    * @param r the rotation to apply
    *
-   * @return a new {@link Derived} holding the rotated cells and their bound
+   * @return a new {@link Derived} holding the rotated coordinates and their bound
    */
   private static Derived computeRelative(TetrominoType t, Rotation r) {
     List<Cell> rel = t.shape.stream().map(r::apply).toList();
@@ -118,7 +120,7 @@ public enum TetrominoType {
    * Returns cached rotation-specific data for this type.
    *
    * <p>Uses a thread-safe cache keyed by (type, rotation). The returned {@link Derived} contains
-   * both the rotated relative cells and their inclusive {@link Bound}.</p>
+   * both the rotated relative coordinates and their inclusive {@link Bound}.</p>
    *
    * @param r the desired rotation (must not be {@code null})
    *
@@ -136,7 +138,7 @@ public enum TetrominoType {
    *
    * @param r the desired rotation (must not be {@code null})
    *
-   * @return an unmodifiable list of four relative cells (never {@code null})
+   * @return an unmodifiable list of four relative coordinates (never {@code null})
    */
   public List<Cell> relativeShape(Rotation r) {
     return relativeDerived(r).relative;
@@ -169,7 +171,7 @@ public enum TetrominoType {
    * <p>Contains the rotated relative {@link Cell} list and its inclusive {@link Bound} in the same
    * coordinate space.</p>
    *
-   * @param relative the rotated relative cells (size 4)
+   * @param relative the rotated relative coordinates (size 4)
    * @param bound    the inclusive bound spanning {@code relative}
    */
   public record Derived(List<Cell> relative, Bound bound) {

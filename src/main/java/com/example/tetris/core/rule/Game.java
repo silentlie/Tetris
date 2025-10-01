@@ -1,28 +1,49 @@
 package com.example.tetris.core.rule;
 
+import com.example.tetris.ai.Ai;
 import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.GameState;
 import com.example.tetris.ui.view.GameView;
 import java.util.Objects;
 
 /**
- * Orchestrates a single running game: advances time/gravity, applies inputs, and renders.
+ * Orchestrates a single running game: advances time/gravity, applies inputs, optionally steers via
+ * an AI plan, and renders the current frame.
  *
  * <p>This class wires together the core model ({@link GameState}), the timing/level curve
- * ({@link GameClock}), and the UI surface ({@link GameView}). The typical loop calls
+ * ({@link GameClock}), and the UI surface ({@link GameView}). Typical usage calls
  * {@link #tick(long)} from an animation timer with the frame delta in nanoseconds, and calls
  * {@link #apply(GameIntent)} in response to input events.</p>
  *
- * <p>Thread-safety: not thread-safe. Call all methods from the JavaFX application thread.</p>
+ * <p><strong>Thread-safety:</strong> not thread-safe. Call all methods from the JavaFX
+ * application thread.</p>
+ *
+ * @since 1.0
  */
 public class Game {
 
+  /**
+   * The mutable game state model for rules, movement, scoring, and piece lifecycle.
+   */
   private final GameState state;
+
+  /**
+   * The surface/adapter that renders {@link GameState} and tracks dirtiness.
+   */
   private final GameView view;
+
+  /**
+   * Provides the level curve and fall interval timing; advanced each frame by {@link #tick(long)}.
+   */
   private final GameClock clock;
 
   /**
-   * Accumulator for gravity timing in nanoseconds. When this exceeds
+   * Optional AI used to emit control intents that steer the active tetromino.
+   */
+  private Ai ai;
+
+  /**
+   * Accumulator for gravity timing in nanoseconds. When this meets or exceeds
    * {@link GameClock#fallIntervalNanos()}, a soft drop is applied and the accumulator is reduced.
    */
   private long gravityAccNanos = 0L;
@@ -33,6 +54,8 @@ public class Game {
    * @param state the mutable game state (must not be {@code null})
    * @param view  the view responsible for rendering and dirty tracking (must not be {@code null})
    * @param clock the timing/level curve (must not be {@code null})
+   *
+   * @throws NullPointerException if any argument is {@code null}
    */
   public Game(GameState state, GameView view, GameClock clock) {
     this.state = Objects.requireNonNull(state, "state is null");
@@ -41,15 +64,30 @@ public class Game {
   }
 
   /**
+   * Attaches an {@link Ai} to steer the game each tick (if present).
+   *
+   * <p>The AI is consulted during {@link #tick(long)} after gravity is applied. If it returns a
+   * non-{@code null} {@link GameIntent}, that intent is applied immediately via
+   * {@link #apply(GameIntent)}.</p>
+   *
+   * @param ai the AI to attach (must not be {@code null})
+   *
+   * @throws NullPointerException if {@code ai} is {@code null}
+   */
+  public void ai(Ai ai) {
+    this.ai = Objects.requireNonNull(ai, "ai is null");
+  }
+
+  /**
    * Applies a high-level input intent to the game.
    *
    * <p>If the game is already over, the intent is ignored and {@code false} is returned.
    * Otherwise, the intent is forwarded to {@link GameState#apply(GameIntent)}. When the state
-   * changes, the view is marked dirty to trigger a re-render on the next {@link #tick(long)}.</p>
+   * changes, the view is marked dirty so the next {@link #tick(long)} will re-render.</p>
    *
    * @param intent the input to process
    *
-   * @return {@code true} if the intent was processed by the state; {@code false} if ignored
+   * @return {@code true} if the state accepted and applied the intent; {@code false} if ignored
    */
   public boolean apply(GameIntent intent) {
     if (isGameOver()) {
@@ -72,23 +110,26 @@ public class Game {
   }
 
   /**
-   * Advances time, applies gravity steps as needed, and renders the frame.
+   * Advances time, applies gravity steps as needed, optionally steers via AI, and renders the
+   * frame.
    *
-   * <p>Behavior:</p>
-   * <ul>
+   * <p><strong>Order of operations:</strong></p>
+   * <ol>
    *   <li>If the game is not over, advance {@link GameClock} by {@code dtNanos}.</li>
-   *   <li>Accumulate {@code dtNanos} into {@link #gravityAccNanos}. While the accumulator is
-   *       ≥ {@link GameClock#fallIntervalNanos()}, subtract one interval and apply a
-   *       {@link GameIntent#SOFT_DROP}. Mark the view dirty if the state changed.</li>
-   *   <li>Render the current state via {@link GameView} (concrete signature  as defined in your
-   *   view).</li>
-   * </ul>
+   *   <li>Accumulate {@code dtNanos} into an internal counter. While the accumulator is
+   *       ≥ {@link GameClock#fallIntervalNanos()}, subtract one interval and attempt a
+   *       {@link GameIntent#SOFT_DROP}. If the state changes, mark the view dirty.</li>
+   *   <li>If an {@link Ai} is attached, obtain an intent for the current snapshot and apply it.
+   *   </li>
+   *   <li>Render the current state via {@link GameView} (rendering occurs even if the game is over;
+   *       the view may internally skip work when not dirty).</li>
+   * </ol>
    *
-   * <p>Call this once per frame from your animation loop. Pass the frame delta in nanoseconds
-   * (e.g., from {@code AnimationTimer}).</p>
+   * <p><strong>Timing semantics:</strong> negative {@code dtNanos} values decrease the gravity
+   * accumulator (no gravity steps are performed unless the accumulator is still ≥ the fall
+   * interval). Callers should normally pass non-negative deltas from the animation timer.</p>
    *
-   * @param dtNanos elapsed time since the previous frame in nanoseconds (maybe 0; negative
-   *                ignored)
+   * @param dtNanos elapsed time since the previous frame in nanoseconds (maybe negative or zero)
    */
   public void tick(long dtNanos) {
     if (!isGameOver()) {
@@ -98,6 +139,12 @@ public class Game {
         gravityAccNanos -= clock.fallIntervalNanos();
         if (state.apply(GameIntent.SOFT_DROP)) {
           view.markDirty();
+        }
+      }
+      if (ai != null) {
+        GameIntent intent = ai.tick(state.toPureGame());
+        if (intent != null) {
+          apply(intent);
         }
       }
     }
