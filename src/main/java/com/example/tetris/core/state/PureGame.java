@@ -104,7 +104,7 @@ public record PureGame(
    * @throws NullPointerException if {@code original} or any row is {@code null}
    * @implNote Assumes a rectangular matrix (constant row length).
    */
-  public int[][] clearLines(int[][] original) {
+  public static int[][] clearLines(int[][] original) {
     int[][] copy = new int[original.length][];
     int write = original.length - 1;
 
