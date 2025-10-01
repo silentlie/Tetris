@@ -160,7 +160,7 @@ public final class JavaFxAudioService implements AudioService {
   public void setSound(boolean enabled) {
     soundEnabled = enabled;
     if (!enabled) {
-      // SAFE TWEAK: iterate loaded clips directly.
+      // Stop all currently playing sound effect clips.
       for (AudioClip clip : clips.values()) {
         clip.stop();
       }
