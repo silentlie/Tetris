@@ -68,7 +68,9 @@ public abstract class Ai {
     if (snapshot == null) {
       return null;
     }
-    if (shouldStartNewPlan(snapshot, cachePureGame, cachedOpMove)) {
+    PureGame lastPureGame = cachePureGame;
+    cachePureGame = snapshot;
+    if (shouldStartNewPlan(cachePureGame, lastPureGame, cachedOpMove)) {
       cachePureGame = snapshot;
       cachedOpMove = null;
       if (inFlight != null && !inFlight.isDone()) {

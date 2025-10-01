@@ -15,6 +15,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
@@ -74,9 +75,8 @@ public class EternalAi extends Ai {
   /**
    * Compact JSON mapper for low-overhead wire format.
    */
-  private static final JsonUtil COMPACT_JSON =
-      JsonUtil.getInstance().copy()
-          .configure(m -> m.disable(SerializationFeature.INDENT_OUTPUT));
+  private static final JsonUtil COMPACT_JSON = JsonUtil.getInstance().copy()
+      .configure(m -> m.disable(SerializationFeature.INDENT_OUTPUT));
 
   /**
    * Target host running the external AI.
@@ -142,6 +142,21 @@ public class EternalAi extends Ai {
       Thread.currentThread().interrupt();
       throw new CancellationException("Interrupted during backoff");
     }
+  }
+
+  @Override
+  protected boolean shouldStartNewPlan(PureGame newSnapshot, PureGame lastSnapshot,
+      OpMove existingPlan) {
+    if (lastSnapshot == null) {
+      return true;
+    }
+    if (!Arrays.deepEquals(newSnapshot.cells(), lastSnapshot.cells())) {
+      return true;
+    }
+    if (newSnapshot.tetromino().type() != lastSnapshot.tetromino().type()) {
+      return true;
+    }
+    return newSnapshot.tetromino().rotation() != lastSnapshot.tetromino().rotation();
   }
 
   /**
@@ -212,17 +227,26 @@ public class EternalAi extends Ai {
    * @throws IOException            on any other I/O errors (connect/write/read)
    * @throws CancellationException  if interrupted at guarded points
    */
-  private String requestOnce(String json)
-      throws IOException, CancellationException {
+  private String requestOnce(String json) throws IOException, CancellationException {
     try (Socket s = new Socket()) {
       checkInterrupted();
       s.setTcpNoDelay(true);
       s.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MS);
       s.setSoTimeout(READ_TIMEOUT_MS);
-      try (BufferedWriter w = new BufferedWriter(
-          new OutputStreamWriter(s.getOutputStream(), StandardCharsets.UTF_8));
+      try (
+          BufferedWriter w = new BufferedWriter(
+              new OutputStreamWriter(
+                  s.getOutputStream(),
+                  StandardCharsets.UTF_8
+              )
+          );
           BufferedReader r = new BufferedReader(
-              new InputStreamReader(s.getInputStream(), StandardCharsets.UTF_8))) {
+              new InputStreamReader(
+                  s.getInputStream(),
+                  StandardCharsets.UTF_8
+              )
+          )
+      ) {
         send(w, json);
         return read(r);
       }
@@ -238,8 +262,7 @@ public class EternalAi extends Ai {
    * @throws IOException           if writing fails
    * @throws CancellationException if interrupted before or during the writing
    */
-  private void send(BufferedWriter w, String json)
-      throws IOException, CancellationException {
+  private void send(BufferedWriter w, String json) throws IOException, CancellationException {
     checkInterrupted();
     w.write(json);
     w.write('\n');
