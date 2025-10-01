@@ -17,6 +17,8 @@ import java.util.Objects;
  *
  * <p><strong>Thread-safety:</strong> not thread-safe. Call all methods from the JavaFX
  * application thread.</p>
+ *
+ * @since 1.0
  */
 public class Game {
 
@@ -35,10 +37,13 @@ public class Game {
    */
   private final GameClock clock;
 
+  /**
+   * Optional AI used to emit control intents that steer the active tetromino.
+   */
   private Ai ai;
 
   /**
-   * Accumulator for gravity timing in nanoseconds. When this exceeds
+   * Accumulator for gravity timing in nanoseconds. When this meets or exceeds
    * {@link GameClock#fallIntervalNanos()}, a soft drop is applied and the accumulator is reduced.
    */
   private long gravityAccNanos = 0L;
@@ -58,6 +63,17 @@ public class Game {
     this.clock = Objects.requireNonNull(clock, "clock is null");
   }
 
+  /**
+   * Attaches an {@link Ai} to steer the game each tick (if present).
+   *
+   * <p>The AI is consulted during {@link #tick(long)} after gravity is applied. If it returns a
+   * non-{@code null} {@link GameIntent}, that intent is applied immediately via
+   * {@link #apply(GameIntent)}.</p>
+   *
+   * @param ai the AI to attach (must not be {@code null})
+   *
+   * @throws NullPointerException if {@code ai} is {@code null}
+   */
   public void ai(Ai ai) {
     this.ai = Objects.requireNonNull(ai, "ai is null");
   }
@@ -97,18 +113,23 @@ public class Game {
    * Advances time, applies gravity steps as needed, optionally steers via AI, and renders the
    * frame.
    *
-   * <p>Behavior:</p>
-   * <ul>
+   * <p><strong>Order of operations:</strong></p>
+   * <ol>
    *   <li>If the game is not over, advance {@link GameClock} by {@code dtNanos}.</li>
    *   <li>Accumulate {@code dtNanos} into an internal counter. While the accumulator is
    *       ≥ {@link GameClock#fallIntervalNanos()}, subtract one interval and attempt a
    *       {@link GameIntent#SOFT_DROP}. If the state changes, mark the view dirty.</li>
-   *   <li>Render the current state via {@link GameView}, regardless of game-over status.</li>
-   * </ul>
+   *   <li>If an {@link Ai} is attached, obtain an intent for the current snapshot and apply it.
+   *   </li>
+   *   <li>Render the current state via {@link GameView} (rendering occurs even if the game is over;
+   *       the view may internally skip work when not dirty).</li>
+   * </ol>
    *
-   * <p>Call once per animation frame. Negative deltas are ignored.</p>
+   * <p><strong>Timing semantics:</strong> negative {@code dtNanos} values decrease the gravity
+   * accumulator (no gravity steps are performed unless the accumulator is still ≥ the fall
+   * interval). Callers should normally pass non-negative deltas from the animation timer.</p>
    *
-   * @param dtNanos elapsed time since the previous frame in nanoseconds (maybe 0)
+   * @param dtNanos elapsed time since the previous frame in nanoseconds (maybe negative or zero)
    */
   public void tick(long dtNanos) {
     if (!isGameOver()) {
