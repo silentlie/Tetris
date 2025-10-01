@@ -2,6 +2,9 @@ package com.example.tetris.ui.screen;
 
 import static com.example.tetris.core.config.Configuration.NEXT_QUEUE_SIZE;
 
+import com.example.tetris.ai.Ai;
+import com.example.tetris.ai.EternalAi;
+import com.example.tetris.ai.FakeAi;
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
 import com.example.tetris.app.navigation.Route;
@@ -16,6 +19,7 @@ import com.example.tetris.core.rule.GameClock;
 import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.GameState;
 import com.example.tetris.core.state.PieceQueue;
+import com.example.tetris.core.state.PlayerType;
 import com.example.tetris.service.audio.SoundCue;
 import com.example.tetris.ui.view.GameView;
 import java.util.function.Supplier;
@@ -85,15 +89,18 @@ public class PlayController implements FxController {
     service = new GameService(this::endGame);
     long seed = System.nanoTime();
 
-    // --- Player 2 (extend mode) ---
+    // TODO: AI control if config.player1() == PlayerType.AI or config.player2() == PlayerType.AI
+    // TODO: connect to server at port 3000 if config.player1() == PlayerType.EXTERNAL or
+    //  config.player2() == PlayerType.EXTERNAL
+
     if (config.extendMode()) {
-      game2 = createGame(seed, config);
+      game2 = createGame(seed, config.width(), config.height(), config.level(), config.player2());
       service.addGame(game2);
       root.setDividerPositions(0.5);
     }
 
     // --- Player 1 ---
-    game1 = createGame(seed, config);
+    game1 = createGame(seed, config.width(), config.height(), config.level(), config.player1());
     service.addGame(game1);
 
     // Install key handler on the active scene
@@ -116,18 +123,30 @@ public class PlayController implements FxController {
    * {@link Configuration#NEXT_QUEUE_SIZE}.</p>
    *
    * @param seed   RNG seed for the piece supplier
-   * @param config game configuration (board size, start level, etc.)
    *
    * @return a fully wired {@link Game} instance
    */
-  private Game createGame(long seed, Configuration config) {
+  private Game createGame(long seed, int width, int height, int startLevel, PlayerType playerType) {
     Supplier<TetrominoType> supplier = PieceSupplierStrategy.UNIFORM.create(seed);
     PieceQueue queue = new PieceQueue(NEXT_QUEUE_SIZE, supplier);
-    Board board = new Board(config.width(), config.height());
+    Board board = new Board(width, height);
     GameState state = new GameState(board, queue);
     GameView view = new GameView();
     root.getItems().add(view);
-    GameClock clock = new GameClock(config.level());
+    GameClock clock = new GameClock(startLevel);
+    Game game = new Game(state, view, clock);
+    switch (playerType) {
+      case AI -> {
+        Ai ai = new FakeAi();
+        game.ai(ai);
+      }
+      case EXTERNAL -> {
+        Ai ai = new EternalAi();
+        game.ai(ai);
+      }
+      default -> {
+      }
+    }
     return game(state, view, clock);
   }
 
@@ -228,9 +247,7 @@ public class PlayController implements FxController {
    *   <li>Audio: {@code M} toggle BGM, {@code S} toggle SFX</li>
    * </ul>
    *
-   * <p>The event is always consumed.</p>
-   *
-   * @param keyEvent incoming key event
+   * @param keyEvent incoming key event; always consumed
    */
   private void onKeyPressed(KeyEvent keyEvent) {
     keyEvent.consume();

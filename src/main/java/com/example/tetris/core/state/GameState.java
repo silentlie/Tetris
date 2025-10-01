@@ -13,17 +13,14 @@ import java.util.function.UnaryOperator;
  * Mutable game state for a single Tetris session.
  *
  * <p>Owns and updates the playfield ({@link Board}), the active {@link Tetromino}, the
- * upcoming-piece {@link PieceQueue}, and simple scoring/streak counters. State transitions are
- * driven by high-level {@link GameIntent} inputs via {@link #apply(GameIntent)}.</p>
+ * piece {@link PieceQueue}, and simple scoring/streak counters. State transitions are driven by
+ * {@link GameIntent} inputs via {@link #apply(GameIntent)}.</p>
  *
- * <h2>Coordinates</h2>
+ * <p>Coordinate system follows screen-style axes: X increases to the right, Y increases
+ * downward. Cells with {@code y < 0} are above the visible top and are permitted during spawn and
+ * collision checks.</p>
  *
- * <p>Screen-style axes: X increases rightward; Y increases downward. Cells with {@code y < 0} are
- * above the visible top and are permitted during spawn and collision checks.</p>
- *
- * <h2>Threading</h2>
- *
- * <p>Not thread-safe. Call from the JavaFX application thread only.</p>
+ * <p>This class is not thread-safe.</p>
  */
 public class GameState {
 
@@ -212,13 +209,17 @@ public class GameState {
 
   /**
    * Current ongoing line-clear streak (reset to 0 when a lock clears no lines).
+   *
+   * @return streak (≥ 0)
    */
   public int getStreak() {
     return streak;
   }
 
   /**
-   * Highest streak achieved so far (≥ 0).
+   * Highest streak achieved so far.
+   *
+   * @return maximum streak seen (≥ 0)
    */
   public int getHighestStreak() {
     return highestStreak;
@@ -234,21 +235,25 @@ public class GameState {
   }
 
   /**
-   * Board width (columns).
+   * Board width in columns.
+   *
+   * @return width (columns)
    */
   public int getWidth() {
     return board.width;
   }
 
   /**
-   * Board height (rows).
+   * Board height in rows.
+   *
+   * @return height (rows)
    */
   public int getHeight() {
     return board.height;
   }
 
   /**
-   * Occupying type at a coordinate, or {@code null} if empty or out of bounds.
+   * Returns the occupying type at a coordinate, or {@code null} if empty/out of bounds.
    *
    * @param x column index
    * @param y row index
@@ -260,7 +265,9 @@ public class GameState {
   }
 
   /**
-   * Currently active tetromino (never {@code null} until game over).
+   * Returns the currently active tetromino.
+   *
+   * @return active {@link Tetromino}
    */
   public Tetromino getTetromino() {
     return tetromino;
@@ -269,38 +276,33 @@ public class GameState {
   /**
    * Snapshot of the preview queue (head to tail).
    *
-   * @return immutable list of upcoming types (maybe empty)
+   * @return immutable list of upcoming types
    */
   public List<TetrominoType> getQueue() {
     return queue.peek();
   }
 
   /**
-   * Produce a compact, render-ready snapshot of board occupancy and previews.
+   * Produces a minimal, immutable snapshot of the current game suitable for AI evaluation,
+   * serialization, and deterministic tests.
    *
-   * <p>Encodes:</p>
-   * <ul>
-   *   <li>Settled board as a {@code height × width} 0/1 matrix ({@code 1}=filled).</li>
-   *   <li>Active tetromino’s shape matrix for its current rotation.</li>
-   *   <li>Next piece’s shape matrix using {@link Rotation#UP}.</li>
-   * </ul>
+   * <p>The board raster is emitted as a 0/1 matrix ({@code 0} = empty, {@code 1} = occupied),
+   * discarding color/type information. The active {@link Tetromino} is passed through, and the
+   * "next" field contains the head of the preview queue.</p>
    *
-   * <p>Intended for lightweight UIs or AIs that do not require full object graphs.</p>
+   * @return a {@link PureGame} snapshot of this state
    *
-   * @return a {@link PureGame} DTO capturing board cells and current/next shapes
+   * @implNote Rows are emitted in screen order (top to bottom). If you later encode piece IDs
+   *     or colors, adapt the cell mapping here.
    */
-  public PureGame toCells() {
+  public PureGame toPureGame() {
     int[][] cells = new int[getHeight()][getWidth()];
     for (int y = 0; y < getHeight(); y++) {
       for (int x = 0; x < getWidth(); x++) {
         cells[y][x] = (getCell(x, y) == null) ? 0 : 1;
       }
     }
-    int[][] currentShape = tetromino.type().relativeDerived(tetromino.rotation()).toShapeMatrix();
-    List<TetrominoType> peek = getQueue();
-    TetrominoType nextType = peek.getFirst();
-    int[][] nextShape = nextType.relativeDerived(Rotation.UP).toShapeMatrix();
-    return new PureGame(getWidth(), getHeight(), cells, currentShape, nextShape);
+    return new PureGame(getWidth(), getHeight(), cells, tetromino, getQueue().getFirst());
   }
 
   /**

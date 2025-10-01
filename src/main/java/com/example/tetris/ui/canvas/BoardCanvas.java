@@ -12,27 +12,40 @@ import com.example.tetris.ui.view.GameView;
 /**
  * Canvas that renders the Tetris board, settled blocks, and the active tetromino.
  *
- * <p>Layout and scaling:</p>
+ * <h2>Layout &amp; scaling</h2>
  * <ul>
  *   <li>The internal {@link javafx.scene.canvas.Canvas} is bound to this region’s size
- *       (via {@link ResizableCanvas}).</li>
- *   <li>The board is letterboxed to preserve aspect ratio and centered within the region.</li>
- *   <li>Rendering uses a cell-space transform where 1 canvas unit = 1 board cell.</li>
+ *       via {@link ResizableCanvas}.</li>
+ *   <li>The board is letterboxed to preserve aspect ratio and centered within the available area.
+ *   </li>
+ *   <li>Rendering uses a cell-space transform where 1 canvas unit equals 1 board cell.</li>
  * </ul>
  *
- * <p>Visual layers (back-to-front):</p>
+ * <h2>Visual layers (back → front)</h2>
  * <ol>
  *   <li>Background fill ({@link GameView#BACKGROUND}).</li>
- *   <li>Settled board cells using each {@link TetrominoType#getColor()} or {@link GameView#EMPTY}.
- *   </li>
+ *   <li>Settled cells using each {@link TetrominoType#getColor()} or {@link GameView#EMPTY} for
+ *   empty.</li>
  *   <li>Active tetromino cells with its type color.</li>
- *   <li>Grid hairlines in {@link GameView#GRID} with 1 device-pixel width (scale-adjusted).</li>
+ *   <li>Grid hairlines in {@link GameView#GRID} at ~1 device pixel thickness (scale-adjusted).</li>
  * </ol>
  *
- * <p>The {@code dirty} flag is cleared after a successful render. Call
- * {@link #markDirty()} to request a redraw when the game state changes or on resize.</p>
+ * <h2>Dirty flag</h2>
+ * The {@code dirty} flag (inherited from {@link ResizableCanvas}) is cleared after a successful
+ * render. Call {@link #markDirty()} when the game state changes or on resize to schedule a redraw.
  *
- * <p>Threading: call {@link #render(GameState)} on the JavaFX application thread.</p>
+ * <h2>Threading</h2>
+ * Invoke {@link #render(GameState)} on the JavaFX application thread.
+ *
+ * <h2>Notes</h2>
+ * <ul>
+ *   <li>Negative coordinates (e.g., a spawning piece above the top) are culled by the canvas
+ *   viewport—no special handling is required.</li>
+ *   <li>Grid line width is computed as {@code 1 / max(1, cellSize)} so it approximates one device
+ *   pixel regardless of zoom.</li>
+ *   <li>This class performs no allocations per-frame other than trivial loops; colors are reused.
+ *   </li>
+ * </ul>
  *
  * @since 1.0
  */
@@ -46,7 +59,7 @@ public class BoardCanvas extends ResizableCanvas {
    * <p>Steps:</p>
    * <ol>
    *   <li>Compute the maximum integer cell size that fits the board within the canvas.</li>
-   *   <li>Center the board, set a transform so 1 unit equals 1 cell, and draw background.</li>
+   *   <li>Center the board, set a transform so 1 unit equals 1 cell, and draw the background.</li>
    *   <li>Paint settled cells from {@link GameState#getCell(int, int)}.</li>
    *   <li>Paint the active {@link Tetromino} from {@link Tetromino#getAbsoluteShape()}.</li>
    *   <li>Overlay grid lines with scale-adjusted line width (≈ 1 device pixel).</li>
@@ -79,7 +92,7 @@ public class BoardCanvas extends ResizableCanvas {
     gc.translate(ox, oy);
     gc.scale(cell, cell); // 1 unit == 1 cell
 
-    // Board cells
+    // Settled cells
     for (int y = 0; y < rows; y++) {
       for (int x = 0; x < cols; x++) {
         TetrominoType type = s.getCell(x, y);
@@ -97,7 +110,7 @@ public class BoardCanvas extends ResizableCanvas {
       }
     }
 
-    // Grid hairlines (1 device pixel)
+    // Grid hairlines (~1 device pixel)
     gc.setLineWidth(1.0 / Math.max(1.0, cell));
     gc.setStroke(GRID);
     for (int x = 0; x <= cols; x++) {

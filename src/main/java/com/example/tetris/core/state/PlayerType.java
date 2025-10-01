@@ -17,9 +17,9 @@ public enum PlayerType {
   HUMAN("Human"),
 
   /**
-   * A built-in computer-controlled player (AI) that makes automated moves.
+   * A built-in computer-controlled player (Ai) that makes automated moves.
    */
-  AI("AI"),
+  AI("Ai"),
 
   /**
    * A player controlled by an external process or integration (for example, a network client, bot
