@@ -122,7 +122,7 @@ public class PlayController implements FxController {
    * <p>Uses a deterministic piece supplier seeded by {@code seed}. The preview queue length is
    * {@link Configuration#NEXT_QUEUE_SIZE}.</p>
    *
-   * @param seed   RNG seed for the piece supplier
+   * @param seed RNG seed for the piece supplier
    *
    * @return a fully wired {@link Game} instance
    */
@@ -208,7 +208,7 @@ public class PlayController implements FxController {
   /**
    * Pause gameplay and prompt the user to leave or resume.
    *
-   * <p>If the {@link GameService} is not running, this call is ignored. Otherwise the loop is
+   * <p>If the {@link GameService} is not running, this call is ignored. Otherwise, the loop is
    * stopped and a modal dialog is shown. Choosing “Leave” calls {@link #endGame()}; choosing
    * “Resume” restarts the loop.</p>
    */
