@@ -64,7 +64,7 @@
   </build>
   <dependencies>
 
-    <!-- JavaFX Core -->
+    <!-- JavaFX core -->
     <dependency>
       <artifactId>javafx-controls</artifactId>
       <groupId>org.openjfx</groupId>
