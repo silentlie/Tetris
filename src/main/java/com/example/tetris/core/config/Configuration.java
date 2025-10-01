@@ -7,26 +7,39 @@ import java.util.Objects;
  * Immutable game configuration.
  *
  * <p>This {@code record} captures board geometry, starting level, audio flags,
- * optional extended mode, and player types for two participants. Instances are validated on
+ * optional “extended mode”, and player types for two participants. Instances are validated on
  * construction; out-of-range values trigger an {@link IllegalArgumentException}.</p>
  *
- * <p><strong>Invariants & ranges:</strong>
+ * <h2>Immutability &amp; thread-safety</h2>
+ * Records are shallowly immutable; this type contains only primitives and enums, so it is
+ * inherently thread-safe once constructed.
+ *
+ * <h2>Ranges &amp; invariants</h2>
  * <ul>
- *   <li>{@code width} in [{@link #MIN_WIDTH}, {@link #MAX_WIDTH}]</li>
- *   <li>{@code height} in [{@link #MIN_HEIGHT}, {@link #MAX_HEIGHT}]</li>
+ *   <li>{@code width} in [{@link #MIN_WIDTH}, {@link #MAX_WIDTH}] (cells)</li>
+ *   <li>{@code height} in [{@link #MIN_HEIGHT}, {@link #MAX_HEIGHT}] (cells)</li>
  *   <li>{@code level} in [{@link #MIN_LEVEL}, {@link #MAX_LEVEL}]</li>
  *   <li>{@code player1} and {@code player2} are non-null</li>
  * </ul>
  *
- * <p><strong>Defaults:</strong> See {@code DEFAULT_*} constants. The no-arg constructor
- * builds a fully validated configuration using those defaults.</p>
+ * <h2>Defaults</h2>
+ * See the {@code DEFAULT_*} constants. The no-arg constructor builds a validated configuration
+ * using those defaults.
  *
- * @param width      board width in board (see {@link #MIN_WIDTH}/{@link #MAX_WIDTH})
- * @param height     board height in board (see {@link #MIN_HEIGHT}/{@link #MAX_HEIGHT})
+ * <h2>Notes</h2>
+ * <ul>
+ *   <li>{@link #NEXT_QUEUE_SIZE} declares how many upcoming pieces UI/logic should expose.</li>
+ *   <li>{@code extendMode} can be used to toggle alternative rules or board variants; its meaning
+ *       is application-defined.</li>
+ *   <li>{@link PlayerType} typically distinguishes HUMAN/AI/EXTERNAL, but is extensible.</li>
+ * </ul>
+ *
+ * @param width      board width in <em>cells</em> (see {@link #MIN_WIDTH}/{@link #MAX_WIDTH})
+ * @param height     board height in <em>cells</em> (see {@link #MIN_HEIGHT}/{@link #MAX_HEIGHT})
  * @param level      starting difficulty level (see {@link #MIN_LEVEL}/{@link #MAX_LEVEL})
  * @param music      background music enabled
  * @param sound      sound effects enabled
- * @param extendMode extended gameplay rule/board variant enabled
+ * @param extendMode extended/variant gameplay enabled (app-specific semantics)
  * @param player1    primary player type (non-null)
  * @param player2    secondary player type (non-null)
  */
@@ -41,14 +54,18 @@ public record Configuration(
     PlayerType player2
 ) {
 
+  /**
+   * Number of pieces to show/provide in the “next” preview queue. UI and piece generators may use
+   * this as a convention.
+   */
   public static final int NEXT_QUEUE_SIZE = 3;
 
   /**
-   * Default board width (board).
+   * Default board width (cells).
    */
   public static final int DEFAULT_WIDTH = 10;
   /**
-   * Default board height (board).
+   * Default board height (cells).
    */
   public static final int DEFAULT_HEIGHT = 20;
   /**
@@ -77,12 +94,12 @@ public record Configuration(
   public static final PlayerType DEFAULT_PLAYER2 = PlayerType.HUMAN;
 
   /**
-   * Minimum and maximum allowed board width (board).
+   * Minimum and maximum allowed board width (cells).
    */
   public static final int MIN_WIDTH = 5;
   public static final int MAX_WIDTH = 15;
   /**
-   * Minimum and maximum allowed board height (board).
+   * Minimum and maximum allowed board height (cells).
    */
   public static final int MIN_HEIGHT = 15;
   public static final int MAX_HEIGHT = 30;
