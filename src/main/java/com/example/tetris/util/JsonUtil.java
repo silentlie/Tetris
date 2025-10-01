@@ -173,7 +173,7 @@ public final class JsonUtil {
    *
    * @return deserialized instance
    *
-   * @throws IOException if parsing fails
+   * @throws JsonProcessingException if parsing fails
    */
   public <T> T fromJson(String json, Class<T> type) throws JsonProcessingException {
     Objects.requireNonNull(json, "json");
