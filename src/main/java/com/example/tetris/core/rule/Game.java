@@ -173,10 +173,10 @@ public class Game {
    *                ignored)
    */
   public void tick(long dtNanos) {
-    if (!state.isGameOver()) {
+    if (!isGameOver()) {
       clock.tick(dtNanos);
       gravityAccNanos += dtNanos;
-      while (gravityAccNanos >= clock.fallIntervalNanos() && !state.isGameOver()) {
+      while (gravityAccNanos >= clock.fallIntervalNanos() && !isGameOver()) {
         gravityAccNanos -= clock.fallIntervalNanos();
         if (state.apply(GameIntent.SOFT_DROP)) {
           view.markDirty();
