@@ -276,8 +276,8 @@ public abstract class Ai {
    * Hook to provide the current piece's reference X used for horizontal alignment.
    *
    * <p>Default: the tetromino's pivot X,
-   * {@code snapshot.tetromino().position().x()}.</p> Override to align to another reference (e.g.,
-   * left bound/minX).
+   * {@code snapshot.tetromino().position().x()}. Override to align to another reference (e.g.,
+   * left bound/minX).</p>
    *
    * @param snapshot the current snapshot
    *
