@@ -96,7 +96,7 @@ public class GameClock {
    *
    * <p>Let {@code seconds = totalTimeNanos / 1e9}. The continuous level is:
    * <pre>{@code
-   * rawLevel = (1 + sqrt(1 + 2 * seconds / 15)) / 2
+   * rawLevel = (1 + sqrt(1 + 4 * seconds / 30)) / 2
    * }</pre>
    * clamped to {@code [1, MAX_LEVEL]}. When the floored level increases, the listener is
    * notified.</p>

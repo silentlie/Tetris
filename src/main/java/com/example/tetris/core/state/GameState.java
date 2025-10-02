@@ -52,8 +52,13 @@ public class GameState {
     this.queue = Objects.requireNonNull(queue, "queue is null");
     tetromino = spawnFromQueue();
     if (!board.fits(tetromino)) {
-      gameOver = true;
+      setGameOver();
     }
+  }
+
+  private void setGameOver() {
+    gameOver = true;
+    listener.onGameOver();
   }
 
   /**
@@ -146,7 +151,7 @@ public class GameState {
   private void lock() {
     boolean lockOut = board.lock(tetromino);
     if (lockOut) {
-      gameOver = true;
+      setGameOver();
       return;
     }
     int cleared = board.clearLines();
@@ -160,8 +165,7 @@ public class GameState {
     }
     tetromino = spawnFromQueue();
     if (!board.fits(tetromino)) {
-      gameOver = true;
-      listener.onGameOver();
+      setGameOver();
     }
   }
 
