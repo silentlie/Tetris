@@ -14,11 +14,6 @@ import java.util.Set;
 
 final class TestHelpers {
 
-  /** @return a fixed spawn cell. */
-  static Cell spawn() {
-    return new Cell(5, 0);
-  }
-
   /** Factory to create a tetromino.*/
   static Tetromino of(TetrominoType t, int x, int y, Rotation r) {
     return new Tetromino(t, new Cell(x, y), r);

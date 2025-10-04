@@ -4,11 +4,8 @@ package com.example.tetris.core.piece;
 import static org.junit.jupiter.api.Assertions.*;
 
 import com.example.tetris.core.board.Cell;
-import com.example.tetris.core.piece.Rotation;
-import com.example.tetris.core.piece.Tetromino;
-import com.example.tetris.core.piece.TetrominoType;
+
 import java.util.Set;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -19,13 +16,6 @@ import org.junit.jupiter.api.Test;
 
 class TetrominoTest {
 
-  private Cell spawn;
-
-  /** Use a fixed spawn point for deterministic factory tests*/
-  @BeforeEach
-  void setUp() {
-    spawn = TestHelpers.spawn();
-  }
 
   /**
    * Moving up from (5,10) should change pivot point to (5,9) and return
@@ -95,18 +85,6 @@ class TetrominoTest {
     assertEquals(Rotation.UP, r1.rotateCounterClockwise().rotateCounterClockwise().rotateCounterClockwise().rotation());
   }
 
-  /**
-   * Factory should return a non-null with a valid type, rotation should equal UP and position
-   * should equal spawn.
-   */
-  @Test
-  void randomTetromino() {
-    Tetromino t = Tetromino.randomTetromino(spawn);
-    assertNotNull(t, "randomTetromino should not return null");
-    assertNotNull(t.type(), "type should not be null");
-    assertEquals(Rotation.UP, t.rotation(), "random tetromino must start UP");
-    assertEquals(spawn, t.position(), "random tetromino must use spawn position");
-  }
 
   /**
    * withPosition should return a new instance with an updated pivot point and preserve the
@@ -209,12 +187,6 @@ class TetrominoTest {
     assertThrows(NullPointerException.class, () -> new Tetromino(null, new Cell(0,0), Rotation.UP));
     assertThrows(NullPointerException.class, () -> new Tetromino(TetrominoType.I, null, Rotation.UP));
     assertThrows(NullPointerException.class, () -> new Tetromino(TetrominoType.I, new Cell(0,0), null));
-  }
-
-  /** Factory must also reject null values for spawn position. */
-  @Test
-  void randomTetromino_rejectsNullSpawn() {
-    assertThrows(NullPointerException.class, () -> Tetromino.randomTetromino(null));
   }
 
 }

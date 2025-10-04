@@ -2,6 +2,7 @@ package com.example.tetris.core.piece;
 
 import com.example.tetris.core.board.Cell;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Single Tetris tetromino composed of four {@link Cell} blocks arranged as one of the seven
@@ -27,6 +28,18 @@ import java.util.List;
  */
 public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
     implements Movable<Tetromino>, Rotatable<Tetromino> {
+
+  /**
+   * <p>This ensures that no Tetromino instance can be created with
+   * null values for type, position and rotation.
+   * Using Objects.requireNonNull() enforces these constraints at the time of construction
+   * and gives an error message if violated.</p>
+   */
+  public Tetromino{
+    Objects.requireNonNull(type, "type");
+    Objects.requireNonNull(position, "position");
+    Objects.requireNonNull(rotation, "rotation");
+  }
 
   /**
    * Returns a new {@code Tetromino} with {@code newPosition}, keeping the same
@@ -93,14 +106,5 @@ public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
    */
   public Bound getAbsoluteBound() {
     return type.relativeBound(rotation).translate(position.x(), position.y());
-  }
-
-  public static Tetromino randomTetromino(Cell spawn) {
-    if (spawn == null) {
-      throw new NullPointerException("Spawn position cannot be null");
-    }
-    TetrominoType[] types = TetrominoType.values();
-    TetrominoType randomType = types[new java.util.Random().nextInt(types.length)];
-    return new Tetromino(randomType, spawn, Rotation.UP);
   }
 }
