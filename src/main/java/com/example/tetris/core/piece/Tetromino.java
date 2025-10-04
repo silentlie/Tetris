@@ -94,4 +94,13 @@ public record Tetromino(TetrominoType type, Cell position, Rotation rotation)
   public Bound getAbsoluteBound() {
     return type.relativeBound(rotation).translate(position.x(), position.y());
   }
+
+  public static Tetromino randomTetromino(Cell spawn) {
+    if (spawn == null) {
+      throw new NullPointerException("Spawn position cannot be null");
+    }
+    TetrominoType[] types = TetrominoType.values();
+    TetrominoType randomType = types[new java.util.Random().nextInt(types.length)];
+    return new Tetromino(randomType, spawn, Rotation.UP);
+  }
 }
