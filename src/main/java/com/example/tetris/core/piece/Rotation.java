@@ -1,6 +1,7 @@
 package com.example.tetris.core.piece;
 
 import com.example.tetris.core.board.Cell;
+import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
@@ -96,6 +97,7 @@ public enum Rotation {
    * @return a new {@link Cell} with rotated coordinates (never {@code null})
    */
   public Cell apply(Cell c) {
+    Objects.requireNonNull(c, "Cannot apply a null value");
     return switch (this) {
       case UP -> c;
       case RIGHT -> new Cell(c.y(), -c.x());

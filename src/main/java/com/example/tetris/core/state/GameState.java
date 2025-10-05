@@ -71,6 +71,10 @@ public class GameState {
   public void setListener(Listener listener) {
     this.listener = (listener == null) ? new Listener() {
     } : listener;
+    if (gameOver) {
+      assert listener != null;
+      listener.onGameOver();
+    }
   }
 
   /**

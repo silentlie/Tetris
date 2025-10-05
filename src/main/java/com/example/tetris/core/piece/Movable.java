@@ -1,6 +1,7 @@
 package com.example.tetris.core.piece;
 
 import com.example.tetris.core.board.Cell;
+import java.util.Objects;
 
 
 /**
@@ -55,6 +56,7 @@ public interface Movable<T extends Movable<T>> {
    * @return a new instance of {@code T} at the updated position (never {@code null})
    */
   default T moveBy(Cell delta) {
+    Objects.requireNonNull(delta, "delta cannot be null");
     return withPosition(position().add(delta));
   }
 
