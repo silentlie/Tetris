@@ -101,6 +101,7 @@ public class GameState {
     if (gameOver) {
       return false;
     }
+    listener.onIntent(intent);
     return switch (intent) {
       case ROTATE_CW -> tryApply(Tetromino::rotateClockwise);
       case ROTATE_CCW -> tryApply(Tetromino::rotateCounterClockwise);
@@ -233,6 +234,14 @@ public class GameState {
     return highestStreak;
   }
 
+  public int getWidth() {
+    return board.width;
+  }
+
+  public int getHeight() {
+    return board.height;
+  }
+
   /**
    * Whether the game has ended (lock-out or post-spawn collision).
    *
@@ -240,24 +249,6 @@ public class GameState {
    */
   public boolean isGameOver() {
     return gameOver;
-  }
-
-  /**
-   * Board width in columns.
-   *
-   * @return width (columns)
-   */
-  public int getWidth() {
-    return board.width;
-  }
-
-  /**
-   * Board height in rows.
-   *
-   * @return height (rows)
-   */
-  public int getHeight() {
-    return board.height;
   }
 
   /**
@@ -304,13 +295,13 @@ public class GameState {
    *     or colors, adapt the cell mapping here.
    */
   public PureGame toPureGame() {
-    int[][] cells = new int[getHeight()][getWidth()];
-    for (int y = 0; y < getHeight(); y++) {
-      for (int x = 0; x < getWidth(); x++) {
+    int[][] cells = new int[board.height][board.width];
+    for (int y = 0; y < board.height; y++) {
+      for (int x = 0; x < board.width; x++) {
         cells[y][x] = (getCell(x, y) == null) ? 0 : 1;
       }
     }
-    return new PureGame(getWidth(), getHeight(), cells, tetromino, getQueue().getFirst());
+    return new PureGame(board.width, board.height, cells, tetromino, getQueue().getFirst());
   }
 
   /**
@@ -336,6 +327,14 @@ public class GameState {
      * @param highestStreak maximum streak observed so far
      */
     default void onClearLines(int cleared, int score, int streak, int highestStreak) {
+    }
+
+    /**
+     * Called when an input intent results in a state change.
+     *
+     * @param intent the accepted intent (never {@code null})
+     */
+    default void onIntent(GameIntent intent) {
     }
   }
 }

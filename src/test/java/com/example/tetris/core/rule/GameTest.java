@@ -1,6 +1,5 @@
 package com.example.tetris.core.rule;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.anyLong;
@@ -22,7 +21,6 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -102,15 +100,12 @@ class GameTest {
       GameView v = mock(GameView.class);
       GameClock c = mock(GameClock.class);
 
-      Game.Listener listener = mock(Game.Listener.class);
       Game g = newGame(s, v, c);
-      g.setListener(listener);
 
       g.apply(GameIntent.MOVE_RIGHT);
 
       verify(s).apply(GameIntent.MOVE_RIGHT);
       verify(v).markDirty();
-      verify(listener).onIntentAccepted(GameIntent.MOVE_RIGHT);
     }
 
     @Test
@@ -122,14 +117,11 @@ class GameTest {
       GameView v = mock(GameView.class);
       GameClock c = mock(GameClock.class);
 
-      Game.Listener listener = mock(Game.Listener.class);
       Game g = newGame(s, v, c);
-      g.setListener(listener);
 
       g.apply(GameIntent.ROTATE_CW);
 
       verify(v, never()).markDirty();
-      verify(listener, never()).onIntentAccepted(any());
     }
   }
 
@@ -210,49 +202,6 @@ class GameTest {
       verify(c, never()).tick(anyLong());
       verify(s, never()).apply(any());
       verify(v).render(s, c);
-    }
-  }
-
-  @Nested
-  @DisplayName("listener forwarding")
-  class ListenerForwarding {
-
-    @Test
-    @DisplayName("Game forwards GameClock/GameState events to its Listener")
-    void forwards_events() {
-      GameState s = mock(GameState.class);
-      GameView v = mock(GameView.class);
-      GameClock c = mock(GameClock.class);
-
-      Game g = newGame(s, v, c);
-      Game.Listener L = mock(Game.Listener.class);
-      g.setListener(L);
-
-      ArgumentCaptor<GameClock.Listener> clkCap = ArgumentCaptor.forClass(GameClock.Listener.class);
-      verify(c).setListener(clkCap.capture());
-
-      ArgumentCaptor<GameState.Listener> stCap = ArgumentCaptor.forClass(GameState.Listener.class);
-      verify(s).setListener(stCap.capture());
-
-      clkCap.getValue().onLevelUp(7);
-      verify(L).onLevelUp(7);
-
-      stCap.getValue().onGameOver();
-      verify(L).onGameOver();
-
-      stCap.getValue().onClearLines(2, 300, 2, 3);
-      verify(L).onClearLines(2, 300, 2, 3);
-    }
-
-    @Test
-    @DisplayName("setListener(null) installs no-op")
-    void null_listener_ok() {
-      GameState s = mock(GameState.class);
-      GameView v = mock(GameView.class);
-      GameClock c = mock(GameClock.class);
-
-      Game g = newGame(s, v, c);
-      assertDoesNotThrow(() -> g.setListener(null));
     }
   }
 }

@@ -8,6 +8,8 @@ import com.example.tetris.service.audio.AudioService;
 import com.example.tetris.service.audio.JavaFxAudioService;
 import com.example.tetris.service.config.ConfigurationService;
 import com.example.tetris.service.config.JsonConfigurationService;
+import com.example.tetris.service.scores.JsonScoresService;
+import com.example.tetris.service.scores.ScoresService;
 import java.util.Map;
 import javafx.application.Application;
 import javafx.stage.Stage;
@@ -17,27 +19,46 @@ import javafx.util.Duration;
  * Main entry point for the Tetris JavaFX application.
  *
  * <p>Bootstraps JavaFX, wires core services, and delegates view changes to {@link Router} and
- * {@link ViewLoader}. The initial route may be chosen with the named launch parameter
+ * {@link ViewLoader}. The initial route may be selected via the named launch parameter
  * {@code --scene=<name>}.</p>
  *
  * <h2>Launch parameter: {@code --scene}</h2>
  *
- * <p>Supported values (case-sensitive):</p>
+ * <p>Supported case-sensitive values:</p>
  * <ul>
- *   <li>{@code splash} — show only the splash screen (15 s) and then exit</li>
+ *   <li>{@code splash} — show only the splash screen (15&nbsp;s) and then exit</li>
  *   <li>{@code menu} — show the main menu</li>
  *   <li>{@code highScores} — show the high-scores view</li>
  *   <li>{@code configuration} — show the configuration view</li>
  *   <li>{@code play} — start gameplay immediately</li>
  * </ul>
  *
- * <p>If omitted or unrecognized, a short splash (3 s) is shown and then the main menu loads.</p>
+ * <p>If omitted or unrecognized, a short splash (3&nbsp;s) is shown and then the main menu loads.
+ * </p>
  *
- * <h2>Threading</h2>
+ * <h2>Lifecycle & threading</h2>
  *
- * <p>{@link #start(Stage)} is invoked by the JavaFX launcher on the JavaFX application thread.
- * All UI work performed here is therefore on the correct thread.</p>
+ * <p>{@link #start(Stage)} is invoked by the JavaFX launcher on the JavaFX Application Thread.
+ * All UI work performed here runs on that thread. Shutdown occurs when the primary stage is closed,
+ * or immediately after the 15&nbsp;s splash if {@code --scene=splash} is used.</p>
  *
+ * <h2>Services</h2>
+ *
+ * <p>At startup, this class constructs:</p>
+ * <ul>
+ *   <li>{@link ConfigurationService} — JSON-backed configuration with cached access.</li>
+ *   <li>{@link ScoresService} — JSON-backed leaderboard.</li>
+ *   <li>{@link AudioService} — JavaFX-based audio; background music (BGM) is enabled/disabled
+ *       according to the persisted configuration.</li>
+ * </ul>
+ *
+ * @see Application
+ * @see Router
+ * @see ViewLoader
+ * @see Route
+ * @see ConfigurationService
+ * @see ScoresService
+ * @see AudioService
  * @since 1.0
  */
 public class Main extends Application {
@@ -47,6 +68,11 @@ public class Main extends Application {
    *
    * <p>Accepts an optional {@code --scene=<name>} parameter (see class Javadoc). All other
    * arguments are passed through to JavaFX.</p>
+   *
+   * <p>Example:</p>
+   * <pre>{@code
+   * java -jar tetris.jar --scene=play
+   * }</pre>
    *
    * @param args command-line arguments; may include {@code --scene=<name>}
    */
@@ -61,10 +87,11 @@ public class Main extends Application {
    * <ol>
    *   <li>Set the window title.</li>
    *   <li>Create a {@link ViewLoader} and {@link Router} bound to the primary {@link Stage}.</li>
-   *   <li>Initialize {@link ConfigurationService} and {@link AudioService}.</li>
-   *   <li>Apply the persisted BGM preference to the audio service.</li>
-   *   <li>Select the initial scene based on {@code --scene}, or show a 3 s splash then the menu.
+   *   <li>Initialize {@link ConfigurationService}, {@link ScoresService}, and {@link AudioService}.
    *   </li>
+   *   <li>Apply the persisted BGM preference to the audio service.</li>
+   *   <li>Select the initial scene based on {@code --scene}, or show a 3&nbsp;s splash then the
+   *   menu.</li>
    * </ol>
    *
    * <p>When {@code --scene=splash} is provided, a 15-second splash is shown and the window closes
@@ -92,11 +119,12 @@ public class Main extends Application {
 
     // Build persistence
     ConfigurationService configurationService = new JsonConfigurationService();
+    ScoresService scoresService = new JsonScoresService();
     AudioService audioService = new JavaFxAudioService();
     audioService.setBgm(configurationService.getCache().music());
 
     // Pass service and cache into AppContext
-    AppContext ctx = new AppContext(router, configurationService, audioService);
+    AppContext ctx = new AppContext(router, configurationService, audioService, scoresService);
 
     switch (scene) {
       case "splash" -> router.showSplash(this.getClass(), null, primaryStage::close);

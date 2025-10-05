@@ -4,11 +4,14 @@ module com.example.tetris {
   requires com.fasterxml.jackson.databind;
   requires java.logging;
   requires javafx.media;
+  requires org.jetbrains.annotations;
+  requires com.fasterxml.jackson.datatype.jsr310;
 
   opens com.example.tetris.ui.screen to javafx.fxml;
   opens com.example.tetris.ui.view to javafx.fxml;
   opens com.example.tetris.ui.canvas to javafx.fxml;
   opens com.example.tetris.core.config to com.fasterxml.jackson.databind;
+  opens com.example.tetris.core.score to com.fasterxml.jackson.databind;
   opens com.example.tetris.core.state to com.fasterxml.jackson.databind;
   opens com.example.tetris.util to com.fasterxml.jackson.databind;
 
@@ -30,5 +33,6 @@ module com.example.tetris {
   exports com.example.tetris.ui.view;
   exports com.example.tetris.service.audio;
   exports com.example.tetris.service.config;
+  exports com.example.tetris.service.scores;
 }
 
