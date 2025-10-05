@@ -10,6 +10,7 @@ module com.example.tetris {
   opens com.example.tetris.ui.canvas to javafx.fxml;
   opens com.example.tetris.core.config to com.fasterxml.jackson.databind;
   opens com.example.tetris.core.state to com.fasterxml.jackson.databind;
+  opens com.example.tetris.util to com.fasterxml.jackson.databind;
 
   exports com.example.tetris;
   exports com.example.tetris.app.context;

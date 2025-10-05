@@ -59,7 +59,7 @@ public record Cell(int x, int y) {
     if (other == null) {
       return this;
     }
-    return new Cell(x + other.x, y + other.y);
+    return add(other.x, other.y);
   }
 
   /**
@@ -79,6 +79,6 @@ public record Cell(int x, int y) {
    * @return a new {@code Cell} with updated coordinates (never {@code null})
    */
   public Cell add(int dx, int dy) {
-    return new Cell(x + dx, y + dy);
+    return new Cell(Math.addExact(x, dx), Math.addExact(y, dy));
   }
 }

@@ -104,7 +104,8 @@ public class Game {
    * @param listener callback sink or {@code null} for none
    */
   public void setListener(Listener listener) {
-    this.listener = listener;
+    this.listener = (listener == null) ? new Listener() {
+    } : listener;
   }
 
   /**

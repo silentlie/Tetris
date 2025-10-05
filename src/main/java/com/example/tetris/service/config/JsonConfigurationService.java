@@ -30,7 +30,7 @@ import java.util.logging.Logger;
 public final class JsonConfigurationService extends ConfigurationService {
 
   private static final Logger LOG = Logger.getLogger(JsonConfigurationService.class.getName());
-  private static final String CONFIG_FILE_NAME = "config.json";
+  public static final String CONFIG_FILE_NAME = "config.json";
   private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
   private final Path configPath;

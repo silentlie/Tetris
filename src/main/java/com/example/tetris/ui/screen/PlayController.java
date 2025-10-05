@@ -3,7 +3,7 @@ package com.example.tetris.ui.screen;
 import static com.example.tetris.core.config.Configuration.NEXT_QUEUE_SIZE;
 
 import com.example.tetris.ai.Ai;
-import com.example.tetris.ai.EternalAi;
+import com.example.tetris.ai.ExternalAi;
 import com.example.tetris.ai.FakeAi;
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
@@ -151,7 +151,7 @@ public class PlayController implements FxController {
         game.ai(ai);
       }
       case EXTERNAL -> {
-        Ai ai = new EternalAi();
+        Ai ai = new ExternalAi();
         game.ai(ai);
       }
       default -> {
