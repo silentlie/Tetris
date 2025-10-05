@@ -14,6 +14,7 @@ package com.example.tetris.core.state;
  * </ul>
  *
  * <p><strong>Usage</strong></p>
+ *
  * <p>This record is intended as the output of an AI that consumes a compact game snapshot
  * (for example, {@link PureGame}) and returns an optimal placement instruction. The caller is
  * responsible for executing the movement/rotation and performing collision/fit checks.</p>
