@@ -27,7 +27,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@DisplayName("Game (controller)")
+@DisplayName("Game")
 class GameTest {
 
   @BeforeAll

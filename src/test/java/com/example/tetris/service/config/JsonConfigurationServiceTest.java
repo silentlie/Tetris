@@ -22,6 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@DisplayName("JsonConfigurationService")
 class JsonConfigurationServiceTest {
 
   private static Path cfg(Path base) {
@@ -44,7 +45,7 @@ class JsonConfigurationServiceTest {
   @ParameterizedTest(name = "Boot via {0} (true=getCache, false=load) on missing file -> defaults saved & returned")
   @ValueSource(booleans = {true, false})
   @DisplayName("Missing config.json: create defaults, persist, return non-null")
-  void missingFile_createsAndSavesDefaults(boolean viaGetCache, @TempDir Path tmp)
+  void missing_file_creates_and_saves_defaults(boolean viaGetCache, @TempDir Path tmp)
       throws Exception {
     Path path = cfg(tmp);
     assertFalse(Files.exists(path), "Precondition: config.json must not exist");
@@ -62,7 +63,7 @@ class JsonConfigurationServiceTest {
 
   @Test
   @DisplayName("Existing readable config: load it (no backup, no overwrite on read)")
-  void existingReadableConfig_loaded(@TempDir Path tmp) throws Exception {
+  void existing_readable_config_loaded(@TempDir Path tmp) throws Exception {
     Path path = cfg(tmp);
     Files.createDirectories(tmp);
 
@@ -79,7 +80,7 @@ class JsonConfigurationServiceTest {
 
   @Test
   @DisplayName("Corrupt file: backup old config, write defaults, return non-null")
-  void corruptFile_backedUp_and_defaultsRestored(@TempDir Path tmp) throws Exception {
+  void corrupt_file_backed_up_and_defaults_restored(@TempDir Path tmp) throws Exception {
     Path path = cfg(tmp);
     Files.createDirectories(tmp);
 
@@ -104,7 +105,7 @@ class JsonConfigurationServiceTest {
 
   @Test
   @DisplayName("save(): persists to disk and updates cache to the saved instance")
-  void save_persistsAndUpdatesCache(@TempDir Path tmp) throws Exception {
+  void save_persists_and_updates_cache(@TempDir Path tmp) throws Exception {
     Path path = cfg(tmp);
     JsonConfigurationService svc = new JsonConfigurationService(tmp);
     JsonUtil json = JsonUtil.getInstance();
@@ -124,8 +125,7 @@ class JsonConfigurationServiceTest {
 
   @Test
   @DisplayName("clearCache(): forces a fresh read next time; if file is corrupted externally, it backs up and recovers")
-  void clearCache_triggerReloadAndRecoverFromExternalCorruption(@TempDir Path tmp)
-      throws Exception {
+  void clear_cache_trigger_reload_and_recover(@TempDir Path tmp) throws Exception {
     Path path = cfg(tmp);
     JsonConfigurationService svc = new JsonConfigurationService(tmp);
 
@@ -145,7 +145,7 @@ class JsonConfigurationServiceTest {
 
   @Test
   @DisplayName("path(): returns <base>/config.json")
-  void path_returnsExpected(@TempDir Path tmp) {
+  void path_returns_expected(@TempDir Path tmp) {
     JsonConfigurationService svc = new JsonConfigurationService(tmp);
     assertEquals(tmp.resolve("config.json").normalize(), svc.path().normalize());
   }
