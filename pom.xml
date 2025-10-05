@@ -72,10 +72,6 @@
             <goals>
               <goal>properties</goal>
             </goals>
-            <configuration>
-              <includeGroupIds>org.mockito</includeGroupIds>
-              <includeArtifactIds>mockito-core</includeArtifactIds>
-            </configuration>
           </execution>
         </executions>
       </plugin>
