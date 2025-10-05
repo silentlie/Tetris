@@ -28,6 +28,7 @@ module com.example.tetris {
   exports com.example.tetris.core.random;
   exports com.example.tetris.core.rule;
   exports com.example.tetris.core.state;
+  exports com.example.tetris.core.score
 
   exports com.example.tetris.ui.screen;
   exports com.example.tetris.ui.view;
