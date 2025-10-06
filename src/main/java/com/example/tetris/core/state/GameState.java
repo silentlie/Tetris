@@ -112,7 +112,7 @@ public class GameState {
       case ROTATE_CCW -> tryApply(Tetromino::rotateCounterClockwise);
       case MOVE_LEFT -> tryApply(Tetromino::moveLeft);
       case MOVE_RIGHT -> tryApply(Tetromino::moveRight);
-      case SOFT_DROP -> {
+      case SOFT_DROP, GRAVITY_DROP -> {
         if (!tryApply(Tetromino::moveDown)) {
           lock();
         }
@@ -127,12 +127,6 @@ public class GameState {
         lock();
         listener.onIntent(intent);
         yield true;
-      }
-      case GRAVITY_DROP -> {
-        if (!tryApply(Tetromino::moveDown)) {
-          lock();
-        }
-        yield false;
       }
     };
   }
