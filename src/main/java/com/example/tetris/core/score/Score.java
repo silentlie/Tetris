@@ -66,7 +66,7 @@ public record Score(
   @Override
   public int compareTo(@NotNull Score other) {
     return Comparator
-        .comparingInt(Score::score).reversed()
+        .comparingInt(Score::score)
         .thenComparingInt(Score::bestStreak).reversed()
         .thenComparing(Score::elapsed)
         .thenComparing(Score::name, String.CASE_INSENSITIVE_ORDER)
