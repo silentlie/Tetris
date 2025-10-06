@@ -103,9 +103,11 @@ public abstract class ScoresService {
   public final synchronized int[] addAll(List<Score> scores) {
     Objects.requireNonNull(scores, "scores");
     ensureLoaded();
-    int[] indices = new int[scores.size()];
-    for (int i = 0; i < scores.size(); i++) {
-      Score score = Objects.requireNonNull(scores.get(i), "score");
+    List<Score> sorted = new ArrayList<>(scores);
+    Collections.sort(sorted);
+    int[] indices = new int[sorted.size()];
+    for (int i = 0; i < sorted.size(); i++) {
+      Score score = Objects.requireNonNull(sorted.get(i), "score");
       int index = binarySearch(cache, score);
       cache.add(index, score);
       indices[i] = index;

@@ -194,7 +194,7 @@ public class Game {
       if (ai != null) {
         GameIntent intent = ai.tick(state.toPureGame());
         if (intent != null) {
-          state.apply(intent);
+          apply(intent);
         }
       }
     }
