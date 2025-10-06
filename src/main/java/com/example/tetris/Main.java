@@ -122,7 +122,7 @@ public class Main extends Application {
     ScoresService scoresService = new JsonScoresService();
     AudioService audioService = new JavaFxAudioService();
     audioService.setBgm(configurationService.getCache().music());
-
+    audioService.setSound(configurationService.getCache().sound());
     // Pass service and cache into AppContext
     AppContext ctx = new AppContext(router, configurationService, audioService, scoresService);
 
