@@ -39,7 +39,7 @@
       </TableColumn>
       <TableColumn fx:id="name" text="Player">
         <cellValueFactory>
-          <PropertyValueFactory property="player"/>
+          <PropertyValueFactory property="name"/>
         </cellValueFactory>
       </TableColumn>
       <TableColumn fx:id="score" text="Score">
