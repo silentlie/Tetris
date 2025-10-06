@@ -115,6 +115,10 @@ public class Game {
    * @throws NullPointerException if {@code intent} is {@code null}
    */
   public void apply(GameIntent intent) {
+    if (intent == null) {
+      return;
+    }
+    view.markDirty();
     state.apply(intent);
   }
 
@@ -193,8 +197,8 @@ public class Game {
 
       if (ai != null) {
         GameIntent intent = ai.tick(state.toPureGame());
-        if (intent != null) {
-          apply(intent);
+        if (state.apply(intent)) {
+          view.markDirty();
         }
       }
     }
