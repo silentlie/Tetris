@@ -118,8 +118,9 @@ public class Game {
     if (intent == null) {
       return;
     }
-    view.markDirty();
-    state.apply(intent);
+    if (state.apply(intent)) {
+      view.markDirty();
+    }
   }
 
   /**
@@ -197,7 +198,7 @@ public class Game {
 
       if (ai != null) {
         GameIntent intent = ai.tick(state.toPureGame());
-        if (state.apply(intent)) {
+        if (intent != null && state.apply(intent)) {
           view.markDirty();
         }
       }

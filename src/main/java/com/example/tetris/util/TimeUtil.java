@@ -93,6 +93,4 @@ public final class TimeUtil {
       return String.format("%d.%07ds", seconds, nanos7);
     }
   }
-
-
 }
