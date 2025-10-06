@@ -7,14 +7,15 @@
   xmlns:fx="http://javafx.com/fxml"
   fx:controller="com.example.tetris.ui.screen.MenuController"
   alignment="CENTER"
+  stylesheets="@style.css"
 >
   <Region VBox.vgrow="ALWAYS"/>
-  <Button onAction="#onPlayButtonClick" text="Play"/>
+  <Button onAction="#onPlayButtonClick" text="Play" styleClass="contrast"/>
   <Region VBox.vgrow="ALWAYS"/>
-  <Button onAction="#onHighScoresButtonClick" text="High Scores"/>
+  <Button onAction="#onHighScoresButtonClick" text="High Scores" styleClass="contrast"/>
   <Region VBox.vgrow="ALWAYS"/>
-  <Button onAction="#onConfigurationButtonClick" text="Configuration"/>
+  <Button onAction="#onConfigurationButtonClick" text="Configuration" styleClass="contrast"/>
   <Region VBox.vgrow="ALWAYS"/>
-  <Button onAction="#onExitButtonClick" text="Exit"/>
+  <Button onAction="#onExitButtonClick" text="Exit" styleClass="contrast"/>
   <Region VBox.vgrow="ALWAYS"/>
 </VBox>

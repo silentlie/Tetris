@@ -1,13 +1,11 @@
 package com.example.tetris.service.config;
 
 import com.example.tetris.core.config.Configuration;
+import com.example.tetris.util.FileBackup;
 import com.example.tetris.util.JsonUtil;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +29,6 @@ public final class JsonConfigurationService extends ConfigurationService {
 
   private static final Logger LOG = Logger.getLogger(JsonConfigurationService.class.getName());
   public static final String CONFIG_FILE_NAME = "config.json";
-  private static final DateTimeFormatter TS = DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss");
 
   private final Path configPath;
   private final JsonUtil json = JsonUtil.getInstance();
@@ -77,7 +74,7 @@ public final class JsonConfigurationService extends ConfigurationService {
       // Unreadable/corrupt → back it up first, then reset to defaults
       LOG.log(Level.WARNING, "Failed to read config; backing up and using defaults: " + configPath,
           e);
-      backupCorruptConfig();
+      Path ignore = FileBackup.backup(configPath);
       return createAndSaveDefault();
     }
   }
@@ -120,26 +117,5 @@ public final class JsonConfigurationService extends ConfigurationService {
     Configuration defaults = new Configuration();
     saveInternal(defaults);
     return defaults;
-  }
-
-  /**
-   * Best-effort backup of an unreadable/corrupt {@code config.json}.
-   *
-   * <p>Renames the existing file to {@code config.json.bak-<yyyyMMdd-HHmmss>} in the same
-   * directory. If the backup fails, the error is logged and load continues with defaults.</p>
-   */
-  private void backupCorruptConfig() {
-    try {
-      if (!Files.exists(configPath)) {
-        return;
-      }
-      Path parent = configPath.getParent() == null ? Path.of(".") : configPath.getParent();
-      String backupName = CONFIG_FILE_NAME + ".bak-" + TS.format(LocalDateTime.now());
-      Path backup = parent.resolve(backupName);
-      Files.move(configPath, backup, StandardCopyOption.REPLACE_EXISTING);
-      LOG.info(() -> "Backed up corrupt config to: " + backup);
-    } catch (IOException backupErr) {
-      LOG.log(Level.WARNING, "Failed to backup corrupt config: " + configPath, backupErr);
-    }
   }
 }
