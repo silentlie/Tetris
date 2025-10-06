@@ -191,7 +191,7 @@ public class Game {
 
       while (gravityAccNanos >= clock.fallIntervalNanos() && !state.isGameOver()) {
         gravityAccNanos -= clock.fallIntervalNanos();
-        if (state.apply(GameIntent.SOFT_DROP)) {
+        if (state.apply(GameIntent.GRAVITY_DROP)) {
           view.markDirty();
         }
       }

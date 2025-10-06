@@ -35,8 +35,7 @@ public enum GameIntent {
   ROTATE_CW,
 
   /**
-   * Shift the active piece one column to the left (typically discrete with DAS/ARR handled
-   * elsewhere).
+   * Shift the active piece one column to the left.
    */
   MOVE_LEFT,
 
@@ -56,4 +55,9 @@ public enum GameIntent {
    * Instantly drop the active piece to the lowest valid position and lock it.
    */
   HARD_DROP,
+
+  /**
+   * Active piece fall faster as level increase.
+   */
+  GRAVITY_DROP,
 }

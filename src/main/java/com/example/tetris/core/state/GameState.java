@@ -101,7 +101,12 @@ public class GameState {
     if (gameOver) {
       return false;
     }
-    listener.onIntent(intent);
+    if (intent == null) {
+      return false;
+    }
+    if (intent != GameIntent.GRAVITY_DROP) {
+      listener.onIntent(intent);
+    }
     return switch (intent) {
       case ROTATE_CW -> tryApply(Tetromino::rotateClockwise);
       case ROTATE_CCW -> tryApply(Tetromino::rotateCounterClockwise);
@@ -120,7 +125,14 @@ public class GameState {
           }
         }
         lock();
+        listener.onIntent(intent);
         yield true;
+      }
+      case GRAVITY_DROP -> {
+        if (!tryApply(Tetromino::moveDown)) {
+          lock();
+        }
+        yield false;
       }
     };
   }
