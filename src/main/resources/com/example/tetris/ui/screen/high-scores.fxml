@@ -57,7 +57,7 @@
           <PropertyValueFactory property="elapsed"/>
         </cellValueFactory>
       </TableColumn>
-      <TableColumn fx:id="timestamp" text="TimeStamp">
+      <TableColumn fx:id="timestamp" text="Timestamp">
         <cellValueFactory>
           <PropertyValueFactory property="timestamp"/>
         </cellValueFactory>
