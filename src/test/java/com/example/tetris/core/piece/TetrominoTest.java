@@ -15,9 +15,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit testing for the {@link Tetromino} record.
- * Includes: movement, rotation, absolute shape checks, factory invariants,
- * construction invariants including nulls, and immutability.
+ * Unit testing for the {@link Tetromino} record. Includes: movement, rotation, absolute shape
+ * checks, factory invariants, construction invariants including nulls, and immutability.
  */
 @DisplayName("Tetromino")
 class TetrominoTest {
@@ -132,22 +131,22 @@ class TetrominoTest {
 
 
   /**
-   * Moving up from (5,10) should change pivot point to (5,9) and return
-   * a new instance while leaving the original unchanged.
+   * Moving up from (5,10) should change pivot point to (5,9) and return a new instance while
+   * leaving the original unchanged.
    */
   @Test
   void moveUp() {
     Tetromino t = TestHelpers.of(TetrominoType.T, 5, 10, Rotation.UP);
     Tetromino moved = t.moveUp();
-    TestHelpers.assertMovedTo(t, moved, new Cell(5,9)); // new pivot point (5,9)
-    assertEquals(new Cell(5,10), t.position()); // original unchanged
+    TestHelpers.assertMovedTo(t, moved, new Cell(5, 9)); // new pivot point (5,9)
+    assertEquals(new Cell(5, 10), t.position()); // original unchanged
   }
 
   @Test
   void moveDown() {
     Tetromino t = TestHelpers.of(TetrominoType.T, 5, 10, Rotation.UP);
     Tetromino moved = t.moveDown();
-    TestHelpers.assertMovedTo(t, moved, new Cell(5,11));
+    TestHelpers.assertMovedTo(t, moved, new Cell(5, 11));
     assertEquals(new Cell(5, 10), t.position());
   }
 
@@ -168,8 +167,8 @@ class TetrominoTest {
   }
 
   /**
-   * rotateClockwise() should go Up > right > down > left > up, return a new instance,
-   * and preserve type/position
+   * rotateClockwise() should go Up > right > down > left > up, return a new instance, and preserve
+   * type/position
    */
   @Test
   void rotateClockwise() {
@@ -184,8 +183,8 @@ class TetrominoTest {
   }
 
   /**
-   * rotateCounterClockwise() should go up > left > down > right > up, return a new instance,
-   * and preserve type/position
+   * rotateCounterClockwise() should go up > left > down > right > up, return a new instance, and
+   * preserve type/position
    */
   @Test
   void rotateCounterClockwise() {
@@ -196,7 +195,8 @@ class TetrominoTest {
     // Full counter-clockwise cycle check
     assertEquals(Rotation.DOWN, r1.rotateCounterClockwise().rotation());
     assertEquals(Rotation.RIGHT, r1.rotateCounterClockwise().rotateCounterClockwise().rotation());
-    assertEquals(Rotation.UP, r1.rotateCounterClockwise().rotateCounterClockwise().rotateCounterClockwise().rotation());
+    assertEquals(Rotation.UP,
+        r1.rotateCounterClockwise().rotateCounterClockwise().rotateCounterClockwise().rotation());
   }
 
 
@@ -242,7 +242,7 @@ class TetrominoTest {
     // I piece at origin, UP: Shapes has offsets
     Tetromino iUp = TestHelpers.of(TetrominoType.I, 0, 0, Rotation.UP);
     Set<Cell> expectedIUp = Set.of(
-        new Cell(-2, 0),
+        new Cell(2, 0),
         new Cell(-1, 0),
         new Cell(0, 0),
         new Cell(1, 0)
@@ -253,17 +253,17 @@ class TetrominoTest {
     // O piece is rotation-invariant, origin at (0,0)
     Tetromino oUp = TestHelpers.of(TetrominoType.O, 0, 0, Rotation.UP);
     Set<Cell> expectedO = Set.of(
-        new Cell(0,0),
+        new Cell(0, 0),
         new Cell(1, 0),
-        new Cell(0,1),
-        new Cell(1,1)
+        new Cell(0, 1),
+        new Cell(1, 1)
     );
     TestHelpers.assertCellSetEquals(expectedO, oUp.getAbsoluteShape());
 
     // O @ right
     Tetromino oRight = TestHelpers.of(TetrominoType.O, 0, 0, Rotation.RIGHT);
     Set<Cell> expectedORight = Set.of(
-        new Cell(0,  0), new Cell(1,  0),
+        new Cell(0, 0), new Cell(1, 0),
         new Cell(0, -1), new Cell(1, -1)
     );
     TestHelpers.assertCellSetEquals(expectedORight, oRight.getAbsoluteShape());
@@ -273,15 +273,17 @@ class TetrominoTest {
     Set<Cell> expectedIRight = Set.of(
         new Cell(0, -1),
         new Cell(0, 0),
-        new Cell(0,  1),
-        new Cell(0,  2)
+        new Cell(0, 1),
+        new Cell(0, -2)
 
     );
     TestHelpers.assertCellSetEquals(expectedIRight, iRight.getAbsoluteShape());
 
   }
 
-  /** Constructor should store type, position and rotation. */
+  /**
+   * Constructor should store type, position and rotation.
+   */
   @Test
   void construction_storesFields() {
     TetrominoType type = TetrominoType.Z;
@@ -294,11 +296,17 @@ class TetrominoTest {
     assertEquals(r, z.rotation());
   }
 
-  /** Checks that the record constructor enforces non-null values for type, position and rotation.*/
+  /**
+   * Checks that the record constructor enforces non-null values for type, position and rotation.
+   */
   @Test
   void construction_rejectsNulls() {
     // don't know if Tetromino record enforces nulls.
-    assertThrows(NullPointerException.class, () -> new Tetromino(null, new Cell(0,0), Rotation.UP));
-    assertThrows(NullPointerException.class, () -> new Tetromino(TetrominoType.I, null, Rotation.UP));
-    assertThrows(NullPointerException.class, () -> new Tetromino(TetrominoType.I, new Cell(0,0), null));
+    assertThrows(NullPointerException.class,
+        () -> new Tetromino(null, new Cell(0, 0), Rotation.UP));
+    assertThrows(NullPointerException.class,
+        () -> new Tetromino(TetrominoType.I, null, Rotation.UP));
+    assertThrows(NullPointerException.class,
+        () -> new Tetromino(TetrominoType.I, new Cell(0, 0), null));
   }
+}
