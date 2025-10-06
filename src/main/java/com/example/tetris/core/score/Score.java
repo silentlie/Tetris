@@ -15,14 +15,14 @@ import org.jetbrains.annotations.NotNull;
  *   <li>{@code bestStreak} — highest consecutive-line-clear streak (or similar “combo” metric).
  *   </li>
  *   <li>{@code timeStamp} — moment the score was recorded (typically end-of-game time) in UTC.</li>
- *   <li>{@code timeElapsed} — total play duration for the session.</li>
+ *   <li>{@code elapsed} — total play duration for the session.</li>
  * </ul>
  *
  * <p><strong>Natural ordering:</strong> Instances sort by:
  * <ol>
  *   <li><b>score</b> (higher first),</li>
  *   <li>then <b>bestStreak</b> (higher first),</li>
- *   <li>then <b>timeElapsed</b> (shorter first),</li>
+ *   <li>then <b>elapsed</b> (shorter first),</li>
  *   <li>then <b>name</b> (case-insensitive A→Z),</li>
  *   <li>then <b>timeStamp</b> (earlier first).</li>
  * </ol>
@@ -48,12 +48,12 @@ public record Score(
     int score,
     int bestStreak,
     Instant timeStamp,
-    Duration timeElapsed
+    Duration elapsed
 ) implements Comparable<Score> {
 
   /**
    * Compares this score to another using the defined natural ordering: score (desc), bestStreak
-   * (desc), timeElapsed (asc), name (case-insensitive asc), then timeStamp (asc).
+   * (desc), elapsed (asc), name (case-insensitive asc), then timeStamp (asc).
    *
    * @param other the other score entry to compare against; must not be {@code null}
    *
@@ -68,7 +68,7 @@ public record Score(
     return Comparator
         .comparingInt(Score::score).reversed()
         .thenComparingInt(Score::bestStreak).reversed()
-        .thenComparing(Score::timeElapsed)
+        .thenComparing(Score::elapsed)
         .thenComparing(Score::name, String.CASE_INSENSITIVE_ORDER)
         .thenComparing(Score::timeStamp)
         .compare(this, other);

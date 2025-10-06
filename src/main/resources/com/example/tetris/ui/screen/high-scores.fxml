@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<GridPane stylesheets="@style.css" xmlns="http://javafx.com/javafx"
+  xmlns:fx="http://javafx.com/fxml"
+  fx:controller="com.example.tetris.ui.screen.HighScoresController">
+
+  <rowConstraints>
+    <RowConstraints percentHeight="10"/>
+    <RowConstraints percentHeight="80" vgrow="ALWAYS"/>
+    <RowConstraints percentHeight="10"/>
+  </rowConstraints>
+
+  <columnConstraints>
+    <ColumnConstraints percentWidth="50"/>
+    <ColumnConstraints percentWidth="50"/>
+  </columnConstraints>
+
+  <Label styleClass="heading" text="Configuration" GridPane.columnSpan="2"
+    GridPane.halignment="CENTER" GridPane.rowIndex="0" GridPane.valignment="CENTER"/>
+
+  <TableView fx:id="table" GridPane.columnSpan="2" GridPane.rowIndex="1">
+    <GridPane.margin>
+      <Insets topRightBottomLeft="16"/>
+    </GridPane.margin>
+    <columns>
+      <TableColumn fx:id="rank" text="#">
+        <cellValueFactory>
+          <PropertyValueFactory property="rank"/>
+        </cellValueFactory>
+      </TableColumn>
+      <TableColumn fx:id="name" text="Player">
+        <cellValueFactory>
+          <PropertyValueFactory property="player"/>
+        </cellValueFactory>
+      </TableColumn>
+      <TableColumn fx:id="score" text="Score">
+        <cellValueFactory>
+          <PropertyValueFactory property="score"/>
+        </cellValueFactory>
+      </TableColumn>
+      <TableColumn fx:id="bestStreak" text="Best Streak">
+        <cellValueFactory>
+          <PropertyValueFactory property="bestStreak"/>
+        </cellValueFactory>
+      </TableColumn>
+      <TableColumn fx:id="elapsed" text="Elapsed">
+        <cellValueFactory>
+          <PropertyValueFactory property="elapsed"/>
+        </cellValueFactory>
+      </TableColumn>
+      <TableColumn fx:id="timestamp" text="TimeStamp">
+        <cellValueFactory>
+          <PropertyValueFactory property="timestamp"/>
+        </cellValueFactory>
+      </TableColumn>
+    </columns>
+    <columnResizePolicy>
+      <TableView fx:constant="CONSTRAINED_RESIZE_POLICY"/>
+    </columnResizePolicy>
+  </TableView>
+
+  <Button id="resetButton" onAction="#onReset" text="Reset" GridPane.columnIndex="0"
+    GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER"
+  />
+  <Button id="backButton" onAction="#onBack" text="Back" GridPane.columnIndex="1"
+    GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER"
+  />
+</GridPane>

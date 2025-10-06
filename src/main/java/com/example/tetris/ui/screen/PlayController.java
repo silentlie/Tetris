@@ -291,7 +291,7 @@ public class PlayController implements FxController {
             + " • Streak: "
             + bestStreak
             + " • Time: "
-            + TimeUtil.formatElapsed(elapsed)
+            + TimeUtil.formatDuration(elapsed)
     );
     dialog.setContentText("Enter your name:");
 

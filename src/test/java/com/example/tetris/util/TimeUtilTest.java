@@ -36,7 +36,7 @@ class TimeUtilTest {
   @MethodSource("nanosCases")
   @DisplayName("formatElapsedNanos: 7 fractional digits with truncation")
   void nanos_formats(Case c) {
-    assertEquals(c.expected, TimeUtil.formatElapsedNanos(c.nanos));
+    assertEquals(c.expected, TimeUtil.formatNanos(c.nanos));
   }
 
   static Stream<Arguments> durationCases() {
@@ -57,14 +57,14 @@ class TimeUtilTest {
   @MethodSource("durationCases")
   @DisplayName("formatElapsed(Duration): hours/minutes/seconds branching + truncation")
   void duration_formats(DurCase c) {
-    assertEquals(c.expected, TimeUtil.formatElapsed(c.duration));
+    assertEquals(c.expected, TimeUtil.formatDuration(c.duration));
   }
 
   @Test
   @DisplayName("Boundary below minute: 59.99999995s truncates to 59.9999999s (no rounding)")
   void boundary_truncates() {
     long nanos = s(59) + 999_999_950L;
-    assertEquals("59.9999999s", TimeUtil.formatElapsedNanos(nanos));
+    assertEquals("59.9999999s", TimeUtil.formatNanos(nanos));
   }
 
   private record Case(long nanos, String expected) {

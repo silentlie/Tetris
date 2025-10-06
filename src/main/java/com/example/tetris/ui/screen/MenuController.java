@@ -47,7 +47,7 @@ public class MenuController implements FxController {
    */
   @FXML
   private void onHighScoresButtonClick(ActionEvent actionEvent) {
-    ctx.show(Route.HIGH_SCORE);
+    ctx.show(Route.HIGH_SCORES);
   }
 
   /**

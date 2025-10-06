@@ -2,7 +2,7 @@ package com.example.tetris.app.navigation;
 
 import com.example.tetris.app.context.FxController;
 import com.example.tetris.ui.screen.ConfigurationController;
-import com.example.tetris.ui.screen.HighScoreController;
+import com.example.tetris.ui.screen.HighScoresController;
 import com.example.tetris.ui.screen.MenuController;
 import com.example.tetris.ui.screen.PlayController;
 
@@ -30,9 +30,9 @@ public enum Route {
   MENU("menu.fxml", MenuController.class),
 
   /**
-   * High score listing screen.
+   * High scores listing screen.
    */
-  HIGH_SCORE("high-score.fxml", HighScoreController.class),
+  HIGH_SCORES("high-scores.fxml", HighScoresController.class),
 
   /**
    * Configuration/settings screen.

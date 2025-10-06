@@ -129,7 +129,7 @@ public class Main extends Application {
     switch (scene) {
       case "splash" -> router.showSplash(this.getClass(), null, primaryStage::close);
       case "menu" -> ctx.show(Route.MENU);
-      case "highScores" -> ctx.show(Route.HIGH_SCORE);
+      case "highScores" -> ctx.show(Route.HIGH_SCORES);
       case "configuration" -> ctx.show(Route.CONFIGURATION);
       case "play" -> ctx.show(Route.PLAY);
       case null, default -> router.showSplash(

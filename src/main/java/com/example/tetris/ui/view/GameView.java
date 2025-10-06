@@ -1,6 +1,6 @@
 package com.example.tetris.ui.view;
 
-import static com.example.tetris.util.TimeUtil.formatElapsedNanos;
+import static com.example.tetris.util.TimeUtil.formatNanos;
 
 import com.example.tetris.Main;
 import com.example.tetris.core.rule.GameClock;
@@ -138,7 +138,7 @@ public class GameView extends SplitPane {
     labelScore.setText("Score: " + s.getScore());
     labelStreak.setText("Streak: " + s.getStreak());
     labelHighestStreak.setText("Highest Streak: " + s.getHighestStreak());
-    labelTimeElapsed.setText("Time Elapsed: " + formatElapsedNanos(clock.elapsedNanos()));
+    labelTimeElapsed.setText("Time Elapsed: " + formatNanos(clock.elapsedNanos()));
 
     if (!dirty) {
       return;
