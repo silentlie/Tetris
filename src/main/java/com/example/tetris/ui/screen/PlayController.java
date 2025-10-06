@@ -295,12 +295,6 @@ public class PlayController implements FxController {
     );
     dialog.setContentText("Enter your name:");
 
-    dialog.getEditor().textProperty().addListener((observable, oldValue, newValue) -> {
-      if (newValue != null && !newValue.isEmpty()) {
-        dialog.getEditor().setText(newValue);
-      }
-    });
-
     Optional<String> result = dialog.showAndWait();
     String name = result.map(String::trim).filter(s -> !s.isEmpty()).orElse("");
 
