@@ -24,7 +24,7 @@
     <ColumnConstraints percentWidth="50"/>
   </columnConstraints>
 
-  <Label styleClass="heading" text="Configuration" GridPane.columnSpan="2"
+  <Label styleClass="heading" text="High Scores" GridPane.columnSpan="2"
     GridPane.halignment="CENTER" GridPane.rowIndex="0" GridPane.valignment="CENTER"/>
 
   <TableView fx:id="table" GridPane.columnSpan="2" GridPane.rowIndex="1">
