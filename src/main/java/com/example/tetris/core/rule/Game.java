@@ -112,12 +112,10 @@ public class Game {
    *
    * @param intent the intent to apply (must not be {@code null})
    *
-   * @return {@code true} if the state changed as a result; {@code false} otherwise
-   *
    * @throws NullPointerException if {@code intent} is {@code null}
    */
-  public boolean apply(GameIntent intent) {
-    return state.apply(intent);
+  public void apply(GameIntent intent) {
+    state.apply(intent);
   }
 
   /**

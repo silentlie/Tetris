@@ -31,10 +31,10 @@ public class MenuController implements FxController {
    *
    * <p>Navigates to the gameplay scene.</p>
    *
-   * @param actionEvent the event triggered by clicking the Play button
+   * @param ignore the event triggered by clicking the Play button
    */
   @FXML
-  private void onPlayButtonClick(ActionEvent actionEvent) {
+  private void onPlayButtonClick(ActionEvent ignore) {
     ctx.show(Route.PLAY);
   }
 
@@ -43,10 +43,10 @@ public class MenuController implements FxController {
    *
    * <p>Navigates to the high scores scene.</p>
    *
-   * @param actionEvent the event triggered by clicking the High Scores button
+   * @param ignore the event triggered by clicking the High Scores button
    */
   @FXML
-  private void onHighScoresButtonClick(ActionEvent actionEvent) {
+  private void onHighScoresButtonClick(ActionEvent ignore) {
     ctx.show(Route.HIGH_SCORES);
   }
 
@@ -55,10 +55,10 @@ public class MenuController implements FxController {
    *
    * <p>Navigates to the configuration scene.</p>
    *
-   * @param actionEvent the event triggered by clicking the Configuration button
+   * @param ignore the event triggered by clicking the Configuration button
    */
   @FXML
-  private void onConfigurationButtonClick(ActionEvent actionEvent) {
+  private void onConfigurationButtonClick(ActionEvent ignore) {
     ctx.show(Route.CONFIGURATION);
   }
 
