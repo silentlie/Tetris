@@ -301,7 +301,6 @@ class TetrominoTest {
    */
   @Test
   void construction_rejectsNulls() {
-    // don't know if Tetromino record enforces nulls.
     assertThrows(NullPointerException.class,
         () -> new Tetromino(null, new Cell(0, 0), Rotation.UP));
     assertThrows(NullPointerException.class,
