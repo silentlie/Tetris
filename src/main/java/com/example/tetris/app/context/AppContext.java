@@ -4,6 +4,7 @@ import com.example.tetris.app.navigation.Route;
 import com.example.tetris.app.navigation.Router;
 import com.example.tetris.service.audio.AudioService;
 import com.example.tetris.service.config.ConfigurationService;
+import com.example.tetris.service.scores.ScoresService;
 import java.util.Objects;
 import javafx.stage.Stage;
 
@@ -12,16 +13,17 @@ import javafx.stage.Stage;
  *
  * <p>{@code AppContext} centralizes access to cross-cutting services and app-level state:
  * navigation via a {@link Router}, configuration persistence via a {@link ConfigurationService},
- * and audio playback via an {@link AudioService}. Controllers receive this context (typically
- * through an {@code FxController#setContext(AppContext)}) and invoke it to perform navigation or
- * update global settings without reaching into the primary {@link Stage} or loader internals.</p>
+ * high-scores via a {@link ScoresService}, and audio playback via an {@link AudioService}.
+ * Controllers receive this context (typically through an
+ * {@code FxController#setContext(AppContext)}) and use it to navigate or update global settings
+ * without reaching into the primary {@link Stage} or loader internals.</p>
  *
  * <h2>Responsibilities</h2>
  * <ul>
  *   <li>Expose the primary {@link Stage} for dialog ownership and window metadata.</li>
- *   <li>Navigate between routes, passing the same context through.</li>
+ *   <li>Navigate between routes, passing the same context through to the next controller.</li>
  *   <li>Evict route caches to force fresh loads when needed.</li>
- *   <li>Provide access to configuration and audio services.</li>
+ *   <li>Provide access to configuration, scores, and audio services.</li>
  *   <li>Offer convenience toggles for music/SFX that update both config and runtime audio.</li>
  * </ul>
  *
@@ -49,20 +51,26 @@ import javafx.stage.Stage;
  * }
  * }</pre>
  *
- * <p>This class may be extended in the future to aggregate additional services such as
- * high-scores, user sessions, telemetry, or i18n resources.</p>
+ * <p>This class may be extended in the future to aggregate additional services such as user
+ * sessions, telemetry, or i18n resources.</p>
  *
+ * @see Router
+ * @see Route
+ * @see ConfigurationService
+ * @see ScoresService
+ * @see AudioService
  * @since 1.0
  */
 public class AppContext {
 
   private final Router router;
   private final ConfigurationService configurationService;
+  private final ScoresService scoresService;
   private final AudioService audioService;
 
   /**
-   * Creates a new application context bound to the given router, configuration service, and audio
-   * service.
+   * Creates a new application context bound to the given router, configuration, scores, and audio
+   * services.
    *
    * @param router               the router responsible for navigation between views (must not be
    *                             {@code null})
@@ -70,16 +78,22 @@ public class AppContext {
    *                             be {@code null})
    * @param audioService         service for playing music and sound effects (must not be
    *                             {@code null})
+   * @param scoresService        service for reading and writing high scores/leaderboards (must not
+   *                             be {@code null})
    *
    * @throws NullPointerException if any argument is {@code null}
    */
-  public AppContext(Router router,
+  public AppContext(
+      Router router,
       ConfigurationService configurationService,
-      AudioService audioService) {
+      AudioService audioService,
+      ScoresService scoresService
+  ) {
     this.router = Objects.requireNonNull(router, "router");
     this.configurationService = Objects.requireNonNull(configurationService,
         "configurationService");
     this.audioService = Objects.requireNonNull(audioService, "audioService");
+    this.scoresService = Objects.requireNonNull(scoresService, "scoresService");
   }
 
   /**
@@ -133,6 +147,15 @@ public class AppContext {
   }
 
   /**
+   * Returns the scores service for reading and writing high scores/leaderboards.
+   *
+   * @return the scores service bound to this context (never {@code null})
+   */
+  public ScoresService getScoresService() {
+    return scoresService;
+  }
+
+  /**
    * Returns the audio service for playing background music and sound effects.
    *
    * @return the audio service bound to this context (never {@code null})
@@ -148,7 +171,7 @@ public class AppContext {
    * <ol>
    *   <li>Reads the current cached {@code Configuration}.</li>
    *   <li>Flips the {@code music} flag and persists the new configuration via
-   *   {@link ConfigurationService#save}.</li>
+   *       {@link ConfigurationService#save}.</li>
    *   <li>Propagates the new state to the audio system via {@link AudioService#setBgm(boolean)}.
    *   </li>
    * </ol>
@@ -169,7 +192,7 @@ public class AppContext {
    * <ol>
    *   <li>Reads the current cached {@code Configuration}.</li>
    *   <li>Flips the {@code sound} flag and persists the new configuration via
-   *   {@link ConfigurationService#save}.</li>
+   *       {@link ConfigurationService#save}.</li>
    *   <li>Propagates the new state to the audio system via {@link AudioService#setSound(boolean)}.
    *   </li>
    * </ol>

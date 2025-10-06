@@ -7,47 +7,50 @@ package com.example.tetris.core.piece;
  * lattice, defined by inclusive minimum and maximum coordinates on X and Y: {@code [minX, maxX]} ×
  * {@code [minY, maxY]}.</p>
  *
- * <p>Coordinate semantics:</p>
+ * <h2>Coordinate semantics</h2>
  * <ul>
  *   <li>X increases to the right; Y increases downward (unless your app defines otherwise).</li>
- *   <li>Bounds are inclusive: a point {@code (x, y)} is inside iff
+ *   <li>Bounds are <b>inclusive</b>: a point {@code (x, y)} is inside iff
  *       {@code minX <= x <= maxX} and {@code minY <= y <= maxY}.</li>
  *   <li>{@link #width()} and {@link #height()} include both endpoints:
  *       {@code width = maxX - minX + 1}, {@code height = maxY - minY + 1}.</li>
  * </ul>
  *
- * <p>Immutability: this is a Java record; operations such as {@link #translate(int, int)}
- * return new instances.</p>
+ * <h2>Immutability</h2>
+ * This is a Java {@code record}; operations such as {@link #translate(int, int)} return new
+ * instances and never mutate existing ones.
  *
- * <p>Invariants (not enforced here):</p>
- * <ul>
- *   <li>{@code maxX >= minX}</li>
- *   <li>{@code maxY >= minY}</li>
- * </ul>
+ * <h2>Validation</h2>
+ * The canonical constructor enforces {@code maxX >= minX} and {@code maxY >= minY}.
+ * Attempts to create an invalid bound throw {@link IllegalArgumentException}.
  *
- * <p>Usage example:</p>
- * <pre>{@code
- * Bound b = new Bound(2, 5, 4, 8);   // x in [2..4], y in [5..8]
- * int w = b.width();                  // 3
- * int h = b.height();                 // 4
- * Bound moved = b.translate(-1, 2);   // x in [1..3], y in [7..10]
- * }</pre>
- *
- * <p>Overflow: near {@link Integer#MAX_VALUE} or {@link Integer#MIN_VALUE}, calculations in
- * {@link #width()}, {@link #height()}, and {@link #translate(int, int)} can overflow.</p>
+ * <h2>Overflow</h2>
+ * Methods that perform integer arithmetic ({@link #width()}, {@link #height()},
+ * {@link #translate(int, int)}) use {@link Math#addExact(int, int)} and
+ * {@link Math#subtractExact(int, int)} and will throw {@link ArithmeticException} on overflow.
  *
  * @param minX the inclusive minimum X coordinate (left edge)
  * @param minY the inclusive minimum Y coordinate (top edge)
- * @param maxX the inclusive maximum X coordinate (right edge); should be {@code >= minX}
- * @param maxY the inclusive maximum Y coordinate (bottom edge); should be {@code >= minY}
- *
- * @apiNote Useful for bounding boxes of shapes (e.g., tetrominoes) or grid regions.
- * @see #width()
- * @see #height()
- * @see #translate(int, int)
- * @since 1.0
+ * @param maxX the inclusive maximum X coordinate (right edge); must be {@code >= minX}
+ * @param maxY the inclusive maximum Y coordinate (bottom edge); must be {@code >= minY}
  */
 public record Bound(int minX, int minY, int maxX, int maxY) {
+
+  /**
+   * Creates a new {@code Bound}.
+   *
+   * <p>Enforces {@code maxX >= minX} and {@code maxY >= minY}.</p>
+   *
+   * @throws IllegalArgumentException if {@code maxX < minX} or {@code maxY < minY}
+   */
+  public Bound {
+    if (maxX < minX) {
+      throw new IllegalArgumentException("maxX (" + maxX + ") must be >= minX (" + minX + ")");
+    }
+    if (maxY < minY) {
+      throw new IllegalArgumentException("maxY (" + maxY + ") must be >= minY (" + minY + ")");
+    }
+  }
 
   /**
    * Returns the number of integer X positions covered by this bound (inclusive).
@@ -55,9 +58,11 @@ public record Bound(int minX, int minY, int maxX, int maxY) {
    * <p>Formula: {@code maxX - minX + 1}.</p>
    *
    * @return the inclusive width in grid units
+   *
+   * @throws ArithmeticException if the computation overflows 32-bit signed int
    */
   public int width() {
-    return maxX - minX + 1;
+    return Math.addExact(Math.subtractExact(maxX, minX), 1);
   }
 
   /**
@@ -66,9 +71,11 @@ public record Bound(int minX, int minY, int maxX, int maxY) {
    * <p>Formula: {@code maxY - minY + 1}.</p>
    *
    * @return the inclusive height in grid units
+   *
+   * @throws ArithmeticException if the computation overflows 32-bit signed int
    */
   public int height() {
-    return maxY - minY + 1;
+    return Math.addExact(Math.subtractExact(maxY, minY), 1);
   }
 
   /**
@@ -77,18 +84,19 @@ public record Bound(int minX, int minY, int maxX, int maxY) {
    * <p>Equivalent to adding {@code dx} to both {@code minX} and {@code maxX}, and adding
    * {@code dy} to both {@code minY} and {@code maxY}.</p>
    *
-   * <p>Example:</p>
-   * <pre>{@code
-   * new Bound(2, 5, 4, 8).translate(-1, 2); // -> (1, 7) to (3, 10)
-   * }</pre>
-   *
    * @param dx horizontal delta (positive moves right; negative moves left)
    * @param dy vertical delta (positive moves down; negative moves up)
    *
    * @return a new {@code Bound} shifted by the specified deltas
+   *
+   * @throws ArithmeticException if any coordinate addition overflows 32-bit signed int
    */
   public Bound translate(int dx, int dy) {
-    return new Bound(minX + dx, minY + dy, maxX + dx, maxY + dy);
+    int newMinX = Math.addExact(minX, dx);
+    int newMaxX = Math.addExact(maxX, dx);
+    int newMinY = Math.addExact(minY, dy);
+    int newMaxY = Math.addExact(maxY, dy);
+    // Invariants still hold because we preserve ordering by adding the same delta to each axis.
+    return new Bound(newMinX, newMinY, newMaxX, newMaxY);
   }
 }
-

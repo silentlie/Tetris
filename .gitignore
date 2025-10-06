@@ -38,6 +38,6 @@ build/
 .DS_Store
 
 ### Game ###
-highScores.json
+scores.json
 save
 config.json

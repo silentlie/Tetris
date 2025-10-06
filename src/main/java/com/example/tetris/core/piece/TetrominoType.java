@@ -28,7 +28,7 @@ public enum TetrominoType {
   /**
    * Straight line tetromino (“I”).
    */
-  I(Color.CYAN, List.of(new Cell(-2, 0), new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0))),
+  I(Color.CYAN, List.of(new Cell(-1, 0), new Cell(0, 0), new Cell(1, 0), new Cell(2, 0))),
 
   /**
    * Square tetromino (“O”).

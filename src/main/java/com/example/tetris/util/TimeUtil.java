@@ -1,6 +1,9 @@
 package com.example.tetris.util;
 
 import java.time.Duration;
+import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Time formatting helpers for human-readable elapsed durations.
@@ -29,22 +32,36 @@ public final class TimeUtil {
   }
 
   /**
+   * Formats an {@link Instant} with second precision in UTC, using ISO-8601.
+   *
+   * <p>Examples: {@code 2025-10-06T03:14:15Z}</p>
+   *
+   * @param instant the instant to format (must not be {@code null})
+   *
+   * @return ISO-8601 string truncated to whole seconds
+   */
+  public static String formatInstant(Instant instant) {
+    Instant truncated = instant.truncatedTo(ChronoUnit.SECONDS);
+    return DateTimeFormatter.ISO_INSTANT.format(truncated);
+  }
+
+  /**
    * Formats an elapsed time given in nanoseconds.
    *
    * <p>Negative values are treated as {@code 0}.</p>
    *
-   * @param nanosTotal total elapsed nanoseconds
+   * @param nanos total elapsed nanoseconds
    *
    * @return a human-readable string such as {@code "42.1234567s"}, {@code "5m07.0000000s"}, or
    *     {@code "2h03m04.5000000s"}
    */
-  public static String formatElapsedNanos(long nanosTotal) {
-    if (nanosTotal < 0L) {
-      nanosTotal = 0L;
+  public static String formatNanos(long nanos) {
+    if (nanos < 0L) {
+      nanos = 0L;
     }
 
-    Duration d = Duration.ofNanos(nanosTotal);
-    return formatElapsed(d);
+    Duration d = Duration.ofNanos(nanos);
+    return formatDuration(d);
   }
 
   /**
@@ -62,7 +79,7 @@ public final class TimeUtil {
    *
    * @return formatted string with a trailing {@code s} for seconds
    */
-  public static String formatElapsed(Duration d) {
+  public static String formatDuration(Duration d) {
     long hours = d.toHours();
     int minutes = d.toMinutesPart();   // Java 9+
     int seconds = d.toSecondsPart();

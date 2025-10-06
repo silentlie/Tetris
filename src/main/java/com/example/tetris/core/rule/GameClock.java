@@ -58,10 +58,10 @@ public class GameClock {
    */
   public GameClock(int startLevel) {
     this.startLevel = Math.max(1, Math.min(startLevel, MAX_LEVEL));
-    this.rawLevel = startLevel;
+    this.rawLevel = this.startLevel;
     // Virtual time needed to reach startLevel on the growth curve:
     // seconds = 30 * (L^2 - L) → nanos: 30 * NS_PER_SEC * (L * (L - 1))
-    this.startTimeNanos = 30 * NS_PER_SEC * ((long) startLevel * (startLevel - 1L));
+    this.startTimeNanos = 30 * NS_PER_SEC * ((long) this.startLevel * (this.startLevel - 1L));
     elapsedNanos = 0L;
     fallIntervalNanos = 0L;
   }

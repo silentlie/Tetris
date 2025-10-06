@@ -1,0 +1,126 @@
+.root {
+  /* Brand & on-brand */
+  -brand: #5b6cff;
+  -brand-dark: #3f51ff;
+  -on-brand: white;
+
+  /* Overlays (used as 2nd layer in backgrounds) */
+  -overlay-none: rgba(255, 255, 255, 0.00);
+  -overlay-hover: rgba(255, 255, 255, 0.08);
+  -overlay-pressed: rgba(255, 255, 255, 0.12);
+
+  /* Shadows & focus glows */
+  -shadow-strong: rgba(0, 0, 0, 0.28);
+  -shadow-stronger: rgba(0, 0, 0, 0.32);
+  -shadow-medium: rgba(0, 0, 0, 0.26);
+  -shadow-light: rgba(0, 0, 0, 0.20);
+  -shadow-lighter: rgba(0, 0, 0, 0.18);
+
+  -focus-glow-strong: rgba(91, 108, 255, 0.55);
+  -focus-glow: rgba(91, 108, 255, 0.45);
+
+  /* Contrast button specifics */
+  -contrast-border: derive(-brand-dark, -10%);
+
+  /* Contrast surfaces (derived from on-brand) */
+  -contrast-start: derive(-on-brand, -2%);
+  -contrast-end: derive(-on-brand, -6%);
+}
+
+.heading {
+  -fx-font-size: 24px;
+  -fx-font-weight: bolder;
+}
+
+.title {
+  -fx-font-size: 13px;
+  -fx-font-weight: bold;
+  -fx-wrap-text: true;
+}
+
+.button {
+  -fx-font-weight: bold;
+  -fx-font-size: 14px;
+
+  -fx-min-height: 40;
+  -fx-pref-height: 40;
+  -fx-min-width: 64;
+
+  -fx-background-insets: 0, 0;
+  -fx-background-radius: 20, 20;
+
+  -fx-cursor: hand;
+  -fx-border-width: 0;
+
+  -fx-background-color: linear-gradient(to bottom, -brand, -brand-dark), -overlay-none;
+
+  -fx-text-fill: -on-brand;
+
+  -fx-effect: dropshadow(gaussian, -shadow-strong, 10, 0.25, 0, 2);
+}
+
+.button:hover {
+  -fx-background-color: linear-gradient(to bottom, -brand, -brand-dark), -overlay-hover;
+
+  -fx-effect: dropshadow(gaussian, -shadow-stronger, 12, 0.30, 0, 3);
+}
+
+.button:armed {
+  -fx-background-color: linear-gradient(to bottom, -brand, -brand-dark), -overlay-pressed;
+
+  -fx-translate-y: 2;
+  -fx-effect: dropshadow(gaussian, -shadow-medium, 8, 0.22, 0, 1);
+}
+
+.button:focused {
+  -fx-effect: dropshadow(gaussian, -focus-glow-strong, 10, 0.6, 0, 0), dropshadow(gaussian, -shadow-strong, 10, 0.25, 0, 2);
+}
+
+.button:disabled {
+  -fx-opacity: 0.38;
+  -fx-effect: none;
+  -fx-cursor: default;
+}
+
+.button.contrast {
+  -fx-min-height: 48;
+  -fx-pref-height: 48;
+  -fx-min-width: 80;
+
+  -fx-background-radius: 10, 10;
+  -fx-border-radius: 10;
+
+  -fx-background-insets: 0, 0;
+  -fx-background-color: linear-gradient(to bottom, -contrast-start, -contrast-end), -overlay-none;
+
+  -fx-border-width: 1.5;
+  -fx-border-color: -contrast-border;
+
+  -fx-text-fill: -brand-dark;
+
+  -fx-effect: dropshadow(gaussian, -shadow-light, 8, 0.22, 0, 1);
+  -fx-cursor: hand;
+}
+
+.button.contrast:hover {
+  -fx-background-color: linear-gradient(to bottom, -contrast-start, -contrast-end), -overlay-hover;
+
+  -fx-effect: dropshadow(gaussian, -shadow-medium, 10, 0.28, 0, 2);
+}
+
+.button.contrast:armed {
+  -fx-background-color: linear-gradient(to bottom, -contrast-start, -contrast-end), -overlay-pressed;
+
+  -fx-translate-y: 2;
+  -fx-effect: dropshadow(gaussian, -shadow-lighter, 7, 0.20, 0, 1);
+}
+
+.button.contrast:focused {
+  -fx-effect: dropshadow(gaussian, -focus-glow, 9, 0.55, 0, 0), dropshadow(gaussian, -shadow-light, 8, 0.22, 0, 1);
+}
+
+.button.contrast:disabled {
+  -fx-opacity: 0.38;
+  -fx-effect: none;
+  -fx-cursor: default;
+}

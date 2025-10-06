@@ -57,7 +57,7 @@ import java.util.logging.Level;
  * @see Ai#shouldStartNewPlan(PureGame, PureGame, OpMove)
  * @see Ai#getCurrentIntent(OpMove, PureGame)
  */
-public class EternalAi extends Ai {
+public class ExternalAi extends Ai {
 
   /**
    * Default loopback host for the external AI service.
@@ -100,7 +100,7 @@ public class EternalAi extends Ai {
    * Dedicated worker for blocking socket I/O.
    */
   private final ExecutorService worker = Executors.newSingleThreadExecutor(r -> {
-    Thread t = new Thread(r, "EternalAi-worker");
+    Thread t = new Thread(r, "ExternalAi-worker");
     t.setDaemon(true);
     return t;
   });
@@ -108,7 +108,7 @@ public class EternalAi extends Ai {
   /**
    * Creates an instance that connects to {@code 127.0.0.1:3000}.
    */
-  public EternalAi() {
+  public ExternalAi() {
     this(DEFAULT_HOST, DEFAULT_PORT);
   }
 
@@ -120,7 +120,7 @@ public class EternalAi extends Ai {
    *
    * @throws NullPointerException if {@code host} is null
    */
-  public EternalAi(String host, int port) {
+  public ExternalAi(String host, int port) {
     this.host = Objects.requireNonNull(host, "host is null");
     this.port = port;
   }
@@ -214,14 +214,14 @@ public class EternalAi extends Ai {
             return COMPACT_JSON.fromJson(requestOnce(json), OpMove.class);
           } catch (SocketTimeoutException e) {
             // Treat as transient; allow loop to retry.
-            LOG.log(Level.FINE, "EternalAi: socket timeout at top-level, retrying", e);
+            LOG.log(Level.FINE, "ExternalAi: socket timeout at top-level, retrying", e);
           } catch (JsonProcessingException e) {
             // Serialization/parsing error: surface as completion failure.
             throw new CompletionException(e);
           } catch (IOException ioe) {
             // Connection issues: back off and retry.
             LOG.log(Level.FINE,
-                "EternalAi: socket issue, retrying: " + ioe.getClass().getSimpleName(), ioe);
+                "ExternalAi: socket issue, retrying: " + ioe.getClass().getSimpleName(), ioe);
             sleepBackoff();
           }
         }
@@ -251,7 +251,7 @@ public class EternalAi extends Ai {
    * @throws IOException            on any other I/O errors (connect/write/read)
    * @throws CancellationException  if interrupted at guarded points
    */
-  private String requestOnce(String json) throws IOException, CancellationException {
+  protected String requestOnce(String json) throws IOException, CancellationException {
     try (Socket s = new Socket()) {
       checkInterrupted();
       s.setTcpNoDelay(true);
@@ -278,7 +278,7 @@ public class EternalAi extends Ai {
    * @throws IOException           if writing fails
    * @throws CancellationException if interrupted before or during the writing
    */
-  private void send(BufferedWriter w, String json) throws IOException, CancellationException {
+  protected void send(BufferedWriter w, String json) throws IOException, CancellationException {
     checkInterrupted();
     w.write(json);
     w.write('\n');
@@ -301,7 +301,7 @@ public class EternalAi extends Ai {
    * @throws IOException            on any other I/O errors
    * @throws CancellationException  if interrupted between reads
    */
-  private String read(BufferedReader r) throws IOException, CancellationException {
+  protected String read(BufferedReader r) throws IOException, CancellationException {
     while (true) {
       checkInterrupted();
       final String line = r.readLine();
@@ -311,7 +311,7 @@ public class EternalAi extends Ai {
       if (!line.isBlank()) {
         return line;
       }
-      LOG.log(Level.FINE, "EternalAi: got blank line");
+      LOG.log(Level.FINE, "ExternalAi: got blank line");
     }
   }
 

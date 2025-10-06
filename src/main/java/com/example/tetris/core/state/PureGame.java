@@ -7,6 +7,7 @@ import com.example.tetris.core.piece.TetrominoType;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Arrays;
 import java.util.Objects;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Immutable, minimal snapshot of a Tetris board suitable for AI evaluation, serialization, and
@@ -281,7 +282,7 @@ public record PureGame(
    * current and next pieces.
    */
   @Override
-  public String toString() {
+  public @NotNull String toString() {
     return "PureGame{"
         + "width=" + width
         + ", height=" + height

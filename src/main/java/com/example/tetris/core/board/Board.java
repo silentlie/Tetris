@@ -50,6 +50,9 @@ public class Board {
    * @param height number of rows; must be {@code > 0}
    */
   public Board(int width, int height) {
+    if (width <= 0 || height <= 0) {
+      throw new IllegalArgumentException("width and height must be positive");
+    }
     this.width = width;
     this.height = height;
     this.board = new TetrominoType[height][width];
