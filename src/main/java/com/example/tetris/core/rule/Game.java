@@ -115,7 +115,7 @@ public class Game {
    * @throws NullPointerException if {@code intent} is {@code null}
    */
   public void apply(GameIntent intent) {
-    if (intent == null) {
+    if (intent == null || isGameOver()) {
       return;
     }
     if (state.apply(intent)) {

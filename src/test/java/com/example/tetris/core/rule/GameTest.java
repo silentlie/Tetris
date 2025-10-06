@@ -34,7 +34,7 @@ class GameTest {
       Platform.startup(() -> {
       });
     } catch (IllegalStateException ignored) {
-      // Toolkit already initialized
+      // toolkit already initialized
     }
   }
 
@@ -57,18 +57,21 @@ class GameTest {
       assertThrows(NullPointerException.class, () -> new Game(s, null, c));
       assertThrows(NullPointerException.class, () -> new Game(s, v, null));
     }
+  }
+
+  @Nested
+  @DisplayName("ai(Ai)")
+  class AiAttach {
 
     @Test
-    @DisplayName("installs listeners on GameClock and GameState")
-    void installs_listeners() {
+    @DisplayName("rejects null ai")
+    void rejects_null_ai() {
       GameState s = mock(GameState.class);
       GameView v = mock(GameView.class);
       GameClock c = mock(GameClock.class);
 
-      newGame(s, v, c);
-
-      verify(c).setListener(any(GameClock.Listener.class));
-      verify(s).setListener(any(GameState.Listener.class));
+      Game g = newGame(s, v, c);
+      assertThrows(NullPointerException.class, () -> g.ai(null));
     }
   }
 
@@ -92,7 +95,22 @@ class GameTest {
     }
 
     @Test
-    @DisplayName("forwards to state; marks view dirty and notifies listener on change")
+    @DisplayName("ignored when intent is null")
+    void ignored_when_null_intent() {
+      GameState s = mock(GameState.class);
+      when(s.isGameOver()).thenReturn(false);
+      GameView v = mock(GameView.class);
+      GameClock c = mock(GameClock.class);
+
+      Game g = newGame(s, v, c);
+      g.apply(null);
+
+      verify(s, never()).apply(any());
+      verify(v, never()).markDirty();
+    }
+
+    @Test
+    @DisplayName("forwards to state; marks view dirty on change")
     void forwards_and_marks_dirty() {
       GameState s = mock(GameState.class);
       when(s.isGameOver()).thenReturn(false);
@@ -109,7 +127,7 @@ class GameTest {
     }
 
     @Test
-    @DisplayName("no dirty/notify when state rejects")
+    @DisplayName("no dirty when state rejects")
     void no_dirty_when_rejected() {
       GameState s = mock(GameState.class);
       when(s.isGameOver()).thenReturn(false);
@@ -137,6 +155,7 @@ class GameTest {
       GameView v = mock(GameView.class);
       GameClock c = mock(GameClock.class);
       when(c.fallIntervalNanos()).thenReturn(Long.MAX_VALUE);
+
       Game g = newGame(s, v, c);
       g.tick(16_000_000L);
 
@@ -145,11 +164,27 @@ class GameTest {
     }
 
     @Test
-    @DisplayName("applies soft-drop while accumulator ≥ interval; marks dirty on change")
+    @DisplayName("clamps negative dt to zero")
+    void clamps_negative_dt() {
+      GameState s = mock(GameState.class);
+      when(s.isGameOver()).thenReturn(false);
+      GameView v = mock(GameView.class);
+      GameClock c = mock(GameClock.class);
+      when(c.fallIntervalNanos()).thenReturn(Long.MAX_VALUE);
+
+      Game g = newGame(s, v, c);
+      g.tick(-123L);
+
+      verify(c).tick(0L);
+      verify(v).render(s, c);
+    }
+
+    @Test
+    @DisplayName("applies gravity-drop while accumulator ≥ interval; marks dirty on change")
     void gravity_steps() {
       GameState s = mock(GameState.class);
       when(s.isGameOver()).thenReturn(false);
-      when(s.apply(GameIntent.SOFT_DROP)).thenReturn(true, true, false);
+      when(s.apply(GameIntent.GRAVITY_DROP)).thenReturn(true, true, false);
 
       GameView v = mock(GameView.class);
       GameClock c = mock(GameClock.class);
@@ -159,7 +194,7 @@ class GameTest {
       g.tick(250L);
 
       verify(c).tick(250L);
-      verify(s, times(2)).apply(GameIntent.SOFT_DROP);
+      verify(s, times(2)).apply(GameIntent.GRAVITY_DROP);
       verify(v, times(2)).markDirty();
       verify(v).render(s, c);
     }
@@ -188,7 +223,7 @@ class GameTest {
     }
 
     @Test
-    @DisplayName("game over short-circuits tick; still renders")
+    @DisplayName("game over short-circuits time/inputs; still renders")
     void over_short_circuit() {
       GameState s = mock(GameState.class);
       when(s.isGameOver()).thenReturn(true);
