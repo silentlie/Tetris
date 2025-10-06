@@ -68,10 +68,10 @@
     </columnResizePolicy>
   </TableView>
 
-  <Button id="resetButton" onAction="#onReset" text="Reset" GridPane.columnIndex="0"
+  <Button id="resetButton" styleClass="button" onAction="#onReset" text="Reset" GridPane.columnIndex="0"
     GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER"
   />
-  <Button id="backButton" onAction="#onBack" text="Back" GridPane.columnIndex="1"
+  <Button id="backButton" styleClass="button" onAction="#onBack" text="Back" GridPane.columnIndex="1"
     GridPane.halignment="CENTER" GridPane.rowIndex="2" GridPane.valignment="CENTER"
   />
 </GridPane>
