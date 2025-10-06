@@ -178,7 +178,6 @@ public class PlayController implements FxController {
     });
     Game game = new Game(state, view, clock);
     switch (playerType) {
-      // TODO: Real AI
       case AI -> {
         Ai ai = new HeuristicAi();
         game.ai(ai);
