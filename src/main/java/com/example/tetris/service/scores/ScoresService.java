@@ -184,7 +184,6 @@ public abstract class ScoresService {
    * Loads scores and normalizes {@code null} to an empty list; validates non-nullity.
    */
   private List<Score> loadInternalNonNull() {
-    List<Score> scores = loadInternal();
-    return Objects.requireNonNull((scores != null) ? scores : List.of());
+    return Objects.requireNonNullElse(loadInternal(), List.of());
   }
 }
