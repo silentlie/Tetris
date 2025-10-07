@@ -69,8 +69,8 @@ public record Score(
         .comparingInt(Score::score).reversed()
         .thenComparingInt(Score::bestStreak).reversed()
         .thenComparing(Score::elapsed)
-        .thenComparing(Score::name, String.CASE_INSENSITIVE_ORDER)
         .thenComparing(Score::timeStamp)
+        .thenComparing(Score::name, String.CASE_INSENSITIVE_ORDER)
         .compare(this, other);
   }
 }
