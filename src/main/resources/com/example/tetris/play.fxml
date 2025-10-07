@@ -2,14 +2,29 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.canvas.Canvas?>
-<?import javafx.scene.layout.Pane?>
-<Pane xmlns="http://javafx.com/javafx"
-  xmlns:fx="http://javafx.com/fxml"
-  fx:controller="com.example.tetris.controllers.PlayController"
-  fx:id="boardHolder"
->
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+<BorderPane xmlns:fx="http://javafx.com/fxml"
+            xmlns="http://javafx.com/javafx"
+            fx:controller="com.example.tetris.controllers.PlayController">
+
   <padding>
     <Insets topRightBottomLeft="12"/>
   </padding>
-  <Canvas fx:id="boardCanvas"/>
-</Pane>
+
+  <!-- Left section: Info panel -->
+  <left>
+    <VBox spacing="8" BorderPane.alignment="TOP_LEFT">
+      <Label fx:id="playerTypeLabel" text="Player: Human" style="-fx-font-size: 14px;"/>
+      <Label fx:id="levelLabel" text="Level: 1" style="-fx-font-size: 14px;"/>
+      <Label fx:id="linesLabel" text="Lines: 0" style="-fx-font-size: 14px;"/>
+      <Label fx:id="scoreLabel" text="Score: 0" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+    </VBox>
+  </left>
+
+  <!-- Center section: Game board -->
+  <center>
+    <Canvas fx:id="boardCanvas" width="300" height="600"/>
+  </center>
+</BorderPane>
