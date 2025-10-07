@@ -31,6 +31,7 @@ import java.util.function.Supplier;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.SplitPane;
@@ -76,7 +77,7 @@ public class PlayController implements FxController {
   private SplitPane root;
 
   private AppContext ctx;
-  private GameService service;
+  private final GameService service = new GameService(this::endGame);
   private Instant now;
   private Game game1;
   private Game game2;
@@ -103,7 +104,6 @@ public class PlayController implements FxController {
     this.ctx = ctx;
     // --- Config & deterministic RNGs ---
     Configuration config = ctx.getConfigService().getCache();
-    service = new GameService(this::endGame);
     now = Instant.now();
 
     if (config.extendMode()) {
@@ -183,7 +183,7 @@ public class PlayController implements FxController {
         game.ai(ai);
       }
       case EXTERNAL -> {
-        Ai ai = new ExternalAi();
+        Ai ai = getExternalAi();
         game.ai(ai);
       }
       default -> {
@@ -192,6 +192,32 @@ public class PlayController implements FxController {
     }
     service.addGame(game);
     return game;
+  }
+
+  private @NotNull ExternalAi getExternalAi() {
+    ExternalAi ai = new ExternalAi();
+    ai.setListener(new ExternalAi.Listener() {
+      @Override
+      public void onDisconnected(Throwable cause, String host, int port) {
+        Platform.runLater(() -> {
+          boolean wasRunning = service.isRunning();
+          if (wasRunning) {
+            service.stop();
+          }
+          Alert alert = new Alert(AlertType.ERROR);
+          alert.setTitle("External Server is not reachable");
+          alert.setHeaderText("Check the server at " + host + ":" + port + ".");
+          alert.setContentText(cause.getMessage());
+          alert.setOnHidden(e -> {
+            if (wasRunning && !service.isRunning()) {
+              service.start();
+            }
+          });
+          alert.show();
+        });
+      }
+    });
+    return ai;
   }
 
   /**
@@ -234,7 +260,7 @@ public class PlayController implements FxController {
    * an already-stopped service is a no-op.</p>
    */
   public void endGame() {
-    if (service != null && service.isRunning()) {
+    if (service.isRunning()) {
       service.stop();
     }
     Platform.runLater(() -> {
@@ -307,7 +333,7 @@ public class PlayController implements FxController {
    * “Resume” restarts the loop.</p>
    */
   public void pauseGame() {
-    if (service == null || !service.isRunning()) {
+    if (!service.isRunning()) {
       return;
     }
     service.stop();

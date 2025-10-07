@@ -98,7 +98,6 @@ class GameTest {
     @DisplayName("ignored when intent is null")
     void ignored_when_null_intent() {
       GameState s = mock(GameState.class);
-      when(s.isGameOver()).thenReturn(false);
       GameView v = mock(GameView.class);
       GameClock c = mock(GameClock.class);
 

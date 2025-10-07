@@ -35,16 +35,4 @@ public record OpMove(
     int opRotate
 ) {
 
-  /**
-   * Creates an {@code OpMove} and validates {@code opRotate}.
-   *
-   * @throws IllegalArgumentException if {@code opRotate} is outside {@code 0..3}
-   */
-  public OpMove {
-    if (opRotate < 0 || opRotate > 3) {
-      throw new IllegalArgumentException("Invalid opRotate=" + opRotate + " (must be 0..3)");
-    }
-    // Note: opX is intentionally not validated here; its valid range depends on the board width
-    // and engine-specific spawn/origin rules.
-  }
 }

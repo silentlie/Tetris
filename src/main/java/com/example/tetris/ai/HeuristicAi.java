@@ -4,6 +4,7 @@ import com.example.tetris.core.board.Cell;
 import com.example.tetris.core.piece.Rotation;
 import com.example.tetris.core.piece.Tetromino;
 import com.example.tetris.core.piece.TetrominoType;
+import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.OpMove;
 import com.example.tetris.core.state.PureGame;
 import java.util.ArrayList;
@@ -196,6 +197,11 @@ public class HeuristicAi extends Ai {
    */
   @Override
   public void shutdown() {
+  }
+
+  @Override
+  protected GameIntent whenAligned(OpMove opMove, PureGame snapshot) {
+    return GameIntent.SOFT_DROP;
   }
 
   /**

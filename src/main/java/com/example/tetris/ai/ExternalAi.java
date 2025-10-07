@@ -1,5 +1,6 @@
 package com.example.tetris.ai;
 
+import com.example.tetris.core.state.GameIntent;
 import com.example.tetris.core.state.OpMove;
 import com.example.tetris.core.state.PureGame;
 import com.example.tetris.util.JsonUtil;
@@ -32,8 +33,8 @@ import java.util.logging.Level;
  * <h2>Protocol</h2>
  * For each {@link PureGame} snapshot, this AI:
  * <ol>
- *   <li>Opens a TCP connection to {@code host:port}.</li>
- *   <li>Sends one <em>single-line</em> compact JSON encoding of the snapshot, terminated by
+ *   <li>Opens a TCP connection to {@code host:port} (fresh, one-shot connection).</li>
+ *   <li>Sends one <em>single-line</em> UTF-8 JSON encoding of the snapshot, terminated by
  *   {@code '\n'}.</li>
  *   <li>Reads lines until the first non-blank JSON line is received and decodes it as
  *   {@link OpMove}.</li>
@@ -42,21 +43,29 @@ import java.util.logging.Level;
  * stateless.
  *
  * <h2>Resilience</h2>
- * Network errors and timeouts are retried with a small backoff until the task is interrupted or a
- * valid
- * response is received. The enclosing {@link Ai} cancels in-flight work when a new snapshot
- * arrives.
+ * Network errors and timeouts are treated as transient: the request is retried with a small backoff
+ * until the task is interrupted/cancelled or a valid response is received. When connectivity is
+ * lost or restored, {@link Listener#onDisconnected(Throwable, String, int)} and
+ * {@link Listener#onReconnected()} are fired exactly once per transition.
  *
- * <h2>Threading</h2>
- * Uses a single-threaded executor to perform blocking I/O. Call {@link #shutdown()} to release the
- * executor when finished.
+ * <h2>Threading & cancellation</h2>
+ * A single-threaded executor performs all blocking I/O. Methods that return
+ * {@link CompletableFuture} complete on that executor. Cooperative cancellation is honored: if the
+ * thread is interrupted, pending I/O loops abort by throwing
+ * {@link java.util.concurrent.CancellationException}.
+ * Call {@link #shutdown()} to release the executor; the instance should not be reused after
+ * shutdown.
  *
- * @implNote Connections are one-shot by design. If you later add connection pooling, ensure
- *     strict snapshot-to-request pairing and prompt interrupt handling.
+ * <h2>JSON format</h2>
+ * Uses a compact (non-indented) JSON wire format via {@link JsonUtil} for lower overhead.
+ *
+ * @implNote Connections are one-shot by design. If pooling is added later, ensure strict
+ *     snapshot-to-request pairing, prompt interrupt handling, and input streamline framing.
  * @see Ai#submit(PureGame)
  * @see Ai#shouldStartNewPlan(PureGame, PureGame, OpMove)
  * @see Ai#getCurrentIntent(OpMove, PureGame)
  */
+
 public class ExternalAi extends Ai {
 
   /**
@@ -105,6 +114,11 @@ public class ExternalAi extends Ai {
     return t;
   });
 
+  private volatile boolean connected = true;
+
+  private Listener listener = new Listener() {
+  };
+
   /**
    * Creates an instance that connects to {@code 127.0.0.1:3000}.
    */
@@ -115,14 +129,29 @@ public class ExternalAi extends Ai {
   /**
    * Creates an instance that connects to the provided endpoint.
    *
-   * @param host hostname or IP of the external AI server (non-null)
+   * @param host hostname or IP of the external AI server (non-{@code null})
    * @param port TCP port of the external AI server
    *
-   * @throws NullPointerException if {@code host} is null
+   * @throws NullPointerException if {@code host} is {@code null}
    */
   public ExternalAi(String host, int port) {
     this.host = Objects.requireNonNull(host, "host is null");
     this.port = port;
+  }
+
+  /**
+   * Installs a listener for connectivity transitions. Passing {@code null} installs a no-op
+   * listener.
+   *
+   * <p><strong>Threading:</strong> listener callbacks are invoked from the worker thread used for
+   * I/O. If the listener updates UI state, marshal to the UI thread (e.g., JavaFX
+   * {@link javafx.application.Platform#runLater(Runnable)}).</p>
+   *
+   * @param listener callback sink or {@code null} for none
+   */
+  public void setListener(Listener listener) {
+    this.listener = listener == null ? new Listener() {
+    } : listener;
   }
 
   /**
@@ -157,17 +186,16 @@ public class ExternalAi extends Ai {
   /**
    * Replan heuristic specializing the base policy.
    *
-   * <p>Replans when:</p>
+   * <p>Starts a new plan when any of these change between snapshots:</p>
    * <ul>
-   *   <li>There was no previous snapshot,</li>
+   *   <li>there was no previous snapshot,</li>
    *   <li>the cell raster changed (deep compare),</li>
-   *   <li>the active tetromino’s {@code type} changed, or</li>
-   *   <li>the active tetromino’s {@code rotation} changed.</li>
+   *   <li>the active tetromino type changed, or</li>
+   *   <li>the active tetromino rotation changed.</li>
    * </ul>
    *
-   * @implNote This assumes both {@code newSnapshot.tetromino()} and
-   *     {@code lastSnapshot.tetromino()} are non-null. If your pipeline allows frames with no
-   *     active piece, consider relaxing or guarding this to avoid NPEs.
+   * @implNote Assumes {@code newSnapshot.tetromino()} and {@code lastSnapshot.tetromino()} are
+   *     non-null. Guard externally if a pipeline can yield frames without an active piece.
    */
   @Override
   protected boolean shouldStartNewPlan(PureGame newSnapshot, PureGame lastSnapshot,
@@ -188,17 +216,22 @@ public class ExternalAi extends Ai {
    * Submits a network task that sends the snapshot to the external AI and awaits an
    * {@link OpMove}.
    *
-   * <p><strong>Behavior:</strong></p>
+   * <p><strong>Behavior</strong></p>
    * <ul>
-   *   <li>Serializes the snapshot to a compact JSON line.</li>
-   *   <li>Attempts request/response exchanges repeatedly until a valid line is received, an I/O
-   *       error occurs (then retried with backoff), or the task is interrupted/cancelled.</li>
-   *   <li>Propagates JSON mapping errors via {@link CompletionException}.</li>
+   *   <li>Serializes {@code snapshot} to a compact JSON line and sends it.</li>
+   *   <li>Retries on I/O errors and socket timeouts with a fixed backoff until interrupted.</li>
+   *   <li>On the first I/O failure, marks the connection as disconnected and fires
+   *       {@link Listener#onDisconnected(Throwable, String, int)}; on the first success after a
+   *       failure, marks as reconnected and fires {@link Listener#onReconnected()}.</li>
+   *   <li>Propagates JSON mapping errors via a {@link CompletionException} cause chain.</li>
    * </ul>
    *
-   * @param snapshot the immutable game state to send (non-null)
+   * <p><strong>Threading:</strong> the returned future runs and completes on the internal worker.
+   * </p>
    *
-   * @return a future that completes with the decoded {@link OpMove}, or completes exceptionally
+   * @param snapshot immutable game state to send (non-{@code null})
+   *
+   * @return future completing with the decoded {@link OpMove}, or exceptionally on error
    *
    * @throws NullPointerException if {@code snapshot} is {@code null}
    */
@@ -211,7 +244,12 @@ public class ExternalAi extends Ai {
         while (true) {
           checkInterrupted();
           try {
-            return COMPACT_JSON.fromJson(requestOnce(json), OpMove.class);
+            OpMove move = COMPACT_JSON.fromJson(requestOnce(json), OpMove.class);
+            if (!connected) {
+              connected = true;
+              listener.onReconnected();
+            }
+            return move;
           } catch (SocketTimeoutException e) {
             // Treat as transient; allow loop to retry.
             LOG.log(Level.FINE, "ExternalAi: socket timeout at top-level, retrying", e);
@@ -219,6 +257,10 @@ public class ExternalAi extends Ai {
             // Serialization/parsing error: surface as completion failure.
             throw new CompletionException(e);
           } catch (IOException ioe) {
+            if (connected) {
+              connected = false;
+              listener.onDisconnected(ioe, host, port);
+            }
             // Connection issues: back off and retry.
             LOG.log(Level.FINE,
                 "ExternalAi: socket issue, retrying: " + ioe.getClass().getSimpleName(), ioe);
@@ -236,19 +278,19 @@ public class ExternalAi extends Ai {
    *
    * <p>Steps:</p>
    * <ol>
-   *   <li>Open a fresh socket and configure timeouts.</li>
-   *   <li>Send the provided JSON line with trailing newline.</li>
-   *   <li>Read the first non-blank response line and return it (raw).</li>
+   *   <li>Open a fresh TCP socket and configure connect/read timeouts.</li>
+   *   <li>Send the provided JSON line followed by {@code '\n'}.</li>
+   *   <li>Read until the first non-blank line is received and return it verbatim.</li>
    * </ol>
    * The caller is responsible for decoding the returned JSON string into {@link OpMove}.
    *
-   * @param json a single-line JSON payload representing {@link PureGame}
+   * @param json single-line JSON payload representing {@link PureGame} (non-{@code null})
    *
    * @return the first non-blank response line from the server
    *
    * @throws SocketTimeoutException if a read operation times out
    * @throws EOFException           if the server closes the connection before sending a line
-   * @throws IOException            on any other I/O errors (connect/write/read)
+   * @throws IOException            on any other I/O error (connect/write/read)
    * @throws CancellationException  if interrupted at guarded points
    */
   protected String requestOnce(String json) throws IOException, CancellationException {
@@ -272,8 +314,8 @@ public class ExternalAi extends Ai {
   /**
    * Sends a JSON line and flushes the stream.
    *
-   * @param w    the writer bound to the socket's output stream
-   * @param json a single-line JSON payload
+   * @param w    writer bound to the socket's output stream
+   * @param json single-line JSON payload
    *
    * @throws IOException           if writing fails
    * @throws CancellationException if interrupted before or during the writing
@@ -288,17 +330,17 @@ public class ExternalAi extends Ai {
   /**
    * Reads lines until the first non-blank is received, then returns it.
    *
-   * <p>Blank lines are logged at {@link Level#FINE} and ignored. The socket read timeout controls
+   * <p>Blank lines are logged at {@link Level#FINE} and ignored. The socket read timeout bounds
    * how long {@link BufferedReader#readLine()} may block; on timeout a
    * {@link SocketTimeoutException} is thrown to the caller (which may choose to retry).</p>
    *
-   * @param r the reader bound to the socket's input stream
+   * @param r reader bound to the socket's input stream
    *
    * @return the first non-blank line read
    *
    * @throws SocketTimeoutException if the read operation times out
    * @throws EOFException           if the peer closes the connection
-   * @throws IOException            on any other I/O errors
+   * @throws IOException            on any other I/O error
    * @throws CancellationException  if interrupted between reads
    */
   protected String read(BufferedReader r) throws IOException, CancellationException {
@@ -321,9 +363,9 @@ public class ExternalAi extends Ai {
    * <p>This implementation uses the left-most absolute bound ({@code minX}) of the active
    * tetromino, which corresponds to board-space alignment at the piece's left edge.</p>
    *
-   * @param snapshot the current immutable game snapshot (must include a non-null active tetromino)
+   * @param snapshot current immutable game snapshot (must include a non-null active tetromino)
    *
-   * @return the left-edge X coordinate in board space
+   * @return left-edge X coordinate in board space
    *
    * @implNote If your controller interprets {@link OpMove#opX()} as pivot X, override this to
    *     return {@code snapshot.tetromino().position().x()} for consistent alignment.
@@ -336,10 +378,53 @@ public class ExternalAi extends Ai {
   /**
    * Shuts down the internal executor used for socket I/O.
    *
-   * <p>Idempotent; no further tasks will be accepted after shutdown.</p>
+   * <p>Idempotent; no further tasks will be accepted after shutdown. Outstanding tasks may still
+   * complete unless interrupted via {@link java.util.concurrent.Future#cancel(boolean)} with
+   * {@code mayInterruptIfRunning=true}.</p>
    */
   @Override
   public void shutdown() {
     worker.shutdown();
+  }
+
+  /**
+   * Intent to emit once horizontally aligned with the target column.
+   *
+   * <p>By default, this returns {@code null}; override to use
+   * {@link GameIntent#SOFT_DROP} once aligned if your rules/UI prefer instant locking.</p>
+   *
+   * @param opMove   current plan returned by the external AI
+   * @param snapshot current game snapshot
+   *
+   * @return the vertical movement intent to apply when aligned
+   */
+  @Override
+  protected GameIntent whenAligned(OpMove opMove, PureGame snapshot) {
+    return GameIntent.SOFT_DROP;
+  }
+
+  /**
+   * Listener for connectivity transitions of the external AI endpoint.
+   *
+   * <p><strong>Threading:</strong> callbacks are invoked on the worker thread used for I/O.
+   * UI code must marshal to the UI thread.</p>
+   */
+  public interface Listener {
+
+    /**
+     * Fired once when a request succeeds after a period of failures/timeouts.
+     */
+    default void onReconnected() {
+    }
+
+    /**
+     * Fired once when the first I/O error or timeout occurs after a period of success.
+     *
+     * @param cause the triggering exception
+     * @param host  the host that failed
+     * @param port  the port that failed
+     */
+    default void onDisconnected(Throwable cause, String host, int port) {
+    }
   }
 }

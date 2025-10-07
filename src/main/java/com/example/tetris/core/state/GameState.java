@@ -16,9 +16,31 @@ import java.util.function.UnaryOperator;
  * piece {@link PieceQueue}, and simple scoring/streak counters. State transitions are driven by
  * {@link GameIntent} inputs via {@link #apply(GameIntent)}.</p>
  *
- * <p>Coordinate system follows screen-style axes: X increases to the right, Y increases
- * downward. Cells with {@code y < 0} are above the visible top and are permitted during spawn and
- * collision checks.</p>
+ * <h2>Coordinates</h2>
+ *
+ * <p>Screen-style axes: X increases to the right, Y increases downward. Cells with {@code y < 0}
+ * are above the visible top and are permitted during spawn and collision checks.</p>
+ *
+ * <h2>Scoring & streaks</h2>
+ *
+ * <p>When a lock clears {@code k} lines in one event, points are awarded using the running
+ * line-clear streak (consecutive lines across lock events). Let {@code S} be the streak
+ * <em>before</em> this lock. The awarded points are:</p>
+ *
+ * <pre>
+ *   score_gain = sum_{i=1..k} (S + i) × 100
+ *              = (S + 1 + S + 2 + … + S + k) × 100
+ * </pre>
+ *
+ * <p>After scoring, the streak becomes {@code S + k}. If a lock clears zero lines, the streak
+ * resets to {@code 0}. {@link #highestStreak} records the maximum observed streak.</p>
+ *
+ * <p><strong>Examples</strong> (showing {@code S} → {@code S'} and the score gain):</p>
+ * <ul>
+ *   <li>{@code S=0}, clear 1 ⇒ gain {@code 100}; new streak {@code 1}.</li>
+ *   <li>{@code S=2}, clear 2 ⇒ gain {@code (3 + 4) × 100 = 700}; new streak {@code 4}.</li>
+ *   <li>{@code S=5}, clear 4 ⇒ gain {@code (6 + 7 + 8 + 9) × 100 = 3000}; new streak {@code 9}.</li>
+ * </ul>
  *
  * <p>This class is not thread-safe.</p>
  */
@@ -87,8 +109,13 @@ public class GameState {
    *       and succeed only if the resulting position fits.</li>
    *   <li>{@link GameIntent#SOFT_DROP} attempts to move down once; if blocked, the piece locks.
    *   </li>
+   *   <li>{@link GameIntent#GRAVITY_DROP} is identical to a down step initiated by gravity and may
+   *       be ignored by UIs for telemetry; if blocked, the piece locks.</li>
    *   <li>{@link GameIntent#HARD_DROP} repeatedly moves down until blocked, then locks.</li>
    * </ul>
+   *
+   * <p>Locking may clear lines and therefore update score/streak per the streak-weighted formula
+   * documented on the class and in {@link #calculateScoring(int, int)}.</p>
    *
    * @param intent the input to process (must not be {@code null})
    *
@@ -153,11 +180,22 @@ public class GameState {
    * Lock the active tetromino into the board, clear any full lines, update score/streak, and spawn
    * the next tetromino. If the new piece does not fit, mark game over.
    *
-   * <p><strong>Lock-out:</strong> if any locked cell lies above the top ({@code y < 0}),
-   * the game ends immediately.</p>
-   *
-   * <p>Listeners are notified via {@link Listener#onClearLines(int, int, int, int)} after scoring,
-   * and via {@link Listener#onGameOver()} if the spawn fails.</p>
+   * <p><strong>Order of operations:</strong></p>
+   * <ol>
+   *   <li>Lock the piece into the board; if any locked cell lies above the top ({@code y < 0}),
+   *       the game ends immediately (“lock-out”).</li>
+   *   <li>Clear full lines and compute {@code cleared}.</li>
+   *   <li>If {@code cleared == 0}, reset {@code streak = 0}. Otherwise:
+   *       <ul>
+   *         <li>Increase {@code score} by {@link #calculateScoring(int, int)} with the
+   *             pre-clear streak and {@code cleared}.</li>
+   *         <li>Update {@code streak += cleared} and
+   *         {@code highestStreak = max(highestStreak, streak)}.</li>
+   *         <li>Notify {@link Listener#onClearLines(int, int, int, int)} after scoring.</li>
+   *       </ul>
+   *   </li>
+   *   <li>Spawn the next piece; if it does not fit, the game ends (“post-spawn collision”).</li>
+   * </ol>
    */
   private void lock() {
     boolean lockOut = board.lock(tetromino);
@@ -169,9 +207,9 @@ public class GameState {
     if (cleared == 0) {
       streak = 0;
     } else {
+      score += calculateScoring(cleared, streak);
       streak += cleared;
       highestStreak = Math.max(highestStreak, streak);
-      score += calculateScoring(cleared, streak);
       listener.onClearLines(cleared, score, streak, highestStreak);
     }
     tetromino = spawnFromQueue();
@@ -181,20 +219,33 @@ public class GameState {
   }
 
   /**
-   * Scoring rule: award {@code streak × 100} for each line cleared in this lock event.
+   * Scoring rule for one lock event that clears lines.
    *
-   * <p>Example: if {@code cleared == 2} and the current {@code streak == 3},
-   * score gain = {@code 2 × (3 × 100)} = {@code 600}.</p>
+   * <p>Given {@code cleared = k ≥ 0} and the streak <em>before</em> this lock {@code S ≥ 0},
+   * award:</p>
+   *
+   * <pre>
+   *   sum_{i=1..k} (S + i) × 100
+   * </pre>
+   *
+   * <p>This is equivalent to adding {@code 100} for each streak step advanced by the clears.</p>
+   *
+   * <p><strong>Examples</strong>:</p>
+   * <ul>
+   *   <li>{@code S=0, k=1} ⇒ {@code 100}</li>
+   *   <li>{@code S=3, k=2} ⇒ {@code (4 + 5) × 100 = 900}</li>
+   *   <li>{@code S=5, k=4} ⇒ {@code (6 + 7 + 8 + 9) × 100 = 3000}</li>
+   * </ul>
    *
    * @param cleared number of lines cleared in this lock (≥ 0)
-   * @param streak  cumulative streak after this clear (≥ 0)
+   * @param streak  streak before scoring (≥ 0)
    *
    * @return points to add for this lock
    */
   private int calculateScoring(int cleared, int streak) {
     int scoring = 0;
     while (cleared-- > 0) {
-      scoring += streak * 100;
+      scoring += ++streak * 100;
     }
     return scoring;
   }
@@ -216,14 +267,17 @@ public class GameState {
   // ===== Read-only accessors for rendering/HUD =====
 
   /**
-   * Current score (≥ 0).
+   * Current score (≥ 0). Increased only on locks that clear ≥ 1 line, following the streak-weighted
+   * formula ({@code +100} for each streak step advanced by that lock).
    */
   public int getScore() {
     return score;
   }
 
   /**
-   * Current ongoing line-clear streak (reset to 0 when a lock clears no lines).
+   * Current ongoing line-clear streak (consecutive cleared lines across lock events). Resets to
+   * {@code 0} when a lock clears no lines; otherwise increases by the number of lines cleared in
+   * that lock.
    *
    * @return streak (≥ 0)
    */
@@ -232,7 +286,7 @@ public class GameState {
   }
 
   /**
-   * Highest streak achieved so far.
+   * Highest streak achieved so far (max over all observed {@link #getStreak()} values).
    *
    * @return maximum streak seen (≥ 0)
    */
