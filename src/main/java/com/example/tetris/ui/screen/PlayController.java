@@ -4,7 +4,7 @@ import static com.example.tetris.core.config.Configuration.NEXT_QUEUE_SIZE;
 
 import com.example.tetris.ai.Ai;
 import com.example.tetris.ai.ExternalAi;
-import com.example.tetris.ai.FakeAi;
+import com.example.tetris.ai.HeuristicAi;
 import com.example.tetris.app.context.AppContext;
 import com.example.tetris.app.context.FxController;
 import com.example.tetris.app.navigation.Route;
@@ -178,9 +178,8 @@ public class PlayController implements FxController {
     });
     Game game = new Game(state, view, clock);
     switch (playerType) {
-      // TODO: Real AI
       case AI -> {
-        Ai ai = new FakeAi();
+        Ai ai = new HeuristicAi();
         game.ai(ai);
       }
       case EXTERNAL -> {
@@ -294,7 +293,6 @@ public class PlayController implements FxController {
             + TimeUtil.formatDuration(elapsed)
     );
     dialog.setContentText("Enter your name:");
-
     Optional<String> result = dialog.showAndWait();
     String name = result.map(String::trim).filter(s -> !s.isEmpty()).orElse("");
 
