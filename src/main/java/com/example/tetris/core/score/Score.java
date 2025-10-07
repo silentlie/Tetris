@@ -67,10 +67,11 @@ public record Score(
   public int compareTo(@NotNull Score other) {
     return Comparator
         .comparingInt(Score::score)
-        .thenComparingInt(Score::bestStreak).reversed()
+        .thenComparingInt(Score::bestStreak)
+        .reversed() // flips the two keys defined so far
         .thenComparing(Score::elapsed)
-        .thenComparing(Score::name, String.CASE_INSENSITIVE_ORDER)
         .thenComparing(Score::timeStamp)
+        .thenComparing(Score::name, String.CASE_INSENSITIVE_ORDER)
         .compare(this, other);
   }
 }

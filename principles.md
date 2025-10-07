@@ -9,20 +9,24 @@
   it never constructs `Tetromino` objects.
 - `JsonConfigurationService` focuses only on loading/saving configuration files with error handling,
   without UI or gameplay entanglement.
+- `ScoresService` caches, sorts, and synchronizes leaderboard access while delegating actual
+  persistence, and `JsonScoresService` stays limited to JSON I/O and backup mechanics.
 
 ## Open/Closed Principle (OCP)
 
-- `Ai` is an abstraction: new steering behaviours (`FakeAi`, `EternalAi`, future AIs) can be added
-  by subclassing without altering the game loop.
+- `Ai` is an abstraction: new steering behaviours (`FakeAi`, `HeuristicAi`, `ExternalAi`, future
+  AIs) can be added by subclassing without altering the game loop.
 - `PieceSupplierStrategy` exposes factories for different piece generators and can be extended
   without changing clients.
 - `ConfigurationService` defines template methods for persistence; new storage backends (e.g., JSON,
   DB) extend it rather than modifying existing logic.
+- `ScoresService` exposes persistence hooks so alternative leaderboard stores (database, REST,
+  etc.) can be added without touching scoring clients.
 
 ## Liskov Substitution Principle (LSP)
 
-- Subclasses such as `FakeAi` and `EternalAi` respect the `Ai` contract and can replace each other
-  transparently.
+- Subclasses such as `FakeAi`, `HeuristicAi`, and `ExternalAi` respect the `Ai` contract and can
+  replace each other transparently.
 - `AudioService` defines the audio backend contract, and `JavaFxAudioService` implements it
   faithfully so callers are unaffected by the swap.
 
@@ -37,7 +41,7 @@
 - High-level components depend on abstractions rather than concrete classes: `AppContext` wires in
   `Router`, `ConfigurationService`, and `AudioService` through constructor injection.
 - `PlayController` currently hardcodes `PieceSupplierStrategy.UNIFORM` and concrete AIs (
-  `new FakeAi()`, `new EternalAi()`); this is a **deviation from DIP** and a potential future
+  `new HeuristicAi()`, `new ExternalAi()`); this is a **deviation from DIP** and a potential future
   refactor point to improve flexibility.
 
 ---
@@ -52,6 +56,8 @@
   for the play scene.
 - `MenuController` mediates menu actions and delegates navigation via `AppContext` rather than
   manipulating scenes directly.
+- `HighScoresController` loads the leaderboard through `ScoresService`, updates the view, and
+  handles navigation back to the menu.
 
 ## Creator
 
@@ -60,6 +66,8 @@
 - `GameState#spawnFromQueue` constructs `Tetromino` instances from the queued `TetrominoType`.
 - `PieceQueue` fills and maintains a queue of `TetrominoType` values pulled from the configured
   supplier.
+- `ScoresService` knows how to sort, cache, and persist leaderboard entries, so controllers defer to
+  it for ranking logic.
 
 ## Information Expert
 
@@ -67,6 +75,8 @@
   pieces, tallies scores, and spawns pieces.
 - `ConfigurationController` reads/writes form values into `Configuration` objects before persisting,
   since it has the necessary control state.
+- `ScoresService` separates leaderboard logic from UI controllers while `JsonScoresService` hides
+  file-system details, minimizing coupling between gameplay and persistence layers.
 
 ## Low Coupling
 
@@ -90,6 +100,8 @@
 
 - `JsonUtil` centralises JSON serialization outside domain entities.
 - `ViewLoader` fabricates a helper to manage FXML caching and loading, reducing coupling.
+- `FileBackup` is a helper focused solely on timestamped backups so persistence services avoid
+  direct filesystem micromanagement.
 
 ## Indirection
 
@@ -102,4 +114,6 @@
 - `ConfigurationService` stabilises persistence behind a fixed interface so storage can vary.
 - `AudioService` shields clients from backend changes with a minimal façade.
 - `PieceSupplierStrategy` and `PieceQueue` hide the variability of piece randomisation at the
-  `TetrominoType` level, with instantiation handled separately in `GameState`.  
+  `TetrominoType` level, with instantiation handled separately in `GameState`.
+- `ScoresService` and `JsonScoresService` isolate leaderboard storage so the rest of the application
+  is unaffected by switching persistence strategies.
