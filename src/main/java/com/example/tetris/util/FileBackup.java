@@ -114,7 +114,11 @@ public class FileBackup {
    */
   public static Path backup(Path path) {
     Objects.requireNonNull(path, "path");
-    String baseName = path.getFileName().toString();
+    Path fileName = path.getFileName();
+    if (fileName == null) {
+      return null;
+    }
+    String baseName = fileName.toString();
     if (baseName.isBlank()) {
       return null;
     }
