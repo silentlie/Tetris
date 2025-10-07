@@ -84,7 +84,7 @@ public final class TimeUtil {
     int minutes = d.toMinutesPart();   // Java 9+
     int seconds = d.toSecondsPart();
     int nanos = d.toNanosPart();
-    int nanos7 = nanos / 100; // 7 digits (truncate to 100 ns)
+    int nanos7 = nanos / 100; // Convert nanoseconds to 100ns units (hectonanoseconds) for 7-digit fractional seconds precision
     if (hours > 0) {
       return String.format("%dh%02dm%02d.%07ds", hours, minutes, seconds, nanos7);
     } else if (minutes > 0) {
