@@ -26,24 +26,22 @@
 
 ## Observer
 
-- **GameState.Listener** – Exposes callbacks for `onGameOver()` and
-  `onClearLines(cleared, score, streak, highestStreak)`; these are invoked synchronously from
-  `apply()` and `lock()` when the game ends or lines are cleared.
+- **GameState.Listener** – Exposes callbacks for `onGameOver()`,
+  `onClearLines(cleared, score, streak, highestStreak)`, and `onIntent(GameIntent)`.
+  `GameState.apply(GameIntent)` fires `onIntent` for accepted inputs (gravity drops excluded) and
+  calls into `lock()`/`setGameOver()` to trigger the other notifications.
 - **GameClock.Listener** – Notifies observers when the integer level increases via
   `onLevelUp(int newLevel)` inside `tick()`.
-- **Game.Listener** – Bridges events from both `GameState` and `GameClock` and exposes additional
-  callbacks such as `onIntentAccepted(GameIntent)`. UI layers or telemetry can subscribe to these to
-  react to
-  game events.
-- **App controllers** – Several controllers (e.g., `PlayController`) register listeners on game
-  objects to update the UI when events occur.
+- **PlayController** – Registers both listeners to drive audio cues (e.g., line clears, level-ups,
+  movement) whenever the model emits those events.
 
 ## Command
 
 - **GameIntent** – Enumerates high-level actions (`ROTATE_CW`, `MOVE_LEFT`, `MOVE_RIGHT`,
-  `SOFT_DROP`, `HARD_DROP`) independent of physical keys.  `GameState.apply(GameIntent)` switches
-  over these intents and delegates the associated movement/rotation to the `Tetromino` via function
-  references.
+  `SOFT_DROP`, `HARD_DROP`, `GRAVITY_DROP`) independent of physical keys.
+  `GameState.apply(GameIntent)` switches over these intents and delegates the associated
+  movement/rotation to the `Tetromino` via function references, treating `SOFT_DROP` and
+  `GRAVITY_DROP` as the same downward step with locking when blocked.
 - **Menu/Configuration actions** – Controller methods (e.g., `onPlayClicked`, `onReset`) encapsulate
   user commands; they call into `AppContext` or services to perform navigation or configuration
   updates, separating UI event handlers from business logic.
@@ -85,6 +83,21 @@
 - **JsonConfigurationService** – Implements the template by reading/writing a `config.json` file. On
   missing or unreadable files it backs up the file, writes defaults and returns them, handling all
   errors internally.
+- **ScoresService** – Provides another template-method hierarchy for leaderboard persistence. Its
+  final public API keeps a sorted in-memory cache and funnels mutations through template hooks
+  `loadInternal()`/`saveInternal(List<Score>)`, guaranteeing non-null lists and copy-on-write
+  semantics for implementors.
+- **JsonScoresService** – Supplies the concrete JSON-backed storage by implementing the two hooks
+  from `ScoresService`. It handles missing/corrupt files, backs them up via `FileBackup`, and writes
+  snapshots using `JsonUtil`’s atomic temp-file move.
+- **Ai** – Encapsulates the frame-by-frame AI control loop in its final `tick(PureGame)` template
+  method. Hooks such as `shouldStartNewPlan(...)`, `submit(PureGame)`, `getCurrentIntent(...)`, and
+  `onError(Throwable)` let subclasses specialize the planning trigger, async work, intent emission,
+  and error policy while reusing the orchestration logic.
+- **HeuristicAi**, **ExternalAi**, **FakeAi** – Concrete `Ai` specializations that plug custom
+  planning strategies into the template. They each implement `submit(PureGame)` (and, for
+  `ExternalAi`, override `shouldStartNewPlan`) to supply different behaviours while delegating tick
+  orchestration to the base class.
 
 ## Flyweight
 
@@ -93,6 +106,10 @@
 - **TetrominoType** – Uses a `ConcurrentHashMap` (not shown here) to cache rotation-specific derived
   data; repeated lookups for a given type and rotation reuse precomputed geometry rather than
   recomputing it each time.
+- **SharedPieceSource** / **SharedPieceSupplier** – Memoize and share a deterministic tetromino
+  sequence across multiple cursors. The source caches each generated `TetrominoType` by index, and
+  lightweight suppliers keep only a cursor, letting many consumers reuse the same intrinsic piece
+  data without duplicating generation.
 
 ## Composite
 
