@@ -69,6 +69,14 @@
       <artifactId>jackson-databind</artifactId>
       <version>2.20.0</version>
     </dependency>
+
+    <!-- Gson JSON Library -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.10.1</version>
+    </dependency>
+
     <!-- JavaFX Core -->
     <dependency>
       <artifactId>javafx-controls</artifactId>
