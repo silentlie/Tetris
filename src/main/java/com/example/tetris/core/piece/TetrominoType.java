@@ -105,6 +105,10 @@ public enum TetrominoType {
     return new Derived(List.copyOf(rel), new Bound(minX, minY, maxX, maxY));
   }
 
+  public static TetrominoType randomType() {
+      return null;
+  }
+
   /**
    * Returns the display {@link Color} associated with this tetromino type.
    *
